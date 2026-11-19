@@ -41,6 +41,8 @@ jobs:
       - run: pnpm test
       - run: pnpm --dir test/next-app install --no-frozen-lockfile
       - run: pnpm test:hydration
+      - run: pnpm --dir test/framework-app install --no-frozen-lockfile
+      - run: pnpm test:frameworks
       - run: pnpm --dir test/next-app exec playwright install --with-deps chromium
       - run: pnpm test:browser
       - run: pnpm test:package
