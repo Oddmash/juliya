@@ -1,0 +1,20 @@
+{
+  "name": "kowrap-next-integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build --webpack",
+    "test:hydration": "node --test hydration.test.mjs",
+    "test:browser": "node browser.mjs"
+  },
+  "dependencies": {
+    "@oddmash/kowrap": "file:../..",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1",
+    "playwright": "1.65.1"
+  }
+}
