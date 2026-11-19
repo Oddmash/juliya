@@ -32,6 +32,7 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
   let previousFont: string | undefined;
   let measure: Measure | undefined;
   let observedWidth: { fallback: number; exact: number } | undefined;
+  let frame: number | undefined;
 
   const update = (contentWidth?: number) => {
     if (!active) return;
@@ -67,7 +68,19 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     update();
   };
   const Observer = view.ResizeObserver ?? globalThis.ResizeObserver;
-  const observer = Observer ? new Observer((entries) => update(entries?.[0]?.contentRect.width)) : undefined;
+  const observer = Observer ? new Observer((entries) => {
+    const width = entries?.[0]?.contentRect.width;
+    if (width === undefined || !view.requestAnimationFrame) {
+      update(width);
+      return;
+    }
+    if (frame !== undefined) view.cancelAnimationFrame(frame);
+    // Rendering can change the observed element's height.
+    frame = view.requestAnimationFrame(() => {
+      frame = undefined;
+      update(width);
+    });
+  }) : undefined;
   observer?.observe(element);
   view.addEventListener("resize", refresh);
   doc.fonts?.addEventListener("loadingdone", onFonts);
@@ -76,6 +89,7 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
 
   const destroy = () => {
     active = false;
+    if (frame !== undefined) view.cancelAnimationFrame(frame);
     observer?.disconnect();
     view.removeEventListener("resize", refresh);
     doc.fonts?.removeEventListener("loadingdone", onFonts);

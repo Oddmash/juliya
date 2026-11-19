@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, firefox, webkit } from "playwright";
@@ -135,7 +135,8 @@ try {
 		.click();
 	await docs.waitForURL("**/docs/ssr/");
 	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
-	const mobile = await openPage({ width: 375, height: 812 });
+	const mobileViewport = { width: 375, height: 812 };
+	const mobile = await openPage(mobileViewport);
 	await mobile.goto(`${origin}/`);
 	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
@@ -151,6 +152,20 @@ try {
 			() => document.documentElement.scrollWidth <= innerWidth + 2,
 		),
 	);
+	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
+	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
+	for (const path of paths) {
+		const guide = await openPage(mobileViewport);
+		const response = await guide.goto(`${origin}/docs/${path}`);
+		assert.ok(response.ok(), `Guide loads: ${path}`);
+		await guide.locator("#doc-content h1[data-kowrap-prose]").waitFor();
+		await guide.evaluate(async () => {
+			await document.fonts.ready;
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+		});
+		assert.ok(await guide.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), `Guide fits: ${path}`);
+	}
 	assert.deepEqual(errors, []);
 	console.log(
 		`${engine.name()}: landing comparisons, code synchronization, docs search, navigation and mobile layout passed`,
