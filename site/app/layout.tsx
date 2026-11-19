@@ -16,21 +16,26 @@ export const metadata: Metadata = {
 
 const Logo = ({ size = 28 }: { size?: number }) => (
 	<svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
-		<rect width="40" height="40" rx="6" fill="#171717" />
-		<path d="M9 12h15l7 7-7 7H9l7-7z" fill="#ffffff" />
-		<path d="M9 28h15" stroke="#999999" strokeWidth="2" strokeLinecap="round" />
+		<rect width="40" height="40" rx="6" fill="var(--action)" />
+		<path d="M9 12h15l7 7-7 7H9l7-7z" fill="var(--action-text)" />
+		<path d="M9 28h15" stroke="var(--action-text)" strokeWidth="2" strokeLinecap="round" />
 	</svg>
 );
 
 const theme = {
 	"--paper": tokens.color.background,
 	"--surface": tokens.color.surface,
+	"--surface-raised": tokens.color.surfaceRaised,
+	"--surface-inset": tokens.color.surfaceInset,
+	"--surface-hover": tokens.color.surfaceHover,
 	"--ink": tokens.color.text,
 	"--muted": tokens.color.muted,
+	"--subtle": tokens.color.subtle,
 	"--border": tokens.color.border,
 	"--control-border": tokens.color.controlBorder,
 	"--action": tokens.color.action,
 	"--action-hover": tokens.color.actionHover,
+	"--action-text": tokens.color.actionText,
 	"--focus": tokens.color.focus,
 	"--danger": tokens.color.danger,
 	"--sans": tokens.font.sans,

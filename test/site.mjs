@@ -12,6 +12,9 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /id="native-preview"/);
 	assert.match(html, /id="kowrap-preview"/);
 	assert.match(html, /id="inline-preview"/);
+	assert.match(html, /--paper:#0d0e10/);
+	assert.match(html, /--ink:#f0f1f2/);
+	assert.match(html, /직접 비교하기/);
 	assert.match(html, /적용 전 \(CSS keep-all\)/);
 	assert.match(html, /적용 후 \(kowrap\)/);
 	assert.ok(html.includes(`${basePath}/_next/`));

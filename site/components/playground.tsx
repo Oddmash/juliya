@@ -10,7 +10,7 @@ import { CopyButton } from "./copy-button";
 const presets = [
 	{
 		label: "제목",
-		value: "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험합니다.",
+		value: "좋은 글은 보기 편한 화면에서 시작됩니다.",
 	},
 	{
 		label: "설명",
@@ -35,7 +35,7 @@ const nativeStyle = {
 const PreviewCode = ({ code, applied }: { code: string; applied: boolean }) => (
 	<div className="compare-code">
 		<div className="compare-code-header">
-			<span>{applied ? "WITH KOWRAP / TSX" : "WITHOUT KOWRAP / TSX"}</span>
+			<span>{applied ? "kowrap 적용 코드" : "기본 CSS 코드"}</span>
 			<CopyButton value={code} />
 		</div>
 		<pre>
@@ -162,90 +162,15 @@ export const Playground = () => {
 		>
 			<div className="playground-header">
 				<div>
-					<p className="eyebrow label-muted">LIVE PLAYGROUND</p>
-					<h2 id="playground-title">같은 문장, 다른 줄바꿈</h2>
+					<p className="eyebrow label-muted">실시간 비교</p>
+					<h2 id="playground-title">같은 문장, 더 균형 있는 줄바꿈</h2>
 				</div>
 				<span className="live-label">
 					<span aria-hidden="true" />
-					실제 React 컴포넌트
+					실제 브라우저 렌더링
 				</span>
 			</div>
 			<div className="playground-body">
-				<div className="controls">
-					<div className="preset-group" role="group" aria-label="예시 문장">
-						{presets.map(({ label, value }, index) => (
-							<button
-								type="button"
-								key={label}
-								className={`preset ${preset === index ? "is-active" : ""}`}
-								aria-pressed={preset === index}
-								onClick={() => changeText(value, index)}
-							>
-								{label}
-							</button>
-						))}
-					</div>
-					<div className="control-range">
-						<label htmlFor="demo-width">
-							폭 <output htmlFor="demo-width">{width}px</output>
-						</label>
-						<input
-							id="demo-width"
-							type="range"
-							min="180"
-							max="460"
-							step="4"
-							value={width}
-							onChange={(event) => setWidth(Number(event.target.value))}
-						/>
-					</div>
-					<div className="control-range font-control">
-						<label htmlFor="font-size">
-							글자 크기 <output htmlFor="font-size">{font}px</output>
-						</label>
-						<input
-							id="font-size"
-							type="range"
-							min="16"
-							max="32"
-							value={font}
-							onChange={(event) => setFont(Number(event.target.value))}
-						/>
-					</div>
-				</div>
-				<div className="editor">
-					<label htmlFor="demo-text" className="sr-only">
-						비교할 문장
-					</label>
-					<textarea
-						id="demo-text"
-						rows={2}
-						maxLength={400}
-						spellCheck={false}
-						ref={inputRef}
-						value={text}
-						onChange={(event) => changeText(event.target.value)}
-					/>
-					<div className="editor-actions">
-						<button type="button" className="button-small" onClick={addBreak}>
-							커서 위치에서 개행
-						</button>
-						<button
-							type="button"
-							className="button-small"
-							onClick={clearBreaks}
-							disabled={!breaks.length}
-						>
-							개행 초기화
-						</button>
-						<span
-							className={`editor-status${invalidBreak ? " is-error" : ""}`}
-							role="status"
-						>
-							{message}
-						</span>
-					</div>
-				</div>
 				<div className="comparison" style={comparisonStyle}>
 					<article className="comparison-card">
 						<div className="comparison-top">
@@ -294,6 +219,87 @@ export const Playground = () => {
 						</div>
 						<PreviewCode code={withCode} applied />
 					</article>
+				</div>
+				<div className="playground-settings">
+					<div className="settings-heading">
+						<h3>직접 비교하기</h3>
+						<p>문장, 너비, 글자 크기를 바꾸면 두 결과와 코드가 즉시 갱신됩니다.</p>
+					</div>
+					<div className="controls">
+						<div className="preset-group" role="group" aria-label="예시 문장">
+							{presets.map(({ label, value }, index) => (
+								<button
+									type="button"
+									key={label}
+									className={`preset ${preset === index ? "is-active" : ""}`}
+									aria-pressed={preset === index}
+									onClick={() => changeText(value, index)}
+								>
+									{label}
+								</button>
+							))}
+						</div>
+						<div className="control-range">
+							<label htmlFor="demo-width">
+								폭 <output htmlFor="demo-width">{width}px</output>
+							</label>
+							<input
+								id="demo-width"
+								type="range"
+								min="180"
+								max="460"
+								step="4"
+								value={width}
+								onChange={(event) => setWidth(Number(event.target.value))}
+							/>
+						</div>
+						<div className="control-range font-control">
+							<label htmlFor="font-size">
+								글자 크기 <output htmlFor="font-size">{font}px</output>
+							</label>
+							<input
+								id="font-size"
+								type="range"
+								min="16"
+								max="32"
+								value={font}
+								onChange={(event) => setFont(Number(event.target.value))}
+							/>
+						</div>
+					</div>
+					<div className="editor">
+						<label htmlFor="demo-text" className="sr-only">
+							비교할 문장
+						</label>
+						<textarea
+							id="demo-text"
+							rows={2}
+							maxLength={400}
+							spellCheck={false}
+							ref={inputRef}
+							value={text}
+							onChange={(event) => changeText(event.target.value)}
+						/>
+						<div className="editor-actions">
+							<button type="button" className="button-small" onClick={addBreak}>
+								커서 위치에서 개행
+							</button>
+							<button
+								type="button"
+								className="button-small"
+								onClick={clearBreaks}
+								disabled={!breaks.length}
+							>
+								개행 초기화
+							</button>
+							<span
+								className={`editor-status${invalidBreak ? " is-error" : ""}`}
+								role="status"
+							>
+								{message}
+							</span>
+						</div>
+					</div>
 				</div>
 				<div className="playground-footer">
 					<span>

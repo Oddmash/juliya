@@ -53,6 +53,7 @@ try {
 	const errors = [];
 	page.on("pageerror", (error) => errors.push(error.message));
 	await page.goto(`${origin}/`);
+	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
 	await page
 		.locator("#kowrap-preview br")
 		.first()
