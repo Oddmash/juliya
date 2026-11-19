@@ -42,7 +42,16 @@ export const HeaderSearch = ({ items }: { items: SearchItem[] }) => {
 		<DialogContent className="search-dialog" theme="dark" onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); trigger.current?.focus(); }}>
 			<div className="search-dialog-heading"><DialogTitle>문서 검색</DialogTitle><DialogClose asChild><Button variant="ghost" size="sm" aria-label="검색 닫기">닫기</Button></DialogClose></div>
 			<DialogDescription className="sr-only">제목이나 문서 내용을 검색합니다.</DialogDescription>
-			<Input ref={input} id="docs-search" type="search" placeholder="API, SSR, React" aria-label="문서 검색어" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "ArrowDown") { event.preventDefault(); results.current?.querySelector("a")?.focus(); } else if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); results.current?.querySelector("a")?.click(); } }} />
+			<Input ref={input} id="docs-search" type="search" placeholder="API, SSR, React" aria-label="문서 검색어" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => {
+				if (event.nativeEvent.isComposing) return;
+				if (event.key === "ArrowDown") {
+					event.preventDefault();
+					results.current?.querySelector("a")?.focus();
+				} else if (event.key === "Enter") {
+					event.preventDefault();
+					results.current?.querySelector("a")?.click();
+				}
+			}} />
 			<div className="search-dialog-results" ref={results} aria-live="polite" onKeyDown={(event) => {
 				if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
 				const links = Array.from(results.current?.querySelectorAll("a") ?? []);

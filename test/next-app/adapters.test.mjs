@@ -22,7 +22,7 @@ const fixture = () => {
     created++;
     return { font: "", measureText: (value) => ({ width: [...value].length * 10 }) };
   };
-  return { dom, element, resize: (value) => { width = value; observer(); }, count: () => created, disconnected: () => disconnected };
+  return { dom, element, resize: (value, entries) => { width = value; observer(entries); }, count: () => created, disconnected: () => disconnected };
 };
 
 test("vanilla controller preserves text, manual breaks, measurement reuse and cleanup", () => {
@@ -56,6 +56,25 @@ test("data-only observer preserves manual lines when element has no width", () =
   assert.deepEqual(result.lines.map(({ text }) => text), ["가나다", "라마바사"]);
   assert.equal(element.textContent, "원문");
   controller.destroy();
+  dom.window.close();
+});
+
+test("resize delivery schedules rendering outside the observer and cancels on destroy", () => {
+  const { dom, element, resize } = fixture();
+  let frame;
+  dom.window.requestAnimationFrame = (callback) => { frame = callback; return 1; };
+  dom.window.cancelAnimationFrame = () => { frame = undefined; };
+  const controller = mountKowrap(element, { text: "오늘은 모든 사람이 함께" });
+  const initial = element.innerHTML;
+  assert.ok(element.querySelector("br"));
+  resize(400, [{ contentRect: { width: 380 } }]);
+  assert.equal(element.innerHTML, initial);
+  frame();
+  assert.equal(element.querySelector("br"), null);
+  resize(120, [{ contentRect: { width: 100 } }]);
+  assert.equal(typeof frame, "function");
+  controller.destroy();
+  assert.equal(frame, undefined);
   dom.window.close();
 });
 

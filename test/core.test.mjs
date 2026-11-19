@@ -32,6 +32,16 @@ test("keeps demonstratives with the word they modify when feasible", () => {
   assert.ok(!lines.slice(0, -1).some((line) => line.text.trimEnd().endsWith("모든")));
 });
 
+test("keeps a Korean adjective with its noun without adding a line", () => {
+  const text = "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험할 수 있습니다.";
+  const width = 23;
+  const lines = run(text, width);
+  assert.equal(reconstruct(lines), text);
+  assert.equal(lines.length, 2);
+  assert.ok(lines.every((line) => line.width <= width));
+  assert.ok(lines.some((line) => line.text.includes("자연스러운 한국어")));
+});
+
 test("uses emergency grapheme boundaries without splitting emoji or combining marks", () => {
   const text = "👩‍💻🇰🇷e\u0301가나다";
   const lines = run(text, 2);

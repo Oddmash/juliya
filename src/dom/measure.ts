@@ -7,8 +7,10 @@ export interface CanvasMeasureOptions {
   fontKerning?: CanvasFontKerning;
 }
 
-export const createCanvasMeasure = (options: CanvasMeasureOptions, ownerDocument: Document = document): Measure => {
-  const context = ownerDocument.createElement("canvas").getContext("2d");
+export const createLocalizedCanvasMeasure = (options: CanvasMeasureOptions, ownerDocument: Document, language: string | undefined): Measure => {
+  const canvas = ownerDocument.createElement("canvas");
+  if (language !== undefined) canvas.lang = language;
+  const context = canvas.getContext("2d");
   if (!context) throw new Error("Canvas 2D measurement is unavailable");
   context.font = options.font;
   if (options.letterSpacing && "letterSpacing" in context) context.letterSpacing = options.letterSpacing;
@@ -16,3 +18,9 @@ export const createCanvasMeasure = (options: CanvasMeasureOptions, ownerDocument
   if (options.fontKerning) context.fontKerning = options.fontKerning;
   return (text) => context.measureText(text).width;
 };
+
+export const createCanvasMeasure = (options: CanvasMeasureOptions, ownerDocument: Document = document): Measure =>
+  createLocalizedCanvasMeasure(options, ownerDocument, ownerDocument.documentElement?.lang);
+
+export const languageOf = (element: HTMLElement): string | undefined =>
+  element.closest("[lang]")?.getAttribute("lang") ?? undefined;

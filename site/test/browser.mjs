@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 
 const root = fileURLToPath(new URL("../out/", import.meta.url));
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -46,12 +46,18 @@ await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
 let browser;
 try {
-	browser = await chromium.launch();
-	const page = await browser.newPage({
-		viewport: { width: 1280, height: 900 },
-	});
+	const engines = { chromium, firefox, webkit };
+	const engine = engines[process.argv[2] ?? "chromium"];
+	assert.ok(engine, "Choose chromium, firefox or webkit");
+	browser = await engine.launch();
 	const errors = [];
-	page.on("pageerror", (error) => errors.push(error.message));
+	const openPage = async (viewport) => {
+		const page = await browser.newPage({ viewport });
+		page.on("pageerror", (error) => errors.push({ page: page.url(), error: error.stack }));
+		return page;
+	};
+	const desktop = { width: 1280, height: 900 };
+	const page = await openPage(desktop);
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
 	await page
@@ -95,32 +101,45 @@ try {
 			"kowrapDirective",
 		),
 	);
-	await page.goto(`${origin}/docs/`);
-	await page.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
-	await page.keyboard.press("Control+k");
-	await page.getByRole("dialog").waitFor();
-	await page.waitForFunction(() => document.activeElement?.id === "docs-search");
-	assert.equal(await page.locator("#docs-search").evaluate((element) => getComputedStyle(element).outlineOffset), "-1px");
-	await page.keyboard.press("Escape");
-	await page.getByRole("dialog").waitFor({ state: "hidden" });
-	await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "문서 검색");
-	await page.keyboard.press("Meta+k");
-	await page.getByRole("dialog").waitFor();
-	await page.locator("#docs-search").fill("SSR");
-	await page
+	// Separate entry points so a forced page unload cannot abort an active prefetch.
+	const docs = await openPage(desktop);
+	await docs.goto(`${origin}/docs/`);
+	await docs.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
+	await docs.keyboard.press("Control+k");
+	await docs.getByRole("dialog").waitFor();
+	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");
+	assert.equal(await docs.locator("#docs-search").evaluate((element) => getComputedStyle(element).outlineOffset), "-1px");
+	await docs.keyboard.press("Escape");
+	await docs.getByRole("dialog").waitFor({ state: "hidden" });
+	await docs.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "문서 검색");
+	await docs.keyboard.press("Meta+k");
+	await docs.getByRole("dialog").waitFor();
+	await docs.locator("#docs-search").fill("SSR");
+	const search = docs.locator("#docs-search");
+	const composingKeyWasHandled = await search.evaluate((element) => !element.dispatchEvent(
+		new KeyboardEvent("keydown", { key: "ArrowDown", isComposing: true, bubbles: true, cancelable: true }),
+	));
+	assert.equal(composingKeyWasHandled, false, "ArrowDown remains available to the IME");
+	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
+	await docs
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.waitFor();
-	await page
+	await search.press("ArrowDown");
+	assert.equal(await docs.locator(".search-dialog-results a").first().evaluate((element) => document.activeElement === element), true);
+	await docs.keyboard.press("ArrowUp");
+	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
+	await docs
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.click();
-	await page.waitForURL("**/docs/ssr/");
-	assert.match(await page.locator("h1").textContent(), /SSR과 하이드레이션/);
-	await page.setViewportSize({ width: 375, height: 812 });
-	await page.goto(`${origin}/`);
-	await page.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
-	const inlineCode = await page.locator(".inline-example pre").evaluate((element) => ({
+	await docs.waitForURL("**/docs/ssr/");
+	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
+	const mobileViewport = { width: 375, height: 812 };
+	const mobile = await openPage(mobileViewport);
+	await mobile.goto(`${origin}/`);
+	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
+	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
 		right: element.getBoundingClientRect().right,
 		viewport: innerWidth,
@@ -129,13 +148,27 @@ try {
 	assert.ok(inlineCode.left >= 0 && inlineCode.right <= inlineCode.viewport + 1, "Inline code block fits the mobile viewport");
 	assert.equal(inlineCode.overflow, "auto", "Long code lines can scroll inside their own block");
 	assert.ok(
-		await page.evaluate(
+		await mobile.evaluate(
 			() => document.documentElement.scrollWidth <= innerWidth + 2,
 		),
 	);
+	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
+	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
+	for (const path of paths) {
+		const guide = await openPage(mobileViewport);
+		const response = await guide.goto(`${origin}/docs/${path}`);
+		assert.ok(response.ok(), `Guide loads: ${path}`);
+		await guide.locator("#doc-content h1[data-kowrap-prose]").waitFor();
+		await guide.evaluate(async () => {
+			await document.fonts.ready;
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+		});
+		assert.ok(await guide.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), `Guide fits: ${path}`);
+	}
 	assert.deepEqual(errors, []);
 	console.log(
-		"Landing comparisons, code synchronization, docs search, navigation and mobile layout passed",
+		`${engine.name()}: landing comparisons, code synchronization, docs search, navigation and mobile layout passed`,
 	);
 } finally {
 	await browser?.close();

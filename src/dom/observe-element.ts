@@ -1,4 +1,4 @@
-import { createCanvasMeasure } from "./measure.js";
+import { createLocalizedCanvasMeasure, languageOf } from "./measure.js";
 import type { CanvasMeasureOptions } from "./measure.js";
 import type { Measure } from "../core/types.js";
 
@@ -31,23 +31,30 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
   let active = true;
   let previousFont: string | undefined;
   let measure: Measure | undefined;
+  let observedWidth: { fallback: number; exact: number } | undefined;
+  let frame: number | undefined;
 
-  const update = () => {
+  const update = (contentWidth?: number) => {
     if (!active) return;
     let layout: ElementLayout | undefined;
     try {
       const computed = view.getComputedStyle(element);
-      const width = element.clientWidth - numericPadding(computed.paddingLeft) - numericPadding(computed.paddingRight);
+      const fallback = element.clientWidth - numericPadding(computed.paddingLeft) - numericPadding(computed.paddingRight);
+      if (contentWidth !== undefined) observedWidth = { fallback, exact: contentWidth };
+      if (observedWidth?.fallback !== fallback) observedWidth = undefined;
+      // clientWidth is rounded. Prefer the observer's content box when available.
+      const width = observedWidth?.exact ?? (fallback > 0 ? Math.max(1, fallback - 1) : 0);
       if (!(width > 0)) {
         layout = undefined;
       } else {
         const font = fontOf(computed);
-        const signature = JSON.stringify(font);
+        const language = languageOf(element);
+        const signature = JSON.stringify([font, language]);
         if (!measure || previousFont !== signature) {
-          measure = createCanvasMeasure(font, doc);
+          measure = createLocalizedCanvasMeasure(font, doc, language);
           previousFont = signature;
         }
-        layout = { width: Math.max(1, width - 1), measure };
+        layout = { width, measure };
       }
     } catch {
       layout = undefined;
@@ -55,23 +62,37 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     onLayout(layout);
   };
 
+  const refresh = () => update();
   const onFonts = () => {
     measure = undefined;
     update();
   };
   const Observer = view.ResizeObserver ?? globalThis.ResizeObserver;
-  const observer = Observer ? new Observer(update) : undefined;
+  const observer = Observer ? new Observer((entries) => {
+    const width = entries?.[0]?.contentRect.width;
+    if (width === undefined || !view.requestAnimationFrame) {
+      update(width);
+      return;
+    }
+    if (frame !== undefined) view.cancelAnimationFrame(frame);
+    // Rendering can change the observed element's height.
+    frame = view.requestAnimationFrame(() => {
+      frame = undefined;
+      update(width);
+    });
+  }) : undefined;
   observer?.observe(element);
-  view.addEventListener("resize", update);
+  view.addEventListener("resize", refresh);
   doc.fonts?.addEventListener("loadingdone", onFonts);
   void doc.fonts?.ready.then(onFonts);
   update();
 
   const destroy = () => {
     active = false;
+    if (frame !== undefined) view.cancelAnimationFrame(frame);
     observer?.disconnect();
-    view.removeEventListener("resize", update);
+    view.removeEventListener("resize", refresh);
     doc.fonts?.removeEventListener("loadingdone", onFonts);
   };
-  return { refresh: update, destroy };
+  return { refresh, destroy };
 };
