@@ -2,7 +2,7 @@ import type { LineCandidate } from "./types.js";
 
 const sentenceEnd = /[.!?。！？…][”’"')\]]*$/u;
 const clauseEnd = /[,;:，、；：]$/u;
-const boundModifier = /(?:^|\s)(?:이|그|저|각|모든|어떤|이런|그런|저런|새로운|다음|해당|본|여러|\S+(?:들의|에서의|로서의|으로의|와의|과의|사이의))$/u;
+const boundModifier = /(?:^|\s)(?:이|그|저|각|모든|어떤|이런|그런|저런|다음|해당|본|여러|\S+(?:로운|스러운|적인|들의|에서의|로서의|으로의|와의|과의|사이의))$/u;
 
 const boundaryCost = ({ fragment, emergency }: LineCandidate) => {
   if (emergency) return 0.75;
