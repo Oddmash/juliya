@@ -14,7 +14,7 @@ const numericPadding = (value: string) => {
 
 const spacing = (value: string) => value === "normal" || !value ? "0px" : value;
 
-const fontOf = (computed: CSSStyleDeclaration): CanvasMeasureOptions => ({
+export const fontOf = (computed: CSSStyleDeclaration): CanvasMeasureOptions => ({
   font: computed.font || `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`,
   letterSpacing: spacing(computed.letterSpacing),
   wordSpacing: spacing(computed.wordSpacing),

@@ -51,7 +51,8 @@ const balancedPlan = (text: string, points: Boundary[], options: ParagraphOption
 };
 
 export const planParagraph = (text: string, options: ParagraphOptions): PlannedLine[] => {
-  const fullWidth = options.measure(visibleText(text));
+  const visible = visibleText(text);
+  const fullWidth = options.measureRange ? options.measureRange(0, visible.length) : options.measure(visible);
   if (!text || fullWidth <= options.width) return [{ start: 0, end: text.length, width: fullWidth }];
   const points = boundariesOf(text, options);
   return options.strategy === "greedy" ? greedyPlan(text, points, options) : balancedPlan(text, points, options);

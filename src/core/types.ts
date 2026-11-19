@@ -3,6 +3,7 @@ export type Measure = (text: string) => number;
 export interface WrapOptions {
   width: number;
   measure: Measure;
+  measureRange?: (start: number, end: number) => number;
   strategy?: "balanced" | "greedy";
   breakLongWords?: boolean;
   forcedBreaks?: readonly number[];
@@ -25,6 +26,7 @@ export interface TextSegment {
 export interface ParagraphOptions {
   width: number;
   measure: Measure;
+  measureRange?: (start: number, end: number) => number;
   strategy: NonNullable<WrapOptions["strategy"]>;
   breakLongWords: boolean;
 }

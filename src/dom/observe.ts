@@ -4,6 +4,7 @@ import { observeElementLayout } from "./observe-element.js";
 import type { KowrapController, KowrapLayout, KowrapOptions } from "./types.js";
 
 export const observeKowrap = (element: HTMLElement, initial: KowrapOptions, onLayout: (layout: KowrapLayout) => void): KowrapController => {
+  if (initial.inline) throw new TypeError("Use mountKowrap for inline content");
   let options = initial;
   let active = true;
   let fallback = manualLines(options.text, options.forcedBreaks);
@@ -18,6 +19,7 @@ export const observeKowrap = (element: HTMLElement, initial: KowrapOptions, onLa
   return {
     update: (next) => {
       if (!active) return;
+      if (next.inline) throw new TypeError("Use mountKowrap for inline content");
       fallback = manualLines(next.text, next.forcedBreaks);
       options = next;
       observer.refresh();

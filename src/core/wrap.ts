@@ -19,7 +19,11 @@ export const wrap = (text: string, options: WrapOptions): WrappedLine[] => {
   };
   const lines: WrappedLine[] = [];
   for (const paragraph of segmentsWithBreaks(text, options.forcedBreaks)) {
-    const plan = planParagraph(paragraph.text, paragraphOptions);
+    const plan = planParagraph(paragraph.text, { ...paragraphOptions, measureRange: options.measureRange ? (start, end) => {
+      const result = options.measureRange!(paragraph.start + start, paragraph.start + end);
+      if (!Number.isFinite(result) || result < 0) throw new RangeError("measureRange must return a non-negative finite number");
+      return result;
+    } : undefined });
     for (const [index, line] of plan.entries()) {
       lines.push({
         text: paragraph.text.slice(line.start, line.end),

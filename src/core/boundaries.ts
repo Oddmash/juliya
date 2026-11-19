@@ -1,7 +1,7 @@
 import { graphemesOf, isBreakableSpace, visibleText } from "./segmentation.js";
 import type { Boundary, LineCandidate, ParagraphOptions } from "./types.js";
 
-export const boundariesOf = (text: string, { width, measure, breakLongWords }: ParagraphOptions): Boundary[] => {
+export const boundariesOf = (text: string, { width, measure, measureRange, breakLongWords }: ParagraphOptions): Boundary[] => {
   const points: Boundary[] = [{ offset: 0, emergency: false }];
   const graphemes = graphemesOf(text);
   let cursor = 0;
@@ -15,7 +15,7 @@ export const boundariesOf = (text: string, { width, measure, breakLongWords }: P
     if (breakLongWords && start < end) {
       const wordStart = graphemes[start]!.index;
       const wordEnd = graphemes[end]?.index ?? text.length;
-      if (measure(text.slice(wordStart, wordEnd)) > width) {
+      if ((measureRange ? measureRange(wordStart, wordEnd) : measure(text.slice(wordStart, wordEnd))) > width) {
         for (let i = start + 1; i < end; i++) points.push({ offset: graphemes[i]!.index, emergency: true });
       }
     }
@@ -25,11 +25,12 @@ export const boundariesOf = (text: string, { width, measure, breakLongWords }: P
   return points;
 };
 
-export const candidatesFrom = function* (text: string, points: Boundary[], start: number, { width, measure }: ParagraphOptions): Generator<LineCandidate> {
+export const candidatesFrom = function* (text: string, points: Boundary[], start: number, { width, measure, measureRange }: ParagraphOptions): Generator<LineCandidate> {
   for (let next = start + 1; next < points.length; next++) {
     const boundary = points[next]!;
     const fragment = visibleText(text.slice(points[start]!.offset, boundary.offset));
-    const measured = measure(fragment);
+    const offset = points[start]!.offset;
+    const measured = measureRange ? measureRange(offset, offset + fragment.length) : measure(fragment);
     if (measured > width && next > start + 1) break;
     yield { next, width: measured, fragment, emergency: boundary.emergency };
     if (measured > width) break;

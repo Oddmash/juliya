@@ -1,9 +1,9 @@
 import { mountKowrap } from "../../dom/render.js";
-import type { KowrapOptions } from "../../dom/types.js";
+import type { MountKowrapOptions } from "../../dom/types.js";
 
-export const kowrap = (element: HTMLElement, options: KowrapOptions) => {
+export const kowrap = (element: HTMLElement, options: MountKowrapOptions) => {
   const controller = mountKowrap(element, options);
   return { update: controller.update, destroy: controller.destroy };
 };
 
-export type { KowrapOptions } from "../../dom/types.js";
+export type { KowrapOptions, InlineKowrapOptions, MountKowrapOptions } from "../../dom/types.js";
