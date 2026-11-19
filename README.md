@@ -1,32 +1,20 @@
 # kowrap
 
-한국어 웹 서비스에서 제목과 문장이 어색하게 끊기지 않도록 돕는 줄바꿈 라이브러리입니다. 어절은 보존하고, 문장부호와 수식 관계를 고려하며, 주어진 폭에서 줄의 균형을 조절합니다.
+한국어를 읽는 흐름에 맞춰 자연스럽게 줄바꿈하는 라이브러리입니다.
 
-반응형 제목, 카드 설명, 알림 메시지처럼 좁은 화면에서도 자연스럽게 읽혀야 하는 텍스트를 위한 도구입니다.
+실제 글자 폭과 한국어 어절 및 문장 경계를 고려하여 제목과 문장의 줄바꿈을 최적화합니다.
 
-## 실제 줄바꿈 예시
+[체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
 
-동일한 문장을 같은 폭(문자 수 기준 14)에서 줄바꿈한 kowrap 엔진의 실제 출력입니다.
+## 특징
 
-| 일반적인 순차 줄바꿈 | kowrap 균형 줄바꿈 |
-| --- | --- |
-| 오늘은 모든 사람이 함께<br>자연스러운 한국어 줄바꿈을<br>경험합니다. | 오늘은 모든 사람이<br>함께 자연스러운 한국어<br>줄바꿈을 경험합니다. |
-
-같은 세 줄을 사용하면서 마지막 줄에 짧은 어절만 남는 현상을 줄입니다.
-
-## 주요 기능
-
-- 한국어 어절 보존과 문장 경계 고려
-- 줄 길이 균형 최적화 및 긴 어절 처리
-- React 없이 사용할 수 있는 독립 JavaScript 및 TypeScript 엔진
-- 실제 글자 폭을 반영하는 React 반응형 줄바꿈
-- 일반 HTML, Vue, Svelte를 위한 공통 브라우저 어댑터
-- 화면 크기에 상관없이 유지할 의도적인 줄바꿈 위치 설정
-- SSR 및 Next.js App Router의 Server Component 지원
-- JavaScript 없이도 동작하는 문장 단위 CSS 줄바꿈
+- 한국어 어절을 보존하는 균형 잡힌 줄바꿈
+- 화면 폭 변화에 따른 자동 재계산
+- 의도적인 개행 위치 지정
+- React, Next.js, Vue, Svelte 및 일반 HTML 지원
 
 ## 지원 범위
 
-kowrap은 제목과 짧은 일반 텍스트의 줄바꿈을 우선 최적화합니다. SSR의 최초 화면은 CSS 줄바꿈을 사용하며 하이드레이션 후 줄 위치가 달라질 수 있습니다. 인라인 JSX 마크업은 현재 지원하지 않습니다.
+kowrap은 프레임워크에 의존하지 않는 코어를 제공하며, 제목과 짧은 일반 텍스트에 적합합니다. 현재 인라인 마크업 분리는 지원하지 않습니다.
 
-[문서 및 실제 줄바꿈 체험](https://oddmash.github.io/kowrap/) | [사용 및 기여 안내](https://github.com/Oddmash/kowrap/blob/main/CONTRIBUTING.md) | [GitHub](https://github.com/Oddmash/kowrap)
+[기여 안내](CONTRIBUTING.md)
