@@ -5,6 +5,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { splitLines } from "@oddmash/kowrap";
 import { WrapText } from "@oddmash/kowrap/react";
+import { Button } from "@oddmash/ui/button";
+import { Card } from "@oddmash/ui/card";
+import { Textarea } from "@oddmash/ui/textarea";
 import { CopyButton } from "./copy-button";
 
 const presets = [
@@ -172,7 +175,7 @@ export const Playground = () => {
 			</div>
 			<div className="playground-body">
 				<div className="comparison" style={comparisonStyle}>
-					<article className="comparison-card">
+					<Card role="article" className="comparison-card">
 						<div className="comparison-top">
 							<span className="comparison-label">
 								<span className="marker marker-neutral" />
@@ -194,8 +197,8 @@ export const Playground = () => {
 							</p>
 						</div>
 						<PreviewCode code={withoutCode} applied={false} />
-					</article>
-					<article className="comparison-card comparison-featured">
+					</Card>
+					<Card role="article" className="comparison-card comparison-featured">
 						<div className="comparison-top">
 							<span className="comparison-label">
 								<span className="marker marker-active" />
@@ -218,7 +221,7 @@ export const Playground = () => {
 							</WrapText>
 						</div>
 						<PreviewCode code={withCode} applied />
-					</article>
+					</Card>
 				</div>
 				<div className="playground-settings">
 					<div className="settings-heading">
@@ -228,7 +231,7 @@ export const Playground = () => {
 					<div className="controls">
 						<div className="preset-group" role="group" aria-label="예시 문장">
 							{presets.map(({ label, value }, index) => (
-								<button
+								<Button variant={preset === index ? "primary" : "secondary"} size="sm"
 									type="button"
 									key={label}
 									className={`preset ${preset === index ? "is-active" : ""}`}
@@ -236,7 +239,7 @@ export const Playground = () => {
 									onClick={() => changeText(value, index)}
 								>
 									{label}
-								</button>
+								</Button>
 							))}
 						</div>
 						<div className="control-range">
@@ -271,7 +274,7 @@ export const Playground = () => {
 						<label htmlFor="demo-text" className="sr-only">
 							비교할 문장
 						</label>
-						<textarea
+						<Textarea
 							id="demo-text"
 							rows={2}
 							maxLength={400}
@@ -281,17 +284,17 @@ export const Playground = () => {
 							onChange={(event) => changeText(event.target.value)}
 						/>
 						<div className="editor-actions">
-							<button type="button" className="button-small" onClick={addBreak}>
+							<Button variant="secondary" size="sm" type="button" className="button-small" onClick={addBreak}>
 								커서 위치에서 개행
-							</button>
-							<button
+							</Button>
+							<Button variant="secondary" size="sm"
 								type="button"
 								className="button-small"
 								onClick={clearBreaks}
 								disabled={!breaks.length}
 							>
 								개행 초기화
-							</button>
+							</Button>
 							<span
 								className={`editor-status${invalidBreak ? " is-error" : ""}`}
 								role="status"

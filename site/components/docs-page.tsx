@@ -9,11 +9,10 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 	const index = guides.findIndex((item) => item.slug === guide.slug);
 	const previous = guides[index - 1];
 	const next = guides[index + 1];
-	const items = guides.map(({ slug, group, title, body }) => ({
+	const items = guides.map(({ slug, group, title }) => ({
 		slug,
 		group,
 		title,
-		body,
 		href: guideHref(slug),
 	}));
 	return (

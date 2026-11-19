@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@oddmash/ui/button";
 
 export const copyText = async (value: string) => {
 	if (navigator.clipboard?.writeText) {
@@ -38,7 +39,7 @@ export const CopyButton = ({
 		setTimeout(() => setState("복사"), 1500);
 	};
 	return (
-		<button
+		<Button variant="ghost" size="sm"
 			type="button"
 			className={className}
 			onClick={copy}
@@ -61,6 +62,6 @@ export const CopyButton = ({
 			) : (
 				state
 			)}
-		</button>
+		</Button>
 	);
 };

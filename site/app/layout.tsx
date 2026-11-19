@@ -3,6 +3,9 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import manifest from "../../package.json";
 import tokens from "../theme/tokens.json";
+import { HeaderSearch } from "../components/header-search";
+import { getGuides, guideHref } from "../lib/guides";
+import "@oddmash/ui/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,7 +49,7 @@ const theme = {
 } as CSSProperties;
 
 const RootLayout = ({ children }: { children: ReactNode }) => (
-	<html lang="ko" style={theme}>
+	<html lang="ko" data-om-theme="dark" style={theme}>
 		<body>
 			<a className="skip-link" href="#main">
 				본문 바로가기
@@ -58,6 +61,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 						kowrap<span className="version">v{manifest.version}</span>
 					</Link>
 					<nav className="nav-links" aria-label="주 메뉴">
+						<HeaderSearch items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
 						<Link href="/#playground" className="desktop-link">
 							체험하기
 						</Link>

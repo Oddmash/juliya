@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Button } from "@oddmash/ui/button";
 
 interface Item {
 	slug: string;
 	href: string;
 	title: string;
 	group: string;
-	body: string;
 }
 
 export const DocsNavigation = ({
@@ -19,22 +19,13 @@ export const DocsNavigation = ({
 	current: string;
 }) => {
 	const [open, setOpen] = useState(false);
-	const [query, setQuery] = useState("");
 	const groups = useMemo(
 		() => [...new Set(items.map((item) => item.group))],
 		[items],
 	);
-	const search = query.trim().toLowerCase();
-	const matches = search
-		? items
-				.filter((item) =>
-					`${item.title} ${item.body}`.toLowerCase().includes(search),
-				)
-				.slice(0, 8)
-		: [];
 	return (
 		<>
-			<button
+			<Button variant="secondary"
 				type="button"
 				className="mobile-docs-toggle"
 				aria-expanded={open}
@@ -42,37 +33,12 @@ export const DocsNavigation = ({
 				onClick={() => setOpen(!open)}
 			>
 				문서 목록 {open ? "닫기" : "열기"}
-			</button>
+			</Button>
 			<aside
 				className={`docs-sidebar ${open ? "is-open" : ""}`}
 				id="docs-sidebar"
 			>
-				<label className="search-label" htmlFor="docs-search">
-					문서 검색
-				</label>
-				<input
-					className="docs-search"
-					type="search"
-					id="docs-search"
-					placeholder="API, SSR, React"
-					value={query}
-					onChange={(event) => setQuery(event.target.value)}
-					autoComplete="off"
-				/>
-				{search ? (
-					<div className="search-results" aria-live="polite">
-						{matches.length ? (
-							matches.map((item) => (
-								<Link href={item.href} key={item.slug}>
-									{item.title}
-								</Link>
-							))
-						) : (
-							<p className="empty-search">검색 결과가 없습니다.</p>
-						)}
-					</div>
-				) : (
-					groups.map((group) => (
+				{groups.map((group) => (
 						<div key={group}>
 							<p className="sidebar-label">{group}</p>
 							<nav className="docs-nav" aria-label={group}>
@@ -89,8 +55,7 @@ export const DocsNavigation = ({
 									))}
 							</nav>
 						</div>
-					))
-				)}
+					))}
 			</aside>
 		</>
 	);

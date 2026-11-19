@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@oddmash/ui/tabs";
 import { CopyButton } from "./copy-button";
 
 const examples = [
@@ -38,58 +38,15 @@ const examples = [
 ];
 
 export const FrameworkExamples = () => {
-	const [active, setActive] = useState(0);
-	const example = examples[active]!;
 	return (
-		<div className="code-window">
-			<div className="code-tabs" role="tablist" aria-label="환경별 예제">
-				{examples.map(({ tab }, index) => (
-					<button
-						key={tab}
-						id={`framework-tab-${index}`}
-						type="button"
-						role="tab"
-						aria-selected={active === index}
-						aria-controls="framework-panel"
-						tabIndex={active === index ? 0 : -1}
-						onClick={() => setActive(index)}
-						onKeyDown={(event) => {
-							const next =
-								event.key === "ArrowRight"
-									? (index + 1) % examples.length
-									: event.key === "ArrowLeft"
-										? (index + examples.length - 1) % examples.length
-										: event.key === "Home"
-											? 0
-											: event.key === "End"
-												? examples.length - 1
-												: -1;
-							if (next >= 0) {
-								event.preventDefault();
-								setActive(next);
-								document.getElementById(`framework-tab-${next}`)?.focus();
-							}
-						}}
-					>
-						{tab}
-					</button>
-				))}
-			</div>
-			<div
-				className="code-body"
-				id="framework-panel"
-				role="tabpanel"
-				aria-labelledby={`framework-tab-${active}`}
-			>
-				<CopyButton className="copy-code" value={example.code} />
-				<pre>
-					<code>{example.code}</code>
-				</pre>
-			</div>
-			<div className="code-foot">
-				<span>{example.label}</span>
-				<Link href={`/docs/${example.doc}/`}>사용 문서</Link>
-			</div>
-		</div>
+		<Tabs defaultValue="React" className="code-window">
+			<TabsList className="code-tabs" aria-label="환경별 예제">
+				{examples.map(({ tab }) => <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>)}
+			</TabsList>
+			{examples.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
+				<div className="code-body"><CopyButton className="copy-code" value={example.code} /><pre><code>{example.code}</code></pre></div>
+				<div className="code-foot"><span>{example.label}</span><Link href={`/docs/${example.doc}/`}>사용 문서</Link></div>
+			</TabsContent>)}
+		</Tabs>
 	);
 };

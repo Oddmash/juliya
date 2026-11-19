@@ -91,18 +91,28 @@ try {
 	);
 	await page.getByRole("tab", { name: "Vue", exact: true }).click();
 	assert.ok(
-		(await page.locator("#framework-panel").textContent()).includes(
+		(await page.getByRole("tabpanel").textContent()).includes(
 			"kowrapDirective",
 		),
 	);
 	await page.goto(`${origin}/docs/`);
+	await page.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
+	await page.keyboard.press("Control+k");
+	await page.getByRole("dialog").waitFor();
+	await page.waitForFunction(() => document.activeElement?.id === "docs-search");
+	assert.equal(await page.locator("#docs-search").evaluate((element) => getComputedStyle(element).outlineOffset), "-1px");
+	await page.keyboard.press("Escape");
+	await page.getByRole("dialog").waitFor({ state: "hidden" });
+	await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "문서 검색");
+	await page.keyboard.press("Meta+k");
+	await page.getByRole("dialog").waitFor();
 	await page.locator("#docs-search").fill("SSR");
 	await page
-		.getByRole("link", { name: "SSR과 하이드레이션", exact: true })
+		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.waitFor();
 	await page
-		.getByRole("link", { name: "SSR과 하이드레이션", exact: true })
+		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.click();
 	await page.waitForURL("**/docs/ssr/");

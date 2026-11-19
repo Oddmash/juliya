@@ -5,5 +5,5 @@ export default {
 	trailingSlash: true,
 	basePath,
 	images: { unoptimized: true },
-	transpilePackages: ["@oddmash/kowrap"],
+	transpilePackages: ["@oddmash/kowrap", "@oddmash/ui"],
 };
