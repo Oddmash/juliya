@@ -50,11 +50,14 @@ try {
 	const engine = engines[process.argv[2] ?? "chromium"];
 	assert.ok(engine, "Choose chromium, firefox or webkit");
 	browser = await engine.launch();
-	const page = await browser.newPage({
-		viewport: { width: 1280, height: 900 },
-	});
 	const errors = [];
-	page.on("pageerror", (error) => errors.push(error.message));
+	const openPage = async (viewport) => {
+		const page = await browser.newPage({ viewport });
+		page.on("pageerror", (error) => errors.push({ page: page.url(), error: error.stack }));
+		return page;
+	};
+	const desktop = { width: 1280, height: 900 };
+	const page = await openPage(desktop);
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
 	await page
@@ -98,41 +101,41 @@ try {
 			"kowrapDirective",
 		),
 	);
-	await page.goto(`${origin}/docs/`);
-	await page.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
-	await page.keyboard.press("Control+k");
-	await page.getByRole("dialog").waitFor();
-	await page.waitForFunction(() => document.activeElement?.id === "docs-search");
-	assert.equal(await page.locator("#docs-search").evaluate((element) => getComputedStyle(element).outlineOffset), "-1px");
-	await page.keyboard.press("Escape");
-	await page.getByRole("dialog").waitFor({ state: "hidden" });
-	await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "문서 검색");
-	await page.keyboard.press("Meta+k");
-	await page.getByRole("dialog").waitFor();
-	await page.locator("#docs-search").fill("SSR");
-	const search = page.locator("#docs-search");
+	// Separate entry points so a forced page unload cannot abort an active prefetch.
+	const docs = await openPage(desktop);
+	await docs.goto(`${origin}/docs/`);
+	await docs.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
+	await docs.keyboard.press("Control+k");
+	await docs.getByRole("dialog").waitFor();
+	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");
+	assert.equal(await docs.locator("#docs-search").evaluate((element) => getComputedStyle(element).outlineOffset), "-1px");
+	await docs.keyboard.press("Escape");
+	await docs.getByRole("dialog").waitFor({ state: "hidden" });
+	await docs.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "문서 검색");
+	await docs.keyboard.press("Meta+k");
+	await docs.getByRole("dialog").waitFor();
+	await docs.locator("#docs-search").fill("SSR");
+	const search = docs.locator("#docs-search");
 	const composingKeyWasHandled = await search.evaluate((element) => !element.dispatchEvent(
 		new KeyboardEvent("keydown", { key: "ArrowDown", isComposing: true, bubbles: true, cancelable: true }),
 	));
 	assert.equal(composingKeyWasHandled, false, "ArrowDown remains available to the IME");
 	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
-	await page
+	await docs
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.waitFor();
 	await search.press("ArrowDown");
-	assert.equal(await page.locator(".search-dialog-results a").first().evaluate((element) => document.activeElement === element), true);
-	await page.keyboard.press("ArrowUp");
+	assert.equal(await docs.locator(".search-dialog-results a").first().evaluate((element) => document.activeElement === element), true);
+	await docs.keyboard.press("ArrowUp");
 	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
-	await page
+	await docs
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.click();
-	await page.waitForURL("**/docs/ssr/");
-	assert.match(await page.locator("h1").textContent(), /SSR과 하이드레이션/);
-	// Keep the docs page open while checking a separate mobile navigation.
-	const mobile = await browser.newPage({ viewport: { width: 375, height: 812 } });
-	mobile.on("pageerror", (error) => errors.push(error.message));
+	await docs.waitForURL("**/docs/ssr/");
+	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
+	const mobile = await openPage({ width: 375, height: 812 });
 	await mobile.goto(`${origin}/`);
 	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
