@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { segmentSentences, wrap } from "@oddmash/kowrap";
+import { segmentSentences, splitLines, wrap } from "@oddmash/kowrap";
 
 const measure = (text) => [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].length;
 const run = (text, width, options = {}) => wrap(text, { width, measure, ...options });
@@ -98,4 +98,38 @@ test("segments Korean and English sentences without discarding delimiters", () =
   assert.equal(segments.map((segment) => segment.text).join(""), text);
   assert.equal(segments.length, 4);
   assert.ok(segments.every((segment) => text.slice(segment.start, segment.end) === segment.text));
+});
+
+test("manual UTF-16 boundaries are preserved under every strategy and width", () => {
+  const text = "한글 줄바꿈과 영어 문장";
+  const offset = text.indexOf("영어");
+  for (const strategy of ["balanced", "greedy"]) {
+    for (const width of [3, 8, 100]) {
+      const lines = run(text, width, { strategy, forcedBreaks: [offset, offset] });
+      assert.equal(reconstruct(lines), text);
+      assert.ok(lines.some((line) => line.end === offset));
+    }
+  }
+  assert.deepEqual(splitLines(text, [offset]).map(({ text }) => text), [text.slice(0, offset), text.slice(offset)]);
+});
+
+test("forced breaks protect graphemes and do not duplicate explicit newlines", () => {
+  const text = "가👩‍💻나\r\n다";
+  assert.throws(() => run(text, 20, { forcedBreaks: [2] }), RangeError);
+  assert.throws(() => splitLines(text, [0]), RangeError);
+  assert.throws(() => splitLines(text, [text.length]), RangeError);
+  const lines = splitLines(text, [1, text.indexOf("\r"), text.indexOf("다")]);
+  assert.equal(reconstruct(lines), text);
+  assert.deepEqual(lines.map((line) => line.text), ["가", "👩‍💻나", "다"]);
+});
+
+test("greedy visits only forward line candidates instead of all suffixes", () => {
+  const text = Array.from({ length: 200 }, (_, index) => `단어${index}`).join(" ");
+  let greedyCalls = 0;
+  let balancedCalls = 0;
+  const greedy = run(text, 30, { strategy: "greedy", measure: (value) => { greedyCalls++; return value.length; } });
+  const balanced = run(text, 30, { measure: (value) => { balancedCalls++; return value.length; } });
+  assert.equal(reconstruct(greedy), text);
+  assert.equal(reconstruct(balanced), text);
+  assert.ok(greedyCalls < balancedCalls / 2);
 });

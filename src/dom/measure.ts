@@ -1,4 +1,4 @@
-import type { Measure } from "./index.js";
+import type { Measure } from "../core/types.js";
 
 export interface CanvasMeasureOptions {
   font: string;

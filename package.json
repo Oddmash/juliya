@@ -1,13 +1,16 @@
 {
   "name": "@oddmash/kowrap",
   "version": "0.1.0",
-  "description": "Korean-aware text wrapping for JavaScript and React",
+  "description": "Korean-aware text wrapping for JavaScript, HTML and frontend frameworks",
   "type": "module",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./browser": { "types": "./dist/browser.d.ts", "import": "./dist/browser.js" },
-    "./react": { "types": "./dist/react.d.ts", "import": "./dist/react.js" },
-    "./react/server": { "types": "./dist/server.d.ts", "import": "./dist/server.js" }
+    "./browser": { "types": "./dist/dom/index.d.ts", "import": "./dist/dom/index.js" },
+    "./dom": { "types": "./dist/dom/index.d.ts", "import": "./dist/dom/index.js" },
+    "./react": { "types": "./dist/adapters/react/index.d.ts", "import": "./dist/adapters/react/index.js" },
+    "./react/server": { "types": "./dist/adapters/react/server.d.ts", "import": "./dist/adapters/react/server.js" },
+    "./vue": { "types": "./dist/adapters/vue/index.d.ts", "import": "./dist/adapters/vue/index.js" },
+    "./svelte": { "types": "./dist/adapters/svelte/index.d.ts", "import": "./dist/adapters/svelte/index.js" }
   },
   "files": ["dist", "README.md"],
   "publishConfig": {
@@ -16,10 +19,11 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:next": "npm run build && npm --prefix test/next-app run build",
     "test:hydration": "npm run build && npm --prefix test/next-app run test:hydration",
+    "test:frameworks": "npm run build && npm --prefix test/framework-app test",
     "test:browser": "npm run test:next && npm --prefix test/next-app run test:browser",
     "test:package": "npm run build && node --test test/package.mjs",
     "prepack": "npm run build"

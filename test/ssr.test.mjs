@@ -21,9 +21,18 @@ test("React escapes literal markup rather than injecting HTML", () => {
   assert.doesNotMatch(html, /<script>/);
 });
 
+test("manual breaks appear in initial SSR HTML before browser measurement", () => {
+  const html = renderToString(createElement(WrapText, { forcedBreaks: [3] }, "한국어줄바꿈"));
+  assert.match(html, /한국어<br\/?>(?:<!-- -->)?줄바꿈/);
+  const sentenceHtml = renderToString(createElement(SentenceText, { forcedBreaks: [3] }, "한국어줄바꿈"));
+  assert.match(sentenceHtml, /한국어<\/span><br\/?><span[^>]*>줄바꿈/);
+});
+
 test("built React entry preserves the Next.js client boundary", () => {
-  assert.match(readFileSync(new URL("../dist/react.js", import.meta.url), "utf8"), /^"use client";/);
-  assert.doesNotMatch(readFileSync(new URL("../dist/server.js", import.meta.url), "utf8"), /^"use client";/);
+  const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const entry = (path) => readFileSync(new URL(`../${manifest.exports[path].import.slice(2)}`, import.meta.url), "utf8");
+  assert.match(entry("./react"), /^"use client";/);
+  assert.doesNotMatch(entry("./react/server"), /^"use client";/);
 });
 
 test("sentence grouping works during SSR without a client effect", () => {

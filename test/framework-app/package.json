@@ -1,0 +1,16 @@
+{
+  "name": "kowrap-framework-integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --conditions=browser --test *.test.mjs"
+  },
+  "dependencies": {
+    "@oddmash/kowrap": "file:../..",
+    "vue": "^3.5.0",
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  }
+}

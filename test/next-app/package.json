@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "next build --webpack",
-    "test:hydration": "node --test hydration.test.mjs",
+    "test:hydration": "node --test hydration.test.mjs adapters.test.mjs",
     "test:browser": "node browser.mjs"
   },
   "dependencies": {
