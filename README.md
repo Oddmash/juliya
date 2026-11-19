@@ -18,7 +18,7 @@
 
 - 한국어 어절 보존과 문장 경계 고려
 - 줄 길이 균형 최적화 및 긴 어절 처리
-- React 없이 사용할 수 있는 독립 JavaScript·TypeScript 엔진
+- React 없이 사용할 수 있는 독립 JavaScript 및 TypeScript 엔진
 - 실제 글자 폭을 반영하는 React 반응형 줄바꿈
 - 일반 HTML, Vue, Svelte를 위한 공통 브라우저 어댑터
 - 화면 크기에 상관없이 유지할 의도적인 줄바꿈 위치 설정
@@ -29,4 +29,4 @@
 
 kowrap은 제목과 짧은 일반 텍스트의 줄바꿈을 우선 최적화합니다. SSR의 최초 화면은 CSS 줄바꿈을 사용하며 하이드레이션 후 줄 위치가 달라질 수 있습니다. 인라인 JSX 마크업은 현재 지원하지 않습니다.
 
-[사용 및 기여 안내](https://github.com/Oddmash/kowrap/blob/main/CONTRIBUTING.md) · [GitHub](https://github.com/Oddmash/kowrap)
+[문서 및 실제 줄바꿈 체험](https://oddmash.github.io/kowrap/) | [사용 및 기여 안내](https://github.com/Oddmash/kowrap/blob/main/CONTRIBUTING.md) | [GitHub](https://github.com/Oddmash/kowrap)

@@ -26,6 +26,8 @@
     "test:frameworks": "npm run build && npm --prefix test/framework-app test",
     "test:browser": "npm run test:next && npm --prefix test/next-app run test:browser",
     "test:package": "npm run build && node --test test/package.mjs",
+    "build:site": "npm run build && npm --prefix site run build",
+    "test:site": "npm run build:site && node --test test/site.mjs",
     "prepack": "npm run build"
   },
   "engines": { "node": ">=20" },

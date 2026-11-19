@@ -1,5 +1,8 @@
 node_modules/
 dist/
+site/out/
+site/next-env.d.ts
+*.tsbuildinfo
 *.tgz
 .next/
 coverage/

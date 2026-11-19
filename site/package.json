@@ -1,0 +1,22 @@
+{
+	"name": "kowrap-site",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "next dev --webpack",
+		"build": "next build --webpack",
+		"test:browser": "node test/browser.mjs"
+	},
+	"dependencies": {
+		"@oddmash/kowrap": "file:..",
+		"next": "16.4.6",
+		"react": "19.3.1",
+		"react-dom": "19.3.1"
+	},
+	"devDependencies": {
+		"@types/node": "25.9.9",
+		"@types/react": "19.3.0",
+		"playwright": "1.65.1",
+		"typescript": "6.0.3"
+	}
+}

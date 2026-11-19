@@ -1,0 +1,84 @@
+# 코어 엔진
+
+`wrap`은 DOM이나 React에 의존하지 않습니다. 원문 문자열, 최대 폭, 문자열 폭을 계산할 측정 함수를 받아 줄 데이터를 반환합니다.
+
+## wrap
+
+```ts
+import { wrap } from '@oddmash/kowrap';
+
+const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
+  width: 12,
+  measure: (text) => [...text].length,
+  strategy: 'balanced',
+  breakLongWords: true,
+});
+```
+
+| 옵션 | 기본값 | 설명 |
+| --- | --- | --- |
+| `width` | 필수 | 양수의 최대 줄 폭 |
+| `measure` | 필수 | 문자열을 받아 같은 단위의 폭을 반환하는 함수 |
+| `strategy` | `balanced` | 균형 최적화 또는 `greedy` 순차 탐색 |
+| `breakLongWords` | `true` | 한 줄에 들어가지 않는 긴 어절의 grapheme 분리 |
+| `forcedBreaks` | 없음 | 반드시 줄을 나눌 원문 UTF-16 위치 |
+
+`width`는 유한한 양수여야 합니다. `measure`는 유한하고 음수가 아닌 수를 반환해야 합니다. 유효하지 않은 값은 `RangeError`를 발생시킵니다. 같은 입력을 같은 단위로 일관되게 측정해야 합니다.
+
+## 전략 선택
+
+**balanced**는 가능한 줄 수를 우선 최소화한 뒤 남는 여백, 문장 끝, 쉼표, 한국어 수식 관계 등에 비용을 적용합니다. 제목과 짧은 설명처럼 전체 줄 균형이 중요할 때 권장합니다.
+
+**greedy**는 현재 줄에서 들어갈 수 있는 가장 긴 경계를 선택하고 앞으로 진행합니다. 더 단순한 순차 처리나 긴 입력에서 더 적은 측정 호출이 필요할 때 사용할 수 있습니다.
+
+```ts
+const balanced = wrap(text, { width, measure, strategy: 'balanced' });
+const greedy = wrap(text, { width, measure, strategy: 'greedy' });
+```
+
+## 반환값
+
+`WrappedLine[]`의 각 항목에는 다음 필드가 있습니다.
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| `text` | string | 원문의 해당 줄 부분 문자열 |
+| `start` | number | 원문 UTF-16 시작 위치 |
+| `end` | number | 원문 UTF-16 끝 위치 (exclusive) |
+| `width` | number | 측정된 폭, 줄 끝 일반 공백 제외 |
+| `breakAfter` | string | 원문에 포함된 명시적 개행 문자 |
+
+소프트 줄바꿈은 원문에 개행을 추가하지 않습니다. `breakAfter`는 원문에 실제로 존재한 개행만 보존합니다.
+
+```ts
+const restored = lines.map((line) => line.text + line.breakAfter).join('');
+console.log(restored === text);
+```
+
+## 빈 문자열과 긴 어절
+
+빈 문자열은 폭이 0인 빈 줄 하나를 반환합니다. `breakLongWords: false`이면 들어가지 않는 긴 어절이 폭을 초과할 수 있습니다. grapheme 하나 자체가 폭보다 넓은 경우에도 초과가 불가피합니다.
+
+```ts
+wrap('아주긴공백없는문자열', {
+  width: 4,
+  measure: (text) => Array.from(text).length,
+  breakLongWords: false,
+});
+```
+
+## 문장 분리
+
+`segmentSentences(text, locale?)`는 `Intl.Segmenter`로 문장을 분리합니다. 기본 locale은 `ko`이고, 각 조각은 `text`, `start`, `end`를 반환합니다. 문장 끝의 원문 공백과 부호를 버리지 않습니다.
+
+```ts
+import { segmentSentences } from '@oddmash/kowrap';
+
+const segments = segmentSentences('첫 문장입니다. 다음 문장입니다!');
+```
+
+폭 측정이 필요 없는 강제 개행은 [splitLines](forced-breaks.md)를 사용합니다.
+
+## 제한 사항
+
+코어의 한국어 수식 관계는 간단한 휴리스틱이며 형태소 분석기가 아닙니다. 모든 문장의 의미를 완벽히 판별하지 않습니다. 측정 함수의 폭이 문자열 길이에 따라 대체로 증가한다는 전제가 있으므로 복잡한 사용자 정의 측정에는 주의가 필요합니다.

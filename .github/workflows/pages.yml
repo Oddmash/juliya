@@ -1,0 +1,61 @@
+name: Deploy documentation to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'site/**'
+      - 'docs/guide/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'scripts/clean-dist.mjs'
+      - 'test/site.mjs'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_BASE_PATH: /kowrap
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --dir site install --no-frozen-lockfile
+      - run: pnpm test:site
+      - run: pnpm --dir site exec playwright install --with-deps chromium
+      - run: pnpm --dir site test:browser
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/out
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
