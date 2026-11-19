@@ -1,6 +1,8 @@
 name: Publish npm package
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       version:
@@ -21,11 +23,15 @@ concurrency:
 
 jobs:
   verify:
-    if: github.ref == 'refs/heads/main'
+    if: (github.event_name == 'release' && !github.event.release.prerelease && github.event.release.tag_name != 'v0.1.0') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      published: ${{ steps.registry.outputs.published }}
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
@@ -36,19 +42,32 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - name: Verify release version
+        id: version
         run: node scripts/check-release.mjs
+      - name: Check existing npm release
+        id: registry
+        run: node scripts/check-published.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm --dir test/next-app install --no-frozen-lockfile
       - run: pnpm test:hydration
+      - run: pnpm --dir test/framework-app install --no-frozen-lockfile
+        if: hashFiles('test/framework-app/package.json') != ''
+      - run: pnpm test:frameworks
+        if: hashFiles('test/framework-app/package.json') != ''
       - run: pnpm --dir test/next-app exec playwright install --with-deps chromium
       - run: pnpm test:browser
       - run: pnpm test:package
       - name: Pack verified package
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          ALREADY_PUBLISHED: ${{ steps.registry.outputs.published }}
         run: |
           mkdir -p release-artifacts
           npm pack --ignore-scripts --pack-destination release-artifacts
-          npm publish --dry-run --ignore-scripts "./release-artifacts/oddmash-kowrap-${RELEASE_VERSION}.tgz"
+          if [ "$ALREADY_PUBLISHED" = "false" ]; then
+            npm publish --dry-run --ignore-scripts "./release-artifacts/oddmash-kowrap-${RELEASE_VERSION}.tgz"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: kowrap-npm-package
@@ -57,14 +76,14 @@ jobs:
           retention-days: 7
 
   publish:
-    if: github.ref == 'refs/heads/main' && inputs.publish
+    if: needs.verify.outputs.published == 'false' && ((github.event_name == 'release' && !github.event.release.prerelease) || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish))
     needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_VERSION: ${{ needs.verify.outputs.version }}
     steps:
       - uses: actions/setup-node@v6
         with:
