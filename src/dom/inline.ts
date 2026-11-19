@@ -1,7 +1,7 @@
 import { manualLines } from "../core/segmentation.js";
 import { wrap } from "../core/wrap.js";
 import type { Measure, WrappedLine } from "../core/types.js";
-import { createCanvasMeasure } from "./measure.js";
+import { createLocalizedCanvasMeasure, languageOf } from "./measure.js";
 import { fontOf, observeElementLayout } from "./observe-element.js";
 import type { InlineKowrapOptions } from "./types.js";
 
@@ -45,11 +45,13 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
   const measures = new Map<string, Measure>();
   const styled: { start: number; end: number; measure: Measure; key: string }[] = [];
   for (const run of runs) {
-    const font = fontOf(view.getComputedStyle(run.node.parentElement!));
-    const key = JSON.stringify(font);
+    const parent = run.node.parentElement!;
+    const font = fontOf(view.getComputedStyle(parent));
+    const language = languageOf(parent);
+    const key = JSON.stringify([font, language]);
     let measure = measures.get(key);
     if (!measure) {
-      measure = createCanvasMeasure(font, element.ownerDocument);
+      measure = createLocalizedCanvasMeasure(font, element.ownerDocument, language);
       measures.set(key, measure);
     }
     const previous = styled.at(-1);
@@ -107,7 +109,7 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
   const Mutation = element.ownerDocument.defaultView?.MutationObserver;
   if (Mutation) {
     mutations = new Mutation(() => { restore(); observer.refresh(); });
-    mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style"] });
+    mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style", "lang"] });
   }
   return {
     update: (next: InlineKowrapOptions) => { restore(); options = next; observer.refresh(); },

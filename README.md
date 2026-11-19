@@ -6,7 +6,7 @@
 
 [체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
 
-[![kowrap 적용 전후 비교](docs/assets/wrap-comparison.svg)](https://oddmash.github.io/kowrap/#playground)
+[![kowrap 공개 사이트에서 CSS 기본 줄바꿈과 kowrap 적용 결과를 나란히 비교한 화면](docs/assets/kowrap-live.jpg)](https://oddmash.github.io/kowrap/#playground)
 
 ## 특징
 

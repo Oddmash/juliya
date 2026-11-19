@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 
 const root = fileURLToPath(new URL("../out/", import.meta.url));
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -46,7 +46,10 @@ await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
 let browser;
 try {
-	browser = await chromium.launch();
+	const engines = { chromium, firefox, webkit };
+	const engine = engines[process.argv[2] ?? "chromium"];
+	assert.ok(engine, "Choose chromium, firefox or webkit");
+	browser = await engine.launch();
 	const page = await browser.newPage({
 		viewport: { width: 1280, height: 900 },
 	});
@@ -107,10 +110,20 @@ try {
 	await page.keyboard.press("Meta+k");
 	await page.getByRole("dialog").waitFor();
 	await page.locator("#docs-search").fill("SSR");
+	const search = page.locator("#docs-search");
+	const composingKeyWasHandled = await search.evaluate((element) => !element.dispatchEvent(
+		new KeyboardEvent("keydown", { key: "ArrowDown", isComposing: true, bubbles: true, cancelable: true }),
+	));
+	assert.equal(composingKeyWasHandled, false, "ArrowDown remains available to the IME");
+	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
 	await page
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
 		.waitFor();
+	await search.press("ArrowDown");
+	assert.equal(await page.locator(".search-dialog-results a").first().evaluate((element) => document.activeElement === element), true);
+	await page.keyboard.press("ArrowUp");
+	assert.equal(await search.evaluate((element) => document.activeElement === element), true);
 	await page
 		.getByRole("dialog").getByRole("link", { name: /SSR과 하이드레이션/ })
 		.first()
@@ -135,7 +148,7 @@ try {
 	);
 	assert.deepEqual(errors, []);
 	console.log(
-		"Landing comparisons, code synchronization, docs search, navigation and mobile layout passed",
+		`${engine.name()}: landing comparisons, code synchronization, docs search, navigation and mobile layout passed`,
 	);
 } finally {
 	await browser?.close();

@@ -29,7 +29,7 @@ pnpm test
 ```bash
 pnpm --dir test/next-app install --no-frozen-lockfile
 pnpm --dir test/framework-app install --no-frozen-lockfile
-pnpm --dir test/next-app exec playwright install chromium
+pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```
 
 ## 문서 사이트
@@ -50,7 +50,7 @@ Oddmash의 [시각 지침](https://github.com/Oddmash/oddmash-ui/blob/main/AGENT
 
 ```bash
 NEXT_PUBLIC_BASE_PATH=/kowrap pnpm test:site
-pnpm --dir site exec playwright install chromium
+pnpm --dir site exec playwright install chromium firefox webkit
 NEXT_PUBLIC_BASE_PATH=/kowrap pnpm --dir site test:browser
 ```
 
