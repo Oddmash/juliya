@@ -20,7 +20,7 @@ pnpm test
 | `pnpm test:hydration` | React 하이드레이션과 DOM 어댑터 검사 |
 | `pnpm test:frameworks` | 실제 Vue와 Svelte 런타임 검사 |
 | `pnpm test:next` | Next.js 프로덕션 빌드 |
-| `pnpm test:browser` | Chromium 프레임워크 통합 검사 |
+| `pnpm test:browser` | Chromium, Firefox, WebKit의 프레임워크 통합 검사 |
 | `pnpm test:package` | npm 패키지 공개 진입점 및 구성 검사 |
 | `pnpm test:site` | Next.js 문서 사이트 정적 export 및 내용 검사 |
 
@@ -31,6 +31,19 @@ pnpm --dir test/next-app install --no-frozen-lockfile
 pnpm --dir test/framework-app install --no-frozen-lockfile
 pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```
+
+### 줄바꿈 비교
+
+```bash
+pnpm build
+benchmark_dir=$(mktemp -d)
+npm install --prefix "$benchmark_dir" --no-save @chenglou/pretext@1.0.0
+node test/next-app/compare-wrap.mjs "$benchmark_dir/node_modules/@chenglou/pretext"
+```
+
+랜딩의 원래 예제 3개를 화면 폭 160, 240, 320px와 글꼴·글자 크기 조합 3개에서 렌더링합니다. CSS `keep-all`, kowrap, Pretext의 실제 줄 수, 넘침, 줄 너비 편차를 기록합니다. 줄 너비 편차는 각 예제에서 가장 넓은 줄과 가장 좁은 줄의 차이를 컨테이너 폭으로 나눈 뒤 평균한 값입니다. 표시 시간은 브라우저 레이아웃과 DOM 갱신을 포함한 반복 렌더링의 중앙값이며, Pretext의 초기 준비와 글꼴 로딩을 포함하지 않습니다.
+
+macOS의 세 브라우저에서 각 구현은 27개 조합당 100줄을 표시했고 넘침은 없었습니다. 줄 너비 편차는 kowrap이 20.4~20.6%, CSS와 Pretext가 35.6~35.9%였습니다. 렌더링 중앙값은 CSS 0.010~0.026ms, Pretext 0.015~0.041ms, kowrap 0.036~0.085ms였습니다. 이 결과는 고정된 예제의 폭 균형을 비교하며 한국어 의미 단위의 정확도를 평가하지 않습니다.
 
 ## 문서 사이트
 
@@ -53,6 +66,8 @@ NEXT_PUBLIC_BASE_PATH=/kowrap pnpm test:site
 pnpm --dir site exec playwright install chromium firefox webkit
 NEXT_PUBLIC_BASE_PATH=/kowrap pnpm --dir site test:browser
 ```
+
+Firefox 또는 WebKit에서 실행하려면 마지막 명령에 각각 `firefox` 또는 `webkit`을 추가합니다.
 
 Next.js의 정적 export 결과는 `site/out/`에 생성됩니다. npm 패키지의 `dist/`와 별개입니다.
 
