@@ -16,7 +16,7 @@ const Title = ({ text }: { text: string }) => (
 
 | prop | 기본값 | 역할 |
 | --- | --- | --- |
-| `children` | 필수 | 일반 문자열 |
+| `children` | 필수 | 문자열 또는 중첩 인라인 JSX |
 | `as` | `span` | span, p, div, h1부터 h6 중 선택 |
 | `strategy` | `balanced` | 줄바꿈 전략 |
 | `breakLongWords` | `true` | 긴 어절 분리 여부 |
@@ -33,7 +33,18 @@ const Title = ({ text }: { text: string }) => (
 </WrapText>
 ```
 
-텍스트가 바뀌면 강제 경계도 함께 계산합니다. 중간에 인라인 JSX 요소를 섞는 것은 현재 지원하지 않습니다.
+텍스트가 바뀌면 강제 경계도 함께 계산합니다.
+
+## 인라인 JSX
+
+```tsx
+<WrapText as="p">
+  읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과{' '}
+  <a href="/docs/">문서</a>를 만나보세요.
+</WrapText>
+```
+
+태그의 스타일, 속성 및 이벤트를 유지하면서 텍스트의 계산된 글꼴을 사용합니다. 서버에서는 원래 JSX와 명시적·강제 개행을 렌더링하고 하이드레이션 후 자동 개행을 계산합니다. `useKowrap`은 문자열용 훅입니다.
 
 ## useKowrap 사용법
 

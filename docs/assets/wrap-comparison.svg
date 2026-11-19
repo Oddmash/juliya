@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="340" viewBox="0 0 960 340" role="img" aria-labelledby="title description">
+  <title id="title">kowrap 적용 전후 비교</title>
+  <desc id="description">동일한 문장을 14자 폭으로 줄바꿈했을 때, kowrap은 세 줄의 길이를 균형 있게 배치합니다.</desc>
+  <rect x=".5" y=".5" width="959" height="339" rx="16" fill="#fafafa" stroke="#d4d4d4"/>
+  <g font-family="Pretendard, Apple SD Gothic Neo, Malgun Gothic, Noto Sans CJK KR, sans-serif">
+    <text x="32" y="48" fill="#171717" font-size="23" font-weight="700">문장은 그대로, 읽기는 더 자연스럽게.</text>
+    <text x="928" y="46" fill="#737373" font-size="13" text-anchor="end">kowrap</text>
+    <rect x="32" y="76" width="436" height="220" rx="10" fill="#fff" stroke="#e5e5e5"/>
+    <rect x="492" y="76" width="436" height="220" rx="10" fill="#fff" stroke="#a3a3a3"/>
+    <g font-size="13" font-weight="600">
+      <text x="56" y="109" fill="#737373">일반 줄바꿈</text>
+      <text x="516" y="109" fill="#171717">kowrap 적용</text>
+    </g>
+    <path d="M56 130H444 M516 130H904" stroke="#e5e5e5"/>
+    <g fill="#171717" font-size="24" font-weight="600">
+      <text x="56" y="173">오늘은 모든 사람이 함께</text>
+      <text x="56" y="211">자연스러운 한국어 줄바꿈을</text>
+      <text x="56" y="249">경험합니다.</text>
+      <text x="516" y="173">오늘은 모든 사람이</text>
+      <text x="516" y="211">함께 자연스러운 한국어</text>
+      <text x="516" y="249">줄바꿈을 경험합니다.</text>
+    </g>
+    <text x="32" y="322" fill="#737373" font-size="12">동일한 문장, 14자 폭 · 실제 코어 엔진 출력 기준</text>
+  </g>
+</svg>

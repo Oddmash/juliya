@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { Playground } from "../components/playground";
+import { WrapText } from "@oddmash/kowrap/react";
 
 const Page = () => (
 	<main id="main" className="container">
@@ -33,6 +34,19 @@ const Page = () => (
 			</div>
 		</section>
 		<Playground />
+		<section className="integration" aria-labelledby="inline-title">
+			<div className="integration-description">
+				<h2 id="inline-title">강조와 링크는 그대로.</h2>
+				<p>글꼴이 달라지는 중첩 태그도 실제 폭을 고려해 줄바꿈합니다.</p>
+				<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법</Link>
+			</div>
+			<div>
+				<WrapText as="p" id="inline-preview" style={{ maxWidth: 320, fontSize: 24 }}>
+					읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과 <a href="#playground">실제 예제</a>를 만나보세요.
+				</WrapText>
+				<pre><code>{`<WrapText as="p">\n  읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과\n  <a href="#playground">실제 예제</a>를 만나보세요.\n</WrapText>`}</code></pre>
+			</div>
+		</section>
 		<section className="principles" aria-labelledby="principles-title">
 			<div>
 				<p className="eyebrow">HOW IT WORKS</p>

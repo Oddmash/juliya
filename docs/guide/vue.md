@@ -33,6 +33,17 @@ app.mount('#app');
 
 이후 각 템플릿에서 `v-kowrap`을 사용할 수 있습니다.
 
+## 인라인 마크업
+
+```vue
+<p v-kowrap="{ inline: true }">
+  읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과
+  <a href="/docs/">문서</a>를 만나보세요.
+</p>
+```
+
+`inline: true`에서는 기존 자식 요소를 유지하며 Vue 업데이트 전에 삽입된 개행을 복원합니다.
+
 ## 반응형 옵션
 
 ```vue

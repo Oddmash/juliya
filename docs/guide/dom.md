@@ -19,7 +19,19 @@ const controller = mountKowrap(element, {
 });
 ```
 
-`mountKowrap`은 요소의 자식 DOM을 관리합니다. 인라인 링크, 버튼, 기타 마크업이 있는 요소 대신 일반 문자열 전용 요소에 연결하세요. 요소에는 측정 가능한 블록 폭이 있어야 합니다.
+문자열 모드는 요소의 자식 DOM을 관리합니다. 기존 인라인 요소를 유지하려면 `inline: true`를 사용합니다. 요소에는 측정 가능한 블록 폭이 있어야 합니다.
+
+## 인라인 마크업
+
+```html
+<p id="rich">읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과 <a href="/docs">문서</a>를 만나보세요.</p>
+```
+
+```ts
+const controller = mountKowrap(document.getElementById('rich')!, { inline: true });
+```
+
+`strong`, `em`, `span`, `a` 등 텍스트를 포함하는 중첩 인라인 요소의 실제 계산된 글꼴로 폭을 측정합니다. 기존 요소, 속성, 이벤트는 유지하고 필요한 위치에만 개행을 삽입합니다. `destroy()`로 추가한 개행을 제거합니다.
 
 ## 업데이트와 해제
 
