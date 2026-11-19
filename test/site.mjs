@@ -11,6 +11,7 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	const html = read("index.html");
 	assert.match(html, /id="native-preview"/);
 	assert.match(html, /id="kowrap-preview"/);
+	assert.match(html, /id="inline-preview"/);
 	assert.match(html, /적용 전 \(CSS keep-all\)/);
 	assert.match(html, /적용 후 \(kowrap\)/);
 	assert.ok(html.includes(`${basePath}/_next/`));
@@ -23,6 +24,7 @@ test("all Markdown guides are prerendered and have base-path-safe navigation", (
 	for (const slug of [
 		"core",
 		"forced-breaks",
+		"inline",
 		"dom",
 		"react",
 		"vue",

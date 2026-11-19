@@ -80,3 +80,26 @@ test("Svelte action lifecycle updates and disconnects the shared controller", ()
   assert.ok(disconnected());
   dom.window.close();
 });
+
+test("inline DOM preserves nested element identities and handlers across resize and destroy", () => {
+  const { dom, element, resize } = fixture();
+  element.innerHTML = '읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong><br><a href="#docs">문서 보기</a>';
+  const original = element.innerHTML;
+  const text = element.textContent;
+  const link = element.querySelector("a");
+  const emphasis = element.querySelector("em");
+  let clicks = 0;
+  link.addEventListener("click", () => clicks++);
+  const controller = mountKowrap(element, { inline: true, forcedBreaks: [2] });
+  assert.ok(element.querySelectorAll("br[data-kowrap-break]").length > 0);
+  assert.equal(element.textContent, text);
+  resize(800);
+  assert.equal(element.querySelectorAll("br").length, 2);
+  assert.equal(element.querySelector("a"), link);
+  assert.equal(element.querySelector("em"), emphasis);
+  link.click();
+  assert.equal(clicks, 1);
+  controller.destroy();
+  assert.equal(element.innerHTML, original);
+  dom.window.close();
+});

@@ -58,6 +58,9 @@ try {
 		.first()
 		.waitFor({ state: "attached" });
 	assert.equal(await page.locator("#native-preview br").count(), 0);
+	await page.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
+	assert.equal(await page.locator("#inline-preview strong em").textContent(), "줄바꿈");
+	assert.equal(await page.locator("#inline-preview a").getAttribute("href"), "#playground");
 	assert.equal(
 		await page.locator("#native-preview").textContent(),
 		await page.locator("#kowrap-preview").textContent(),
