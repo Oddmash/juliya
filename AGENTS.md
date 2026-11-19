@@ -14,3 +14,4 @@ Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/A
 - 줄바꿈 알고리즘 변경 시 원문 복원, 어절·grapheme 보존, 폭 제한, 빈 문자열, 명시적 개행 테스트를 유지한다.
 - 배포 전 `pnpm test`, `pnpm test:hydration`, `pnpm test:frameworks`, `pnpm test:browser`, `pnpm test:package`를 확인한다.
 - 라이선스와 npm 공개 배포는 프로젝트 소유자의 결정을 따른다.
+- 안정 릴리스 태그는 `vX.Y.Z` 형식이며 태그 시점의 `package.json` 버전과 동일해야 한다. 릴리스 노트는 `docs/releases/`와 `CHANGELOG.md`를 함께 갱신하며 기존 태그를 덮어쓰지 않는다.

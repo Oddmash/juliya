@@ -204,7 +204,9 @@ pnpm test:package
 
 ## npm 릴리스
 
-최초 패키지 등록 이후 릴리스는 GitHub Actions의 `Publish npm package` 워크플로에서 수동 실행합니다. `main` 브랜치에서 `package.json`의 버전을 입력하고 처음에는 `publish`를 끈 상태로 검증할 수 있습니다. 모든 테스트를 통과한 tarball만 발행됩니다.
+최초 패키지 등록 이후에는 `package.json` 버전과 동일한 `vX.Y.Z` 태그로 GitHub Release를 발행합니다. 안정 버전 릴리스 발행 시 `Publish npm package` 워크플로가 자동으로 실행됩니다. `main`에서 수동으로 버전을 입력해 `publish`를 끈 상태로 검증할 수 있습니다. npm에 이미 발행된 버전은 다시 발행하지 않으며 모든 테스트를 통과한 tarball만 배포합니다.
+
+릴리스 노트는 [변경 이력](CHANGELOG.md)과 `docs/releases/vX.Y.Z.md`에 기록합니다. 최초 이력 정리는 0.2.0 변경사항을 커밋한 후 `node scripts/prepare-release-history.mjs`로 진행합니다. 이 스크립트는 초기 커밋에 v0.1.0, 초기 커밋에서 배포 설정만 개선한 별도 패치 커밋에 v0.1.1, 현재 0.2.0 커밋에 v0.2.0 태그를 생성합니다. 기존 태그를 덮어쓰지 않습니다. v0.1.1 이후 v0.2.0 릴리스는 순차로 발행하고 각 npm 배포가 성공했는지 확인합니다.
 
 npm의 Trusted Publisher는 다음 값으로 구성합니다.
 
