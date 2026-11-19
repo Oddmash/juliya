@@ -40,7 +40,7 @@ const Page = () => (
 				<p>글꼴이 달라지는 중첩 태그도 실제 폭을 고려해 줄바꿈합니다.</p>
 				<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법</Link>
 			</div>
-			<div>
+			<div className="inline-example">
 				<WrapText as="p" id="inline-preview" style={{ maxWidth: 320, fontSize: 24 }}>
 					읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과 <a href="#playground">실제 예제</a>를 만나보세요.
 				</WrapText>

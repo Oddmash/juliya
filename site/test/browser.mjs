@@ -108,6 +108,15 @@ try {
 	assert.match(await page.locator("h1").textContent(), /SSR과 하이드레이션/);
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.goto(`${origin}/`);
+	await page.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
+	const inlineCode = await page.locator(".inline-example pre").evaluate((element) => ({
+		left: element.getBoundingClientRect().left,
+		right: element.getBoundingClientRect().right,
+		viewport: innerWidth,
+		overflow: getComputedStyle(element).overflowX,
+	}));
+	assert.ok(inlineCode.left >= 0 && inlineCode.right <= inlineCode.viewport + 1, "Inline code block fits the mobile viewport");
+	assert.equal(inlineCode.overflow, "auto", "Long code lines can scroll inside their own block");
 	assert.ok(
 		await page.evaluate(
 			() => document.documentElement.scrollWidth <= innerWidth + 2,

@@ -564,11 +564,27 @@ h3 {
 }
 .integration {
 	display: grid;
-	grid-template-columns: 0.9fr 1.1fr;
+	grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
 	gap: 68px;
 	align-items: center;
 	padding: 75px 0;
 	border-bottom: 1px solid var(--border);
+}
+.inline-example {
+	min-width: 0;
+	max-width: 100%;
+}
+.inline-example pre {
+	max-width: 100%;
+	margin: 20px 0 0;
+	padding: 16px;
+	overflow-x: auto;
+	white-space: pre;
+	font-size: 13px;
+	line-height: 1.65;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
 }
 .integration-description p:not(.eyebrow) {
 	margin-top: 14px;
@@ -1067,7 +1083,7 @@ h3 {
 	.principles,
 	.integration,
 	.docs-section {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 26px;
 		padding: 48px 0;
 	}
