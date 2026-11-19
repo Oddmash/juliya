@@ -20,6 +20,8 @@
 - 줄 길이 균형 최적화 및 긴 어절 처리
 - React 없이 사용할 수 있는 독립 JavaScript·TypeScript 엔진
 - 실제 글자 폭을 반영하는 React 반응형 줄바꿈
+- 일반 HTML, Vue, Svelte를 위한 공통 브라우저 어댑터
+- 화면 크기에 상관없이 유지할 의도적인 줄바꿈 위치 설정
 - SSR 및 Next.js App Router의 Server Component 지원
 - JavaScript 없이도 동작하는 문장 단위 CSS 줄바꿈
 

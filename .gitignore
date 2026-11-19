@@ -4,3 +4,4 @@ dist/
 .next/
 coverage/
 release-artifacts/
+test/framework-app/.svelte-fixture-*/

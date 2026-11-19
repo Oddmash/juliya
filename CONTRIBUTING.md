@@ -2,6 +2,8 @@
 
 제품 개요는 [README](README.md), 공통 기여 절차는 [Oddmash 기여 안내](https://github.com/Oddmash/.github/blob/main/CONTRIBUTING.md)를 참고하세요.
 
+모듈 책임과 의존성 방향은 [아키텍처](docs/ARCHITECTURE.md)를 참고하세요.
+
 ## 기능
 
 - 기본적으로 한국어 어절과 Unicode grapheme을 보존합니다.
@@ -46,10 +48,26 @@ const lines = wrap('한국어와 English를 함께 사용합니다.', { width: 2
 | `measure` | 필수 | 문자열의 폭을 반환하는 함수 |
 | `strategy` | `balanced` | 균형 최적화 또는 `greedy` |
 | `breakLongWords` | `true` | 지나치게 긴 어절을 grapheme 단위로 줄바꿈 |
+| `forcedBreaks` | `[]` | 모든 폭에서 반드시 끊을 원문 UTF-16 위치 |
 
 `WrappedLine`은 `text`, `start`, `end`, `width`, `breakAfter`를 제공합니다. `width`는 줄 끝의 일반 공백을 제외하고 측정합니다. 각 `text + breakAfter`를 이어 붙이면 입력 문자열을 복원할 수 있습니다.
 
 `segmentSentences(text, locale?)`는 원문 범위를 유지하며 문장을 분리합니다.
+
+### 의도적인 개행
+
+원문에 `\n`을 넣거나 `forcedBreaks`로 특정 위치를 강제할 수 있습니다. 강제 위치는 원문의 UTF-16 인덱스이며 grapheme 내부, 0, 문자열 끝은 허용하지 않습니다. 원문 자체에는 새 개행 문자를 삽입하지 않습니다.
+
+```ts
+import { splitLines, wrap } from '@oddmash/kowrap';
+
+const text = '자연스러운 한국어 줄바꿈을 경험하세요';
+const forcedBreaks = [text.indexOf('줄바꿈')];
+const lines = wrap(text, { width: 320, measure: (value) => value.length * 10, forcedBreaks });
+const initialLines = splitLines(text, forcedBreaks);
+```
+
+`splitLines`는 브라우저 폭 없이 명시적 개행과 강제 경계만 미리 결정합니다. SSR이나 프레임워크 자체 렌더링에 사용할 수 있고, 아직 측정하지 않았으므로 각 `width`는 0입니다.
 
 ## React / Next.js
 
@@ -59,7 +77,7 @@ import { SentenceText } from '@oddmash/kowrap/react/server';
 
 const Page = () => (
   <main>
-    <WrapText as="h1" style={{ maxWidth: 480 }}>
+    <WrapText as="h1" style={{ maxWidth: 480 }} forcedBreaks={[6]}>
       모든 사람이 자연스러운 한국어 줄바꿈을 경험할 수 있도록
     </WrapText>
     <SentenceText as="p">
@@ -76,6 +94,84 @@ export default Page;
 - `WrapText`는 Next.js의 Client Component입니다. 최초 SSR과 하이드레이션에서 동일한 원문을 그린 후 실제 브라우저 폭, 글꼴과 리사이즈를 반영합니다.
 - `SentenceText`는 브라우저 API와 React Hook을 사용하지 않아 Server Component에서 그대로 사용할 수 있습니다. JavaScript 없이도 CSS로 문장 단위 줄바꿈을 제공합니다.
 - `wrap`과 `segmentSentences`는 React 없이 Node.js와 Server Component에서 실행할 수 있습니다. React는 선택적 peer dependency입니다.
+
+### React 훅
+
+`useKowrap`으로 직접 렌더링하거나 강제 경계를 동적으로 변경할 수 있습니다. `initialForcedBreaks`는 초기 설정, `forcedBreaks`와 `onForcedBreaksChange`는 제어형 설정입니다.
+
+```tsx
+'use client';
+
+import { Fragment } from 'react';
+import { useKowrap } from '@oddmash/kowrap/react';
+
+const Example = () => {
+  const text = '한국어 줄바꿈을 경험하세요';
+  const { ref, lines, setForcedBreaks, clearForcedBreaks } = useKowrap({ text });
+  return (
+    <>
+      <p ref={ref} style={{ whiteSpace: 'pre-wrap', wordBreak: 'keep-all', overflowWrap: 'anywhere' }}>
+        {lines.map((line, index) => (
+          <Fragment key={line.start}>
+            {line.text}{line.breakAfter || (index < lines.length - 1 ? <br /> : null)}
+          </Fragment>
+        ))}
+      </p>
+      <button onClick={() => setForcedBreaks([text.indexOf('줄바꿈')])}>개행 지정</button>
+      <button onClick={clearForcedBreaks}>자동 개행</button>
+    </>
+  );
+};
+```
+
+`measured`가 `false`인 초기 렌더링에서는 `splitLines`와 같은 결과를 반환합니다.
+
+## 일반 HTML 및 JavaScript
+
+```html
+<p id="title">자연스러운 한국어 줄바꿈</p>
+<script type="module">
+  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';
+
+  const element = document.getElementById('title');
+  const text = element.textContent;
+  const controller = mountKowrap(element, { text, forcedBreaks: [text.indexOf('줄바꿈')] });
+</script>
+```
+
+일반 HTML에서는 패키지의 `dist/` 디렉터리를 정적 파일로 제공하거나 ESM CDN을 사용합니다. 번들러를 쓰는 경우 `@oddmash/kowrap/dom`으로 import합니다(`@oddmash/kowrap/browser`도 동일하게 동작합니다). `controller.update(options)`, `refresh()`, `destroy()`를 호출할 수 있습니다. `mountKowrap`은 대상 요소의 자식 DOM을 소유하므로 일반 텍스트 전용 요소에서 사용합니다. `observeKowrap(element, options, callback)`은 DOM을 수정하지 않고 `lines`, `measured`만 제공하므로 Angular, Solid 등 자체 렌더러에도 연결할 수 있습니다.
+
+실행 가능한 기본 HTML 예시는 [examples/html/index.html](examples/html/index.html)에 있습니다. 빌드 후 저장소 루트를 정적 파일 서버에서 제공해 열 수 있습니다.
+
+## Vue 3
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';
+
+const text = ref('자연스러운 한국어 줄바꿈');
+const breaks = ref([text.value.indexOf('줄바꿈')]);
+</script>
+
+<template>
+  <p v-kowrap="{ text, forcedBreaks: breaks }"></p>
+</template>
+```
+
+## Svelte 5
+
+```svelte
+<script>
+  import { kowrap } from '@oddmash/kowrap/svelte';
+  let text = $state('자연스러운 한국어 줄바꿈');
+  let breaks = $state([text.indexOf('줄바꿈')]);
+</script>
+
+<p use:kowrap={{ text, forcedBreaks: breaks }}></p>
+```
+
+Vue 디렉티브와 Svelte 액션은 클라이언트에서 작동하며 별도 Vue·Svelte 런타임 의존성을 추가하지 않습니다. Nuxt 또는 SvelteKit에서 서버 렌더링이 필요하다면 `splitLines`로 초기 원문을 렌더링하고 클라이언트에서 `observeKowrap` 결과를 프레임워크의 상태에 연결합니다. 전용 디렉티브·액션을 사용하는 요소의 자식은 kowrap이 관리하므로 프레임워크가 별도로 동적 자식을 렌더링하지 않습니다.
 
 ## 현재 범위
 
@@ -96,6 +192,8 @@ pnpm test
 pnpm build
 pnpm --dir test/next-app install --no-frozen-lockfile
 pnpm test:hydration
+pnpm --dir test/framework-app install --no-frozen-lockfile
+pnpm test:frameworks
 pnpm test:next
 pnpm --dir test/next-app exec playwright install chromium
 pnpm test:browser

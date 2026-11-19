@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kowrap — HTML 예시</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; }
+      label { display: block; margin: 24px 0 8px; }
+      input[type="range"] { width: 100%; }
+      #preview { font-size: 24px; line-height: 1.5; border: 1px solid #ccc; padding: 16px; box-sizing: border-box; max-width: 100%; }
+    </style>
+  </head>
+  <body>
+    <h1>kowrap</h1>
+    <label for="width">텍스트 폭 <output id="size">320</output>px</label>
+    <input id="width" type="range" min="160" max="560" value="320">
+    <label><input id="force" type="checkbox"> 의도적인 줄바꿈</label>
+    <p id="preview" style="width: 320px">오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험합니다.</p>
+    <script type="module">
+      import { mountKowrap } from '../../dist/dom/index.js';
+
+      const preview = document.getElementById('preview');
+      const width = document.getElementById('width');
+      const force = document.getElementById('force');
+      const size = document.getElementById('size');
+      const text = preview.textContent;
+      const controller = mountKowrap(preview, { text });
+      width.addEventListener('input', () => {
+        preview.style.width = `${width.value}px`;
+        size.value = width.value;
+        controller.refresh();
+      });
+      force.addEventListener('change', () => {
+        controller.update({ text, forcedBreaks: force.checked ? [text.indexOf('자연스러운')] : [] });
+      });
+      window.addEventListener('pagehide', controller.destroy, { once: true });
+    </script>
+  </body>
+</html>
