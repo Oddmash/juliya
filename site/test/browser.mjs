@@ -129,6 +129,10 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	if (engine.name() === "chromium") {
+		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+		await page.screenshot({ path: "test-results/renewal/landing-desktop.png", fullPage: true, animations: "disabled" });
+	}
 	await page.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	assert.equal(new URL(page.url()).hash, "#editor");
 	assert.equal(await page.locator("#editor").evaluate((editor) => document.activeElement === editor), true);
@@ -272,6 +276,7 @@ try {
 	assert.equal(await mobileEditor.isVisible(), true);
 	assert.ok((await mobileEditor.boundingBox()).y < (await mobile.locator("#native-preview").boundingBox()).y);
 	await verifySpecimen(mobile, false);
+	if (engine.name() === "chromium") await mobile.screenshot({ path: "test-results/renewal/landing-mobile.png", fullPage: true, animations: "disabled" });
 	await mobile.locator(".actual-width").waitFor();
 	assert.ok(await mobile.locator(".actual-width").textContent().then((text) => /실제 비교 폭: \d+px/.test(text)));
 	await mobile.getByRole("link", { name: "내 문장으로 체험하기" }).click();
@@ -346,6 +351,7 @@ try {
 	const inlineDocs = await openPage({ width: 320, height: 812 });
 	await inlineDocs.addInitScript(() => { window.ResizeObserver = undefined; });
 	await inlineDocs.goto(`${origin}/docs/inline/`);
+	if (engine.name() === "chromium") await inlineDocs.screenshot({ path: "test-results/renewal/guide-mobile.png", fullPage: true, animations: "disabled" });
 	const inlineProse = inlineDocs.locator("#doc-content > p[data-kowrap-prose]").first();
 	await inlineProse.locator("br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const [kowrapHeight, cssHeight] = await inlineProse.evaluate(async (paragraph) => {
