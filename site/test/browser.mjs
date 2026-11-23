@@ -69,6 +69,11 @@ const verifySpecimen = async (page, motion) => {
 		const pause = page.getByRole("button", { name: "일시 정지" });
 		await pause.scrollIntoViewIfNeeded();
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
+		assert.ok(await cue.evaluate(marker => {
+			const bounds = marker.getBoundingClientRect();
+			const word = marker.parentElement.getBoundingClientRect();
+			return Math.abs(bounds.left - word.left) < 2 && Number(getComputedStyle(marker).opacity) >= .8;
+		}));
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
 		await pause.press("Enter");
@@ -209,6 +214,7 @@ try {
 	const docs = await openPage(desktop);
 	await docs.goto(`${origin}/docs/`);
 	await docs.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
+	assert.equal(await docs.locator("[data-copy-target]").first().getAttribute("aria-live"), "polite");
 	await docs.keyboard.press("Control+k");
 	await docs.getByRole("dialog").waitFor();
 	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");

@@ -39,7 +39,6 @@ export const MarkdownCopy = () => {
 			}
 			if (disposed || requests.get(button) !== current) return;
 			button.textContent = status;
-			button.setAttribute("aria-live", "polite");
 			timers.set(button, setTimeout(() => {
 				button.textContent = "복사";
 				timers.delete(button);

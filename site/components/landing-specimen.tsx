@@ -89,7 +89,7 @@ export const LandingSpecimen = () => {
 		wordAnimations.current.forEach(item => item.cancel());
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !cue.animate) return;
 		const timing = { duration: 1450, easing: "cubic-bezier(.25, .75, .25, 1)" };
-		animation.current = cue.animate([{ opacity: .25 }, { opacity: .25, offset: .25 }, { opacity: 1 }], timing);
+		animation.current = cue.animate([{ opacity: .85 }, { opacity: .85, offset: .25 }, { opacity: 1 }], timing);
 		wordAnimations.current = Array.from(after.current?.querySelectorAll<HTMLElement>("[data-motion-word]") ?? []).map((word, i) => {
 			const { dx, dy } = measured.offsets[i];
 			const transform = `translate(${dx}px, ${dy}px)`;
