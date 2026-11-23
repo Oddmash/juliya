@@ -280,6 +280,15 @@ try {
 	await api.locator("#react").evaluate((heading) => heading.scrollIntoView());
 	await apiToc.locator('a[href="#react"][aria-current="location"]').waitFor();
 	assert.equal(await apiToc.locator('[aria-current="location"]').count(), 1);
+	const nearEnd = await api.locator("#react").evaluate(async (heading) => {
+		await document.fonts.ready;
+		const top = scrollY + heading.getBoundingClientRect().top - parseFloat(getComputedStyle(heading).scrollMarginTop);
+		return Math.ceil(document.documentElement.scrollHeight - top);
+	});
+	await api.setViewportSize({ width: desktop.width, height: nearEnd });
+	await api.locator("#react").evaluate((heading) => heading.scrollIntoView());
+	await api.waitForFunction(() => scrollY + innerHeight >= document.documentElement.scrollHeight - 2);
+	await apiToc.locator('a[href="#react"][aria-current="location"]').waitFor();
 	for (const width of [390, 800]) {
 		const narrowDocs = await openPage({ width, height: 844 });
 		await narrowDocs.emulateMedia({ reducedMotion: "reduce" });

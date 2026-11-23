@@ -15,9 +15,11 @@ export const DocsToc = ({ headings }: { headings: Guide["headings"] }) => {
 		let frame = 0;
 		const update = () => {
 			const atBottom = scrollY > 0 && scrollY + innerHeight >= document.documentElement.scrollHeight - 2;
-			const section = atBottom ? sections.at(-1) : sections.findLast((heading) => {
+			const section = sections.findLast((heading) => {
 				const margin = parseFloat(getComputedStyle(heading).scrollMarginTop);
-				return heading.getBoundingClientRect().top <= margin + 24;
+				// Near the end, a heading can stay below its scroll margin because the page cannot scroll further.
+				const readingLine = atBottom ? Math.max(margin + 24, innerHeight / 4) : margin + 24;
+				return heading.getBoundingClientRect().top <= readingLine;
 			});
 			setActiveId(section?.id);
 		};
