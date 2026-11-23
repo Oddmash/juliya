@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { extname, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium, firefox, webkit } from "playwright";
 
 const root = fileURLToPath(new URL("../out/", import.meta.url));
@@ -12,6 +13,7 @@ const types = {
 	".js": "text/javascript",
 	".css": "text/css",
 	".svg": "image/svg+xml",
+	".woff2": "font/woff2",
 	".json": "application/json",
 	".txt": "text/plain; charset=utf-8",
 };
@@ -44,6 +46,53 @@ const server = createServer(async (request, response) => {
 
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
+const verifySpecimen = async (page, motion) => {
+	await page.evaluate(() => document.fonts.ready);
+	await page.locator('[data-layer="kowrap"] br').first().waitFor({ state: "attached" });
+	const ribbon = page.locator(".specimen-ribbon[data-positioned]");
+	await ribbon.waitFor();
+	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
+	const [css, kowrap] = await page.locator(".specimen-layer p").evaluateAll((samples) => samples.map((sample) => {
+		const style = getComputedStyle(sample);
+		return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
+	}));
+	assert.deepEqual(css, kowrap, "both modes use the same copy and rendering constraints");
+	const nativeWord = page.locator('[data-layer="css"] [data-word="3"]');
+	const before = await nativeWord.evaluate((word) => word.getBoundingClientRect().top);
+	await ribbon.evaluate((marker) => {
+		marker.addEventListener("transitionrun", (event) => {
+			if (event.propertyName === "transform") marker.dataset.animated = "true";
+		});
+	});
+	const kowrapMode = page.getByRole("button", { name: "Kowrap", exact: true });
+	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--ghost\b/);
+	await kowrapMode.press("Enter");
+	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--primary\b/);
+	const moved = page.locator(".specimen-layer:visible [data-moved]");
+	assert.equal(await moved.textContent(), "한곳에서");
+	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top > top, before));
+	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
+	assert.equal(await kowrapMode.evaluate((button) => document.activeElement === button), true);
+	assert.match(await page.locator(".specimen [role=status]").textContent(), /2번째 줄/);
+	if (motion) await page.locator(".specimen-ribbon[data-animated]").waitFor();
+	else assert.equal(await ribbon.evaluate((marker) => getComputedStyle(marker).transitionProperty), "none");
+	await page.waitForFunction(() => {
+		const marker = document.querySelector(".specimen-ribbon").getBoundingClientRect();
+		const word = document.querySelector(".specimen-layer [data-moved]").getBoundingClientRect();
+		const text = document.querySelector('.specimen-layer[aria-hidden="false"] p').getBoundingClientRect();
+		return marker.top >= text.bottom && Math.abs((marker.left + marker.right - word.left - word.right) / 2) < 2;
+	});
+	await page.getByRole("button", { name: "기본 CSS", exact: true }).press("Enter");
+	await kowrapMode.press("Enter");
+	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
+	assert.equal(await page.locator(".specimen-layer:visible [data-moved]").textContent(), "한곳에서");
+	const width = page.locator("#specimen-width");
+	await width.press("Home");
+	await width.press("ArrowRight");
+	assert.equal(await width.inputValue(), "8.25");
+	assert.equal(await page.locator(".specimen [data-moved]").count(), 0);
+	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
+};
 let browser;
 try {
 	const engines = { chromium, firefox, webkit };
@@ -58,8 +107,21 @@ try {
 	};
 	const desktop = { width: 1280, height: 900 };
 	const page = await openPage(desktop);
+	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
+	assert.equal(await page.locator("#hero-title").textContent(), "한국어 줄바꿈을 자연스럽게");
+	assert.ok(await page.locator("#hero-title").evaluate(async (title) => {
+		await document.fonts.ready;
+		const family = getComputedStyle(title).fontFamily.split(",")[0];
+		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
+	}), "the locally hosted display face loads");
+	assert.equal(await page.locator("#editor").getAttribute("open"), null);
+	await verifySpecimen(page, true);
+	await page.getByRole("link", { name: "직접 편집" }).click();
+	assert.equal(new URL(page.url()).hash, "#editor");
+	assert.equal(await page.locator("#editor").getAttribute("open"), "");
+	await page.getByText("인라인 마크업 예제", { exact: true }).click();
 	await page
 		.locator("#kowrap-preview br")
 		.first()
@@ -72,6 +134,27 @@ try {
 		await page.locator("#native-preview").textContent(),
 		await page.locator("#kowrap-preview").textContent(),
 	);
+	const range = page.locator("#demo-width");
+	await page.locator(".preview-ruler > span").first().evaluate((marker) => {
+		marker.addEventListener("transitionrun", (event) => {
+			if (event.propertyName === "transform") marker.dataset.animated = "true";
+		});
+	});
+	await range.press("Home");
+	await page.waitForFunction(() => [...document.querySelectorAll("#native-preview, #kowrap-preview")]
+		.every((element) => Math.abs(element.getBoundingClientRect().width - 180) < 1));
+	await page.locator(".preview-ruler > span[data-animated]").waitFor({ state: "attached" });
+	await range.press("End");
+	await range.press("ArrowLeft");
+	await page.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
+		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;
+		const transform = new DOMMatrixReadOnly(getComputedStyle(marker).transform);
+		return Math.abs(transform.m41 - width) < 1 && width === 456;
+	}));
+	assert.equal(await page.locator(".preview-ruler > span").first().evaluate((marker) => getComputedStyle(marker).transitionProperty), "transform");
+	await range.press("Home");
+	await page.locator(".comparison-featured summary").press("Enter");
+	assert.equal(await page.locator(".comparison-featured details").getAttribute("open"), "");
 	await page.getByRole("button", { name: "혼합 문장" }).click();
 	await page.waitForFunction(() =>
 		document
@@ -101,6 +184,23 @@ try {
 			"kowrapDirective",
 		),
 	);
+	await page.getByRole("tab", { name: "HTML", exact: true }).click();
+	const landingHtml = await page.getByRole("tabpanel").locator("pre code").textContent();
+	const htmlGuide = await openPage(desktop);
+	await htmlGuide.goto(`${origin}/docs/dom/`);
+	const guideHtml = await htmlGuide.locator("#doc-content pre code").first().textContent();
+	assert.equal(guideHtml.trim(), landingHtml.trim(), "The guide and landing publish the same standalone HTML");
+	assert.match(landingHtml, /https:\/\/cdn\.jsdelivr\.net\/npm\/@oddmash\/kowrap@\d+\.\d+\.\d+\/dist\/dom\/index\.js\/\+esm/);
+	const staticPage = await openPage(desktop);
+	const exampleDir = await mkdtemp(resolve(tmpdir(), "kowrap-cdn-"));
+	try {
+		const exampleFile = resolve(exampleDir, "index.html");
+		await writeFile(exampleFile, landingHtml);
+		await staticPage.goto(pathToFileURL(exampleFile).href);
+		await staticPage.locator("#title > br").first().waitFor({ state: "attached" });
+	} finally {
+		await rm(exampleDir, { recursive: true, force: true });
+	}
 	// Separate entry points so a forced page unload cannot abort an active prefetch.
 	const docs = await openPage(desktop);
 	await docs.goto(`${origin}/docs/`);
@@ -137,7 +237,11 @@ try {
 	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
 	const mobileViewport = { width: 375, height: 812 };
 	const mobile = await openPage(mobileViewport);
+	await mobile.emulateMedia({ reducedMotion: "reduce" });
 	await mobile.goto(`${origin}/`);
+	await verifySpecimen(mobile, false);
+	await mobile.getByRole("link", { name: "직접 편집" }).click();
+	await mobile.getByText("인라인 마크업 예제", { exact: true }).click();
 	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
@@ -152,6 +256,20 @@ try {
 			() => document.documentElement.scrollWidth <= innerWidth + 2,
 		),
 	);
+	const reduced = await openPage({ width: 320, height: 812 });
+	await reduced.emulateMedia({ reducedMotion: "reduce" });
+	await reduced.route("**/*.woff2", (route) => route.abort());
+	await reduced.goto(`${origin}/`);
+	await reduced.locator("#specimen-width").press("Home");
+	assert.equal(await reduced.locator(".specimen-layer:visible").count(), 1);
+	await reduced.getByRole("link", { name: "직접 편집" }).click();
+	await reduced.locator("#demo-width").press("Home");
+	await reduced.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
+		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;
+		const style = getComputedStyle(marker);
+		return width === 180 && style.transitionProperty === "none" && new DOMMatrixReadOnly(style.transform).m41 === width;
+	}));
+	assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), "the narrow landing fits when fonts fail");
 	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
 	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
 	for (const path of paths) {
@@ -168,7 +286,7 @@ try {
 	}
 	assert.deepEqual(errors, []);
 	console.log(
-		`${engine.name()}: landing comparisons, code synchronization, docs search, navigation and mobile layout passed`,
+		`${engine.name()}: landing comparisons, standalone CDN example, docs search, navigation and mobile layout passed`,
 	);
 } finally {
 	await browser?.close();

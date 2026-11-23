@@ -36,15 +36,15 @@ const nativeStyle = {
 } as const;
 
 const PreviewCode = ({ code, applied }: { code: string; applied: boolean }) => (
-	<div className="compare-code">
+	<details className="compare-code">
+		<summary>{applied ? "kowrap 적용 코드" : "기본 CSS 코드"}</summary>
 		<div className="compare-code-header">
-			<span>{applied ? "kowrap 적용 코드" : "기본 CSS 코드"}</span>
 			<CopyButton value={code} />
 		</div>
 		<pre>
 			<code>{code}</code>
 		</pre>
-	</div>
+	</details>
 );
 
 const rowsOf = (element: HTMLElement | null) => {
@@ -159,19 +159,28 @@ export const Playground = () => {
 
 	return (
 		<section
-			id="playground"
+			id="comparison-editor"
 			className="playground"
 			aria-labelledby="playground-title"
 		>
 			<div className="playground-header">
 				<div>
-					<p className="eyebrow label-muted">실시간 비교</p>
 					<h2 id="playground-title">같은 문장, 더 균형 있는 줄바꿈</h2>
 				</div>
-				<span className="live-label">
-					<span aria-hidden="true" />
-					실제 브라우저 렌더링
-				</span>
+				<div className="control-range comparison-width">
+					<label htmlFor="demo-width">
+						비교 폭 <output htmlFor="demo-width">{width}px</output>
+					</label>
+					<input
+						id="demo-width"
+						type="range"
+						min="180"
+						max="460"
+						step="4"
+						value={width}
+						onChange={(event) => setWidth(Number(event.target.value))}
+					/>
+				</div>
 			</div>
 			<div className="playground-body">
 				<div className="comparison" style={comparisonStyle}>
@@ -186,7 +195,7 @@ export const Playground = () => {
 							</span>
 						</div>
 						<div className="preview-stage">
-							<div className="preview-ruler" aria-hidden="true" />
+							<div className="preview-ruler" aria-hidden="true"><span /></div>
 							<p
 								id="native-preview"
 								ref={nativeRef}
@@ -209,7 +218,7 @@ export const Playground = () => {
 							</span>
 						</div>
 						<div className="preview-stage" ref={kowrapRef}>
-							<div className="preview-ruler" aria-hidden="true" />
+							<div className="preview-ruler" aria-hidden="true"><span /></div>
 							<WrapText
 								as="p"
 								id="kowrap-preview"
@@ -241,20 +250,6 @@ export const Playground = () => {
 									{label}
 								</Button>
 							))}
-						</div>
-						<div className="control-range">
-							<label htmlFor="demo-width">
-								폭 <output htmlFor="demo-width">{width}px</output>
-							</label>
-							<input
-								id="demo-width"
-								type="range"
-								min="180"
-								max="460"
-								step="4"
-								value={width}
-								onChange={(event) => setWidth(Number(event.target.value))}
-							/>
 						</div>
 						<div className="control-range font-control">
 							<label htmlFor="font-size">

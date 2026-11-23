@@ -3,37 +3,49 @@
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@oddmash/ui/tabs";
 import { CopyButton } from "./copy-button";
+import { specimenText } from "../lib/specimen";
 
 const examples = [
 	{
 		tab: "React",
 		label: "React / Next.js",
 		doc: "react",
-		code: `import { WrapText } from '@oddmash/kowrap/react';\n\n<WrapText as="h1">\n  한국어를 읽는 흐름대로.\n</WrapText>`,
+		code: `import { WrapText } from '@oddmash/kowrap/react';\n\n<WrapText as="h1">\n  ${specimenText}\n</WrapText>`,
 	},
 	{
 		tab: "Vue",
 		label: "Vue 3",
 		doc: "vue",
-		code: `<script setup>\nimport { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';\nconst text = '한국어를 읽는 흐름대로.';\n</script>\n\n<template>\n  <p v-kowrap="{ text }"></p>\n</template>`,
+		code: `<script setup>\nimport { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';\nconst text = ${JSON.stringify(specimenText)};\n</script>\n\n<template>\n  <p v-kowrap="{ text }"></p>\n</template>`,
 	},
 	{
 		tab: "Svelte",
 		label: "Svelte 5",
 		doc: "svelte",
-		code: `<script>\n  import { kowrap } from '@oddmash/kowrap/svelte';\n  let text = $state('한국어를 읽는 흐름대로.');\n</script>\n\n<p use:kowrap={{ text }}></p>`,
+		code: `<script>\n  import { kowrap } from '@oddmash/kowrap/svelte';\n  let text = $state(${JSON.stringify(specimenText)});\n</script>\n\n<p use:kowrap={{ text }}></p>`,
 	},
 	{
 		tab: "HTML",
-		label: "HTML / JavaScript",
+		label: "npm 설치 없이 index.html로 저장해 열기",
 		doc: "dom",
-		code: `import { mountKowrap } from '@oddmash/kowrap/dom';\n\nconst element = document.querySelector('#title');\nmountKowrap(element, {\n  text: '한국어를 읽는 흐름대로.'\n});`,
+		code: `<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>Kowrap 예제</title>
+<p id="title" style="max-width: 220px; font-size: 24px">${specimenText}</p>
+<script type="module">
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.2.0/dist/dom/index.js/+esm';
+
+  const title = document.getElementById('title');
+  mountKowrap(title, { text: title.textContent });
+</script>
+</html>`,
 	},
 	{
 		tab: "Core",
-		label: "JavaScript / TypeScript",
+		label: "직접 폭을 측정하고 줄 데이터를 받는 API",
 		doc: "core",
-		code: `import { wrap } from '@oddmash/kowrap';\n\nconst lines = wrap('한국어를 읽는 흐름대로.', {\n  width: 8,\n  measure: text => [...text].length,\n});`,
+		code: `import { wrap } from '@oddmash/kowrap';\n\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 8,\n  measure: text => [...text].length,\n});`,
 	},
 ];
 

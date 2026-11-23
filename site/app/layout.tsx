@@ -10,7 +10,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
 	title: {
-		default: "kowrap | 한국어를 읽는 흐름대로",
+		default: "kowrap | 한국어 줄바꿈을 자연스럽게",
 		template: "%s | kowrap",
 	},
 	description:
@@ -82,8 +82,8 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 					<Logo size={23} />
 					kowrap
 				</Link>
-				<span>Oddmash에서 만든 한국어 줄바꿈 라이브러리</span>
 				<div>
+					<a href="https://github.com/Oddmash">Oddmash</a>
 					<a href="https://www.npmjs.com/package/@oddmash/kowrap">npm</a>
 					<a href="https://github.com/Oddmash/kowrap">GitHub</a>
 				</div>

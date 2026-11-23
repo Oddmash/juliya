@@ -28,6 +28,8 @@ interface WrappedLine {
 
 ## DOM
 
+설치 없이 브라우저에서 시작하려면 [정적 HTML CDN 예제](dom.md)를 사용하세요.
+
 ```ts
 import { createCanvasMeasure, observeKowrap, mountKowrap } from '@oddmash/kowrap/dom';
 import type { CanvasMeasureOptions, KowrapOptions, KowrapController, KowrapLayout } from '@oddmash/kowrap/dom';
