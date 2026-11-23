@@ -40,12 +40,11 @@ const Page = () => (
 			</div>
 			<LandingSpecimen />
 		</header>
-		<div className="landing-proof-note"><span>같은 문장. 같은 글꼴. 같은 화면 폭.</span><span>CSS keep-all vs. Kowrap</span></div>
+		<div className="landing-proof-note">같은 문장, 글꼴, 화면 폭으로 비교합니다.</div>
 		<div id="editor" className="landing-editor" tabIndex={-1}>
 			<div className="landing-section-heading">
-				<p className="landing-kicker">01 / Playground</p>
-				<h2>문장을 바꿔서 확인하세요.</h2>
-				<p>실제 브라우저에서 원문과 줄바꿈 결과를 나란히 비교합니다.</p>
+				<h2>직접 써 보세요.</h2>
+				<p>문장과 너비를 바꾸며 차이를 확인하세요.</p>
 			</div>
 			<Playground />
 			<details className="inline-details">
@@ -63,8 +62,7 @@ const Page = () => (
 		</div>
 		<section className="landing-use-cases" aria-labelledby="use-cases-title">
 			<div className="landing-section-heading">
-				<p className="landing-kicker">02 / Use cases</p>
-				<h2 id="use-cases-title">작은 화면, 읽기 좋은 문장.</h2>
+				<h2 id="use-cases-title">문장이 놓이는 자리.</h2>
 			</div>
 			<div className="use-case-grid">
 				<article className="use-case"><span className="case-index">01 · 제목</span><div className="case-sample"><WrapText as="h3">좋은 글은 보기 편한 화면에서 시작됩니다.</WrapText></div><p>랜딩 페이지와 콘텐츠 제목의 어색한 줄바꿈을 다듬습니다.</p></article>
@@ -74,8 +72,7 @@ const Page = () => (
 		</section>
 		<section id="install" className="landing-install" aria-labelledby="install-title">
 			<div>
-				<p className="landing-kicker">03 / Integration</p>
-				<h2 id="install-title">지금 프로젝트에 적용하세요.</h2>
+				<h2 id="install-title">몇 줄이면 충분합니다.</h2>
 				<p>React, Next.js, Vue, Svelte 또는 일반 HTML에서 사용할 수 있습니다.</p>
 				<div className="install-command">
 					<span className="command-prefix" aria-hidden="true">$</span>

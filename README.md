@@ -6,7 +6,7 @@
 
 [체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
 
-랜딩 첫 화면에서 기본 CSS와 Kowrap의 줄바꿈 결과를 같은 글꼴과 화면 폭으로 나란히 확인할 수 있으며, `변화 다시 보기`를 누르면 이동한 어절의 위치가 어떻게 바뀌는지 확인할 수 있습니다.
+랜딩 첫 화면에서 기본 CSS와 Kowrap의 줄바꿈 결과를 같은 글꼴과 화면 폭으로 나란히 확인할 수 있으며, 실제 어절의 이동을 반복 시연합니다. 시연은 일시 정지하거나 재생할 수 있습니다.
 
 [![Kowrap 공개 랜딩에서 줄바꿈을 비교하고 문장을 편집하는 화면](docs/assets/kowrap-live.jpg)](https://oddmash.github.io/kowrap/#playground)
 

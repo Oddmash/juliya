@@ -8,6 +8,9 @@ export const MarkdownCopy = () => {
 	useEffect(() => {
 		const container = document.getElementById("doc-content");
 		if (!container) return;
+		const timers = new Map<HTMLButtonElement, ReturnType<typeof setTimeout>>();
+		const requests = new Map<HTMLButtonElement, number>();
+		let disposed = false;
 		const controllers = Array.from(container.querySelectorAll<HTMLElement>("h1, h2, h3, p, li"))
 			.filter((element) => !element.closest("pre, .doc-code, .doc-table") && !element.querySelector("p, ul, ol"))
 			.map((element) => {
@@ -25,18 +28,25 @@ export const MarkdownCopy = () => {
 				button.dataset.copyTarget ?? "",
 			)?.textContent;
 			if (value === undefined || value === null) return;
+			const current = (requests.get(button) ?? 0) + 1;
+			requests.set(button, current);
+			clearTimeout(timers.get(button));
+			let status = "복사 완료";
 			try {
 				await copyText(value);
-				button.textContent = "복사 완료";
 			} catch {
-				button.textContent = "복사 실패";
+				status = "복사 실패";
 			}
-			setTimeout(() => {
+			if (disposed || requests.get(button) !== current) return;
+			button.textContent = status;
+			button.setAttribute("aria-live", "polite");
+			timers.set(button, setTimeout(() => {
 				button.textContent = "복사";
-			}, 1400);
+				timers.delete(button);
+			}, 2000));
 		};
 		container.addEventListener("click", handle);
-		return () => { container.removeEventListener("click", handle); controllers.forEach((controller) => controller.destroy()); };
+		return () => { disposed = true; timers.forEach(clearTimeout); container.removeEventListener("click", handle); controllers.forEach((controller) => controller.destroy()); };
 	}, []);
 	return null;
 };

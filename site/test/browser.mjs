@@ -64,15 +64,18 @@ const verifySpecimen = async (page, motion) => {
 	assert.equal(await moved.textContent(), "한곳에서");
 	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top > top, before));
 	assert.match(await status.textContent(), /한곳에서.*1번째 줄 → 2번째 줄/);
-	const replay = page.getByRole("button", { name: "변화 다시 보기" });
 	const cue = page.locator(".specimen-cue");
-	await replay.press("Enter");
-	assert.equal(await replay.evaluate((button) => document.activeElement === button), true);
 	if (motion) {
+		const pause = page.getByRole("button", { name: "일시 정지" });
+		await pause.scrollIntoViewIfNeeded();
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
-		await replay.press("Enter");
+		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
+		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
+		await pause.press("Enter");
+		assert.equal(await page.getByRole("button", { name: "재생" }).evaluate(button => document.activeElement === button), true);
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
 	} else {
+		assert.equal(await page.getByRole("button", { name: "모션 감소" }).isDisabled(), true);
 		assert.equal(await cue.evaluate((marker) => marker.getAnimations().length), 0);
 	}
 	assert.equal(await cue.evaluate((marker) => {
@@ -175,6 +178,13 @@ try {
 			"kowrapDirective",
 		),
 	);
+	await page.getByRole("tab", { name: "Core", exact: true }).click();
+	assert.match(await page.getByRole("tabpanel").locator("pre code").textContent(), /createCanvasMeasure/);
+	await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => {} } }));
+	const copy = page.getByRole("tabpanel").getByRole("button", { name: "복사", exact: true });
+	await copy.click();
+	await page.getByRole("tabpanel").getByRole("button", { name: "복사 완료", exact: true }).waitFor();
+	await page.getByRole("tabpanel").getByRole("button", { name: "복사", exact: true }).waitFor();
 	await page.getByRole("tab", { name: "HTML", exact: true }).click();
 	const landingHtml = await page.getByRole("tabpanel").locator("pre code").textContent();
 	const htmlGuide = await openPage(desktop);
