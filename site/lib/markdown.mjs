@@ -80,9 +80,10 @@ export const renderMarkdown = (markdown, basePath = "") => {
 			used.set(base, count);
 			const id = count === 1 ? base : `${base}-${count}`;
 			if (level === 1 && title === "문서") title = text;
-			if (level === 2 || level === 3) headings.push({ level, text, id });
+			const tocEntry = level === 2 || level === 3;
+			if (tocEntry) headings.push({ level, text, id });
 			blocks.push(
-				`<h${level} id="${escapeHtml(id)}">${inline(text, basePath)}</h${level}>`,
+				`<h${level} id="${escapeHtml(id)}"${tocEntry ? ' tabindex="-1"' : ""}>${inline(text, basePath)}</h${level}>`,
 			);
 			index++;
 			continue;
@@ -113,7 +114,7 @@ export const renderMarkdown = (markdown, basePath = "") => {
 						.join("")}</tr>`,
 				);
 			blocks.push(
-				`<div class="doc-table"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
+				`<div class="doc-table" tabindex="0" role="region" aria-label="표"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
 			);
 			continue;
 		}

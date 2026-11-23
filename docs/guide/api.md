@@ -9,6 +9,8 @@ import { wrap, splitLines, segmentSentences } from '@oddmash/kowrap';
 import type { Measure, WrapOptions, WrappedLine, TextSegment } from '@oddmash/kowrap';
 ```
 
+화면 폭에 맞춰 줄을 계산하려면 `wrap`, 원문의 개행과 지정한 위치만 반영하려면 `splitLines`, 문장 단위가 필요하면 `segmentSentences`를 사용합니다. `wrap`을 선택했을 때만 폭과 측정 함수를 제공해야 합니다.
+
 | API | 입력 | 출력 |
 | --- | --- | --- |
 | `wrap` | text, WrapOptions | WrappedLine 배열 |
@@ -42,6 +44,12 @@ import type { CanvasMeasureOptions, KowrapOptions, KowrapController, KowrapLayou
 | `mountKowrap(element, options)` | KowrapController |
 
 `KowrapOptions`에는 필수 `text`와 선택적 `strategy`, `breakLongWords`, `forcedBreaks`가 포함됩니다. `KowrapLayout`에는 `lines`, `measured`가 포함됩니다.
+
+### mountKowrap과 observeKowrap
+
+`mountKowrap`은 계산한 줄바꿈을 요소에 반영합니다. 기존 링크나 강조 마크업을 유지하려면 `{ inline: true }`로 마운트하세요. 문자열 모드와 인라인 모드는 마운트 시 결정합니다.
+
+`observeKowrap`은 자식 요소를 수정하지 않고 콜백으로 줄 데이터를 전달합니다. `measured`가 `false`이면 아직 요소의 실측 폭이 확보되지 않은 초기 결과입니다. 어느 방식을 사용하든 요소를 제거할 때 반환된 컨트롤러의 `destroy()`를 호출하세요.
 
 ```ts
 interface KowrapController {

@@ -33,10 +33,9 @@ const Page = () => (
 			<a href="#install">설치하기 <span aria-hidden="true">↘</span></a>
 		</header>
 		<LandingSpecimen />
-		<details id="editor" className="landing-details">
-			<summary>전체 편집기</summary>
+		<div id="editor" className="landing-editor" tabIndex={-1}>
 			<Playground />
-			<details className="landing-details inline-details">
+			<details className="inline-details">
 				<summary>인라인 마크업 예제</summary>
 				<div className="inline-example">
 					<div className="inline-result">
@@ -48,7 +47,7 @@ const Page = () => (
 				</div>
 				<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법</Link>
 			</details>
-		</details>
+		</div>
 		<section id="install" className="landing-install" aria-labelledby="install-title">
 			<div>
 				<h2 id="install-title">설치</h2>

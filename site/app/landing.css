@@ -12,7 +12,7 @@ body:has(> .landing) {
 	align-items: baseline;
 	flex-wrap: wrap;
 	gap: 8px 28px;
-	padding-block: clamp(34px, 6vw, 84px) 18px;
+	padding-block: clamp(28px, 5vw, 64px) 18px;
 }
 
 .landing-intro h1 {
@@ -30,7 +30,7 @@ body:has(> .landing) {
 
 .specimen {
 	scroll-margin-block-start: 16px;
-	padding-block: 20px clamp(48px, 9vw, 122px);
+	padding-block: 20px clamp(32px, 5vw, 68px);
 }
 
 .specimen-stage {
@@ -55,7 +55,7 @@ body:has(> .landing) {
 }
 
 .specimen .specimen-text {
-	inline-size: min(var(--specimen-width), 100%);
+	inline-size: min(11em, 100%);
 	white-space: pre-wrap;
 	word-break: keep-all;
 	overflow-wrap: anywhere;
@@ -99,23 +99,10 @@ body:has(> .landing) {
 	margin-block-start: clamp(24px, 3.7vw, 46px);
 }
 
-.specimen-width {
-	display: flex;
-	align-items: center;
-	gap: 10px;
+.specimen-status {
+	margin-block-start: 10px;
+	color: var(--muted);
 	font-size: .87rem;
-}
-
-.specimen-width input {
-	inline-size: clamp(95px, 15vw, 220px);
-	min-block-size: 24px;
-	accent-color: var(--action);
-}
-
-.specimen-width output {
-	min-inline-size: 6ch;
-	font: .82rem var(--mono);
-	white-space: nowrap;
 }
 
 .specimen-modes {
@@ -135,23 +122,20 @@ body:has(> .landing) {
 	font-weight: 700;
 }
 
-.landing-details {
+.landing-editor {
 	border-block: 1px solid var(--border);
 	scroll-margin-block-start: 16px;
 }
 
-.landing-details > summary {
+.inline-details > summary {
+	border-block-start: 1px solid var(--border);
 	padding-block: 14px;
 	font-weight: 650;
 	cursor: pointer;
 }
 
-.landing-details .playground {
+.landing-editor .playground {
 	margin-block-end: 14px;
-}
-
-.inline-details {
-	border-block-end: 0;
 }
 
 .inline-details[open] {
@@ -182,10 +166,6 @@ body:has(> .landing) {
 
 	.specimen-controls {
 		column-gap: 14px;
-	}
-
-	.specimen-width {
-		flex-basis: 100%;
 	}
 
 	.landing-install {

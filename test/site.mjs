@@ -12,12 +12,13 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /id="native-preview"/);
 	assert.match(html, /id="kowrap-preview"/);
 	assert.match(html, /id="inline-preview"/);
-	assert.match(html, /id="specimen-width"/);
-	assert.match(html, /id="editor"/);
+	assert.match(html, /<div id="editor"/);
+	assert.match(html, /id="demo-width"/);
+	assert.match(html, /id="demo-text"/);
 	assert.doesNotMatch(html, /Oddmash에서 만든 한국어 줄바꿈 라이브러리/);
 	assert.match(html, /--paper:#0d0e10/);
 	assert.match(html, /--ink:#f0f1f2/);
-	assert.match(html, /직접 비교하기/);
+	assert.match(html, /내 문장으로 비교하기/);
 	assert.match(html, /data-om-theme="dark"/);
 	assert.match(html, /aria-keyshortcuts="Meta\+K Control\+K"/);
 	assert.doesNotMatch(html, /id="hero-title"[^>]*>[^<]*<br/);

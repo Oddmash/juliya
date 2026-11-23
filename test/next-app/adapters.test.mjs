@@ -59,6 +59,18 @@ test("data-only observer preserves manual lines when element has no width", () =
   dom.window.close();
 });
 
+test("initial inline measurement uses the resolved content width before ResizeObserver delivers", () => {
+  const { dom, element, resize } = fixture();
+  element.style.cssText = "box-sizing:border-box;width:124.25px;padding:10px;border:2px solid";
+  element.textContent = "가나다라마바사아자차";
+  const controller = mountKowrap(element, { inline: true });
+  assert.equal(element.querySelector("br"), null, "100px of text fits inside 100.25px");
+  resize(120, [{ contentRect: { width: 99.75 } }]);
+  assert.ok(element.querySelector("br"), "the precise observer width still takes priority");
+  controller.destroy();
+  dom.window.close();
+});
+
 test("resize delivery schedules rendering outside the observer and cancels on destroy", () => {
   const { dom, element, resize } = fixture();
   let frame;

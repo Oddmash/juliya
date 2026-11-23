@@ -165,7 +165,7 @@ export const Playground = () => {
 		>
 			<div className="playground-header">
 				<div>
-					<h2 id="playground-title">같은 문장, 더 균형 있는 줄바꿈</h2>
+					<h2 id="playground-title">내 문장으로 비교하기</h2>
 				</div>
 				<div className="control-range comparison-width">
 					<label htmlFor="demo-width">
@@ -183,7 +183,70 @@ export const Playground = () => {
 				</div>
 			</div>
 			<div className="playground-body">
-				<div className="comparison" style={comparisonStyle}>
+				<div className="playground-settings">
+					<div className="editor">
+						<label htmlFor="demo-text">
+							비교할 문장
+						</label>
+						<Textarea
+							id="demo-text"
+							rows={2}
+							maxLength={400}
+							spellCheck={false}
+							ref={inputRef}
+							value={text}
+							onChange={(event) => changeText(event.target.value)}
+						/>
+						<div className="editor-actions">
+							<Button variant="secondary" size="sm" type="button" className="button-small" onClick={addBreak}>
+								커서 위치에서 개행
+							</Button>
+							<Button variant="secondary" size="sm"
+								type="button"
+								className="button-small"
+								onClick={clearBreaks}
+								disabled={!breaks.length}
+							>
+								개행 초기화
+							</Button>
+							<span
+								className={`editor-status${invalidBreak ? " is-error" : ""}`}
+								role="status"
+							>
+								{message}
+							</span>
+						</div>
+					</div>
+					<div className="controls">
+						<div className="preset-group" role="group" aria-label="예시 문장">
+							{presets.map(({ label, value }, index) => (
+								<Button variant={preset === index ? "primary" : "secondary"} size="sm"
+									type="button"
+									key={label}
+									className={`preset ${preset === index ? "is-active" : ""}`}
+									aria-pressed={preset === index}
+									onClick={() => changeText(value, index)}
+								>
+									{label}
+								</Button>
+							))}
+						</div>
+						<div className="control-range font-control">
+							<label htmlFor="font-size">
+								글자 크기 <output htmlFor="font-size">{font}px</output>
+							</label>
+							<input
+								id="font-size"
+								type="range"
+								min="16"
+								max="32"
+								value={font}
+								onChange={(event) => setFont(Number(event.target.value))}
+							/>
+						</div>
+					</div>
+				</div>
+					<div className="comparison" style={comparisonStyle}>
 					<Card role="article" className="comparison-card">
 						<div className="comparison-top">
 							<span className="comparison-label">
@@ -232,74 +295,7 @@ export const Playground = () => {
 						<PreviewCode code={withCode} applied />
 					</Card>
 				</div>
-				<div className="playground-settings">
-					<div className="settings-heading">
-						<h3>직접 비교하기</h3>
-						<p>문장, 너비, 글자 크기를 바꾸면 두 결과와 코드가 즉시 갱신됩니다.</p>
-					</div>
-					<div className="controls">
-						<div className="preset-group" role="group" aria-label="예시 문장">
-							{presets.map(({ label, value }, index) => (
-								<Button variant={preset === index ? "primary" : "secondary"} size="sm"
-									type="button"
-									key={label}
-									className={`preset ${preset === index ? "is-active" : ""}`}
-									aria-pressed={preset === index}
-									onClick={() => changeText(value, index)}
-								>
-									{label}
-								</Button>
-							))}
-						</div>
-						<div className="control-range font-control">
-							<label htmlFor="font-size">
-								글자 크기 <output htmlFor="font-size">{font}px</output>
-							</label>
-							<input
-								id="font-size"
-								type="range"
-								min="16"
-								max="32"
-								value={font}
-								onChange={(event) => setFont(Number(event.target.value))}
-							/>
-						</div>
-					</div>
-					<div className="editor">
-						<label htmlFor="demo-text" className="sr-only">
-							비교할 문장
-						</label>
-						<Textarea
-							id="demo-text"
-							rows={2}
-							maxLength={400}
-							spellCheck={false}
-							ref={inputRef}
-							value={text}
-							onChange={(event) => changeText(event.target.value)}
-						/>
-						<div className="editor-actions">
-							<Button variant="secondary" size="sm" type="button" className="button-small" onClick={addBreak}>
-								커서 위치에서 개행
-							</Button>
-							<Button variant="secondary" size="sm"
-								type="button"
-								className="button-small"
-								onClick={clearBreaks}
-								disabled={!breaks.length}
-							>
-								개행 초기화
-							</Button>
-							<span
-								className={`editor-status${invalidBreak ? " is-error" : ""}`}
-								role="status"
-							>
-								{message}
-							</span>
-						</div>
-					</div>
-				</div>
-				<div className="playground-footer">
+			<div className="playground-footer">
 					<span>
 						{breaks.length
 							? "강제 개행은 kowrap에만 적용됩니다."
