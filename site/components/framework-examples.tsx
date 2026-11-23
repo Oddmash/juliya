@@ -26,9 +26,20 @@ const examples = [
 	},
 	{
 		tab: "HTML",
-		label: "정적 HTML · 모듈 파일 설치는 사용 문서 참고",
+		label: "npm 설치 없이 index.html로 저장해 열기",
 		doc: "dom",
-		code: `<p id="title" style="max-width: 220px; font-size: 24px">\n  ${specimenText}\n</p>\n<script type="module">\n  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';\n\n  const title = document.getElementById('title');\n  mountKowrap(title, { text: title.textContent.trim() });\n</script>`,
+		code: `<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>Kowrap 예제</title>
+<p id="title" style="max-width: 220px; font-size: 24px">${specimenText}</p>
+<script type="module">
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.2.0/dist/dom/index.js/+esm';
+
+  const title = document.getElementById('title');
+  mountKowrap(title, { text: title.textContent });
+</script>
+</html>`,
 	},
 	{
 		tab: "Core",

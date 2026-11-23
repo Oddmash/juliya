@@ -28,7 +28,7 @@ Node.js 20 이상과 `Intl.Segmenter`를 지원하는 현대 브라우저를 대
 | Vue 3 | `@oddmash/kowrap/vue` | `kowrapDirective` |
 | Svelte | `@oddmash/kowrap/svelte` | `kowrap` |
 
-빌드 도구 없는 HTML에서는 [정적 HTML 예제](dom.md)처럼 `<script type="module">` 안에서 서버에 올린 모듈의 URL을 가져옵니다. 기존 `/browser` 진입점은 `/dom`과 동일하게 동작합니다.
+일반 HTML에서는 [CDN 예제](dom.md)처럼 `<script type="module">` 안에서 모듈 URL을 가져오면 npm 설치 없이 시작할 수 있습니다. 기존 `/browser` 진입점은 `/dom`과 동일하게 동작합니다.
 
 ## React 첫 예제
 

@@ -4,21 +4,24 @@ HTML 요소의 줄바꿈을 화면에 적용할 때는 `mountKowrap`을 사용�
 
 ## 번들러 없는 정적 HTML
 
-`npm install @oddmash/kowrap`으로 받은 패키지의 `dist` 폴더 전체를 웹 서버의 `/vendor/kowrap/dist/`에 복사하세요. 진입점이 주변 모듈을 함께 불러옵니다. HTML과 모듈 파일은 HTTP 서버를 통해 열고, 다른 경로에 복사했다면 `import`의 URL을 바꾸세요.
+아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열어보세요. jsDelivr가 Kowrap 0.2.0을 제공하므로 npm 설치나 파일 복사가 필요 없습니다.
 
 ```html
-<p id="title" style="max-width: 220px; font-size: 24px">
-  자연스러운 한국어 줄바꿈을 경험하세요.
-</p>
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>Kowrap 예제</title>
+<p id="title" style="max-width: 220px; font-size: 24px">팀의 모든 문서를 한곳에서 관리하세요</p>
 <script type="module">
-  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.2.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
-  mountKowrap(title, { text: title.textContent.trim() });
+  mountKowrap(title, { text: title.textContent });
 </script>
+</html>
 ```
 
-`type="module"`을 붙인 `<script>` 안에서 브라우저가 `import`를 처리합니다. 이 방식에서는 모듈의 URL을 사용합니다.
+`<script type="module">` 안에서 브라우저가 CDN 모듈을 불러옵니다. 직접 호스팅하려면 패키지의 `dist` 폴더 전체를 웹 서버에 올리고, `import`에 해당 서버의 `dist/dom/index.js` URL을 써도 됩니다.
 
 ## npm과 빌드 도구를 사용하는 경우
 
