@@ -49,53 +49,45 @@ const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
 const verifySpecimen = async (page, motion) => {
 	await page.evaluate(() => document.fonts.ready);
 	await page.locator(".specimen-applied .specimen-text br").first().waitFor({ state: "attached" });
-	const status = page.locator(".specimen [role=status]");
-	const native = page.locator(".specimen-native .specimen-text");
-	const applied = page.locator(".specimen-applied .specimen-text");
-	await page.locator(".specimen-applied [data-moved]").waitFor();
-	assert.equal(await page.locator(".specimen-text:visible").count(), 2);
-	const [css, kowrap] = await page.locator(".specimen-text").evaluateAll((samples) => samples.map((sample) => {
-		const style = getComputedStyle(sample);
-		return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
-	}));
-	assert.deepEqual(css, kowrap, "both panels use the same text and rendering constraints");
-	assert.equal(await page.locator(".specimen-panels").evaluate((panel) => {
-		const bounds = panel.getBoundingClientRect();
-		return bounds.left >= 0 && bounds.right <= innerWidth + 1;
-	}), true, "the comparison fits the viewport");
-	const before = await native.locator("[data-moved]").evaluate((word) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top);
-	const moved = applied.locator("[data-moved]");
-	assert.equal(await moved.textContent(), "한곳에서");
-	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top > top, before));
-	assert.match(await status.textContent(), /한곳에서.*1번째 줄 → 2번째 줄/);
-	const cue = page.locator(".specimen-cue");
-	if (motion) {
-		const pause = page.getByRole("button", { name: "자동 재생", exact: true });
-		assert.equal(await pause.getAttribute("aria-pressed"), "true");
-		await pause.scrollIntoViewIfNeeded();
-		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
-		assert.ok(await cue.evaluate(marker => {
-			const bounds = marker.getBoundingClientRect();
-			const word = marker.parentElement.getBoundingClientRect();
-			return Math.abs(bounds.left - word.left) < 2 && Number(getComputedStyle(marker).opacity) >= .8;
+	const compare = async () => {
+		assert.equal(await page.locator(".specimen-text:visible").count(), 2);
+		const [css, kowrap] = await page.locator(".specimen-text").evaluateAll(samples => samples.map(sample => {
+			const style = getComputedStyle(sample);
+			return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
 		}));
-		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
-		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
-		await pause.press("Enter");
-		assert.equal(await pause.evaluate(button => document.activeElement === button), true);
-		assert.equal(await pause.getAttribute("aria-pressed"), "false");
-		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
+		assert.deepEqual(css, kowrap, "both panels use the same text and rendering constraints");
+		assert.equal(await page.locator(".specimen-panels").evaluate(panel => {
+			const bounds = panel.getBoundingClientRect();
+			return bounds.left >= 0 && bounds.right <= innerWidth + 1;
+		}), true);
+		assert.ok(await page.locator(".specimen-text").evaluateAll(samples => samples.every(sample => {
+			const words = [...sample.querySelectorAll("[data-word]")].map(word => word.getBoundingClientRect());
+			return words.every((word, index) => words.slice(index + 1).every(other =>
+				word.right <= other.left + 1 || other.right <= word.left + 1 || word.bottom <= other.top + 1 || other.bottom <= word.top + 1
+			));
+		})), "words do not overlap");
+	};
+	await compare();
+	const panels = page.locator(".specimen-panels");
+	const first = await panels.getAttribute("data-example");
+	assert.equal(await page.getByRole("button", { name: /자동 재생/ }).count(), 0);
+	if (motion) {
+		await panels.scrollIntoViewIfNeeded();
+		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
+		await compare();
 	} else {
-		assert.equal(await page.getByRole("button", { name: "자동 재생 (모션 감소)" }).isDisabled(), true);
-		assert.equal(await cue.evaluate((marker) => marker.getAnimations().length), 0);
+		assert.equal(await panels.getAttribute("data-example"), first);
+		assert.equal(await page.locator(".specimen-text").first().evaluate(element => element.getAnimations().length), 0);
 	}
-	assert.equal(await cue.evaluate((marker) => {
-		const bounds = marker.getBoundingClientRect();
-		const word = marker.parentElement.getBoundingClientRect();
-		return Math.abs(bounds.left - word.left) < 2 && Math.abs(bounds.width - word.width) < 2;
-	}), true);
-	assert.equal(await applied.locator("[data-moved]").textContent(), "한곳에서");
-	assert.equal(await page.locator(".specimen-text:visible").count(), 2);
+	const selection = page.locator(".specimen").getByRole("button", { name: "서비스 제목" });
+	await selection.press("Enter");
+	assert.equal(await selection.getAttribute("aria-pressed"), "true");
+	assert.equal(await panels.getAttribute("data-example"), "0");
+	await page.mouse.move(0, 0);
+	await page.locator("#editor").focus();
+	await page.waitForTimeout(4900);
+	assert.equal(await panels.getAttribute("data-example"), "0", "manual selection stops automatic progression");
+	await compare();
 };
 let browser;
 try {
@@ -120,7 +112,7 @@ try {
 	const page = await openPage(desktop);
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
-	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
+	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "light");
 	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름에 맞춰.");
 	assert.ok(await page.locator(".specimen-native .specimen-text").evaluate(async (title) => {
 		await document.fonts.ready;
@@ -136,15 +128,13 @@ try {
 	await page.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	assert.equal(new URL(page.url()).hash, "#editor");
 	assert.equal(await page.locator("#editor").evaluate((editor) => document.activeElement === editor), true);
-	await page.getByText("인라인 마크업 예제", { exact: true }).click();
+	assert.equal(await page.locator(".inline-details").count(), 0);
+	assert.match(await page.locator(".inline-guide-link").getAttribute("href"), /docs\/inline\/$/);
 	await page
 		.locator("#kowrap-preview br")
 		.first()
 		.waitFor({ state: "attached" });
 	assert.equal(await page.locator("#native-preview br").count(), 0);
-	await page.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
-	assert.equal(await page.locator("#inline-preview strong em").textContent(), "줄바꿈");
-	assert.equal(await page.locator("#inline-preview a").getAttribute("href"), "#playground");
 	assert.equal(
 		await page.locator("#native-preview").textContent(),
 		await page.locator("#kowrap-preview").textContent(),
@@ -280,9 +270,9 @@ try {
 	await mobile.locator(".actual-width").waitFor();
 	assert.ok(await mobile.locator(".actual-width").textContent().then((text) => /실제 비교 폭: \d+px/.test(text)));
 	await mobile.getByRole("link", { name: "내 문장으로 체험하기" }).click();
-	await mobile.getByText("인라인 마크업 예제", { exact: true }).click();
-	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
-	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
+	await mobile.locator(".inline-guide-link").click();
+	await mobile.waitForURL("**/docs/inline/");
+	const inlineCode = await mobile.locator(".doc-code pre").first().evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
 		right: element.getBoundingClientRect().right,
 		viewport: innerWidth,

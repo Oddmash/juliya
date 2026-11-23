@@ -82,33 +82,31 @@ body:has(> .landing) { background: var(--paper); }
 	text-wrap: wrap;
 }
 .specimen-native .specimen-text { color: var(--muted); }
-.specimen-text [data-word], .specimen-text [data-motion-word] { display: inline-block; position: relative; }
+.specimen-text [data-word] { display: inline-block; position: relative; }
 .specimen-native [data-moved] {
 	text-decoration: underline dashed;
 	text-decoration-thickness: .045em;
 	text-underline-offset: .16em;
 }
-.specimen-cue {
-	position: absolute;
-	inset-inline: 0;
-	inset-block-end: -.18em;
-	height: .065em;
-	background: var(--ink);
-	pointer-events: none;
-	transform-origin: left center;
+.specimen-applied [data-moved] {
+	color: var(--action);
+	text-decoration: underline;
+	text-decoration-thickness: .065em;
+	text-underline-offset: .16em;
 }
-.specimen-controls {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding-block: 12px;
+.specimen-status { color: var(--muted); font-size: .85rem; min-height: 44px; padding-block: 12px; }
+.specimen-examples { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.specimen-examples button {
+	background: transparent;
+	color: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 24px;
+	padding: 8px 14px;
+	font-size: 13px;
+	min-height: 40px;
 }
-.specimen-status { color: var(--muted); font-size: .85rem; }
-.specimen-replay { white-space: nowrap; flex: none; min-height: 44px; }
-.specimen-replay > span { display: inline-block; font-size: 17px; }
-.specimen-replay:hover:not(:disabled) > span { transform: rotate(-30deg); }
-.specimen-replay > span { transition: transform var(--landing-settle); }
+.specimen-examples button[aria-pressed="true"] { background: var(--action); color: var(--action-text); border-color: var(--action); }
+.specimen-examples button:hover:not([aria-pressed="true"]) { background: var(--surface-hover); }
 .landing-proof-note {
 	display: flex;
 	justify-content: space-between;
@@ -149,9 +147,7 @@ body:has(> .landing) { background: var(--paper); }
 .landing .actual-width { color: var(--muted); font-size: 11px; white-space: normal; }
 .landing .control-range input { min-width: 0; }
 .landing .button-small, .landing .preset { transition: background-color 120ms, color 120ms, border-color 120ms; }
-.inline-details { margin-block-start: 16px; border-block: 1px solid var(--border); }
-.inline-details > summary { padding-block: 18px; font-weight: 650; cursor: pointer; }
-.inline-details[open] { padding-block-end: 18px; }
+.inline-guide-link { display: inline-block; margin-block-start: 20px; }
 .landing-use-cases { padding-block: var(--landing-space); }
 .use-case-grid {
 	display: grid;
@@ -219,7 +215,7 @@ body:has(> .landing) { background: var(--paper); }
 	max-inline-size: 12em;
 }
 .specimen-native { background: var(--surface); }
-.specimen-applied { background: var(--surface-raised); }
+.specimen-applied { background: var(--accent-tint); }
 .specimen-label {
 	min-height: 44px;
 	align-items: center;
@@ -227,7 +223,7 @@ body:has(> .landing) { background: var(--paper); }
 	border-block-end: 1px solid var(--border);
 }
 .specimen-stage { padding-block: clamp(18px, 2.5vw, 30px); }
-.specimen-controls { padding-inline: 4px; }
+.specimen-status { padding-inline: 4px; }
 .landing-proof-note {
 	border-block-start: 0;
 	padding-block: 4px 14px;
@@ -250,4 +246,22 @@ body:has(> .landing) { background: var(--paper); }
 	.specimen-label { min-height: 38px; padding-block: 8px; }
 	.specimen-stage { padding-block: 12px 16px; }
 	.landing-intro .hero-copy h1 { max-inline-size: none; }
+}
+
+.landing-intro { padding-block-start: clamp(40px, 6vw, 80px); }
+.hero-copy h1 { font-weight: 650; }
+.specimen-stage {
+	min-height: clamp(184px, 23vw, 268px);
+}
+.specimen-panels:not([data-example="0"]) .specimen-stage { font-family: var(--sans); }
+.specimen-applied .specimen-label > span:first-child { color: var(--action); font-weight: 700; }
+.specimen-native .specimen-text { color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+	.specimen-text { animation: specimen-enter 240ms ease-out both; }
+	@keyframes specimen-enter { from { opacity: .35; } to { opacity: 1; } }
+}
+@media (max-width: 760px) {
+	.specimen-stage { min-height: 160px; font-size: clamp(22px, 5.8vw, 33px); }
+	.specimen-examples { gap: 6px; }
+	.specimen-examples button { padding-inline: 11px; }
 }
