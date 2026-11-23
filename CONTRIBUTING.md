@@ -59,6 +59,8 @@ pnpm --dir site dev
 
 Oddmash의 [시각 지침](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)에 맞춘 중립 팔레트 및 토큰은 `site/theme/tokens.json`에 둡니다. 파란색은 포커스, 빨간색은 오류에 사용합니다. UI에서 긴 대시를 장식 문자로 사용하지 않습니다.
 
+랜딩의 `site/app/fonts/`는 로컬 WOFF2 두 개를 사용합니다. 제목은 [Noto Sans KR](https://github.com/google/fonts/tree/main/ofl/notosanskr)의 제목 문자 서브셋이고, 코드와 눈금은 [Geist Mono 1.9.2](https://www.npmjs.com/package/geist/v/1.9.2)의 ASCII 서브셋입니다. 제목 문구를 바꾸면 FontTools로 제목의 새 문자 집합을 포함하는 WOFF2를 다시 만드세요. 라이선스는 `site/public/licenses/`에 있습니다. 비교 문장은 공통 본문 서체를 상속합니다.
+
 ### 정적 배포
 
 ```bash

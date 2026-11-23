@@ -1,28 +1,41 @@
 import Link from "next/link";
+import localFont from "next/font/local";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { Playground } from "../components/playground";
 import { WrapText } from "@oddmash/kowrap/react";
 
+const display = localFont({
+	src: "./fonts/kowrap-display.woff2",
+	variable: "--landing-display",
+	weight: "100 900",
+	display: "swap",
+	adjustFontFallback: false,
+});
+
+const mono = localFont({
+	src: "./fonts/geist-mono-ascii.woff2",
+	variable: "--landing-mono",
+	weight: "100 900",
+	display: "swap",
+	preload: false,
+	adjustFontFallback: false,
+});
+
 const Page = () => (
-	<main id="main" className="container">
+	<main id="main" className={`container landing ${display.variable} ${mono.variable}`}>
 		<section className="hero" aria-labelledby="hero-title">
+			<h1 id="hero-title"><span>한국어를 읽는</span>{" "}<span>흐름대로</span></h1>
+			<span className="hero-fold" aria-hidden="true" />
 			<div className="hero-content">
-				<p className="eyebrow hero-label">오픈소스 한국어 줄바꿈 엔진</p>
-				<WrapText as="h1" id="hero-title">한국어 줄바꿈을 더 자연스럽게.</WrapText>
-				<WrapText as="p" className="hero-description">kowrap은 실제 글자 폭과 한국어 어절, 문장 경계를 고려해 화면에 맞는 줄바꿈을 계산합니다. 어색하게 끊기는 제목과 짧은 마지막 줄을 개선하세요.</WrapText>
+				<p className="hero-description">같은 문장도 어디서 줄을 바꾸느냐에 따라 다르게 읽힙니다.</p>
 				<div className="hero-actions">
-					<Link className="button button-primary" href="/docs/">
-						문서에서 시작하기 <span aria-hidden="true">↗</span>
+					<a className="button button-primary hero-try" href="#playground">
+						줄바꿈 체험하기 <span aria-hidden="true">↓</span>
+					</a>
+					<Link className="button hero-docs" href="/docs/">
+						문서 보기
 					</Link>
-					<div className="install-command">
-						<span className="command-prefix" aria-hidden="true">$</span>
-						<code>npm install @oddmash/kowrap</code>
-						<CopyButton value="npm install @oddmash/kowrap" className="icon-button" icon />
-					</div>
-				</div>
-				<div className="hero-meta">
-					<span>React / Next.js</span><span>Vue / Svelte</span><span>HTML / TypeScript</span>
 				</div>
 			</div>
 		</section>
@@ -84,6 +97,11 @@ const Page = () => (
 				<p className="eyebrow">프레임워크 독립</p>
 				<WrapText as="h2" id="integration-title">다양한 프레임워크 지원</WrapText>
 				<WrapText as="p">프레임워크에 종속되지 않는 TypeScript 코어를 기반으로 React, Next.js, Vue, Svelte 및 일반 HTML을 지원합니다.</WrapText>
+				<div className="install-command">
+					<span className="command-prefix" aria-hidden="true">$</span>
+					<code>npm install @oddmash/kowrap</code>
+					<CopyButton value="npm install @oddmash/kowrap" className="icon-button" icon />
+				</div>
 				<Link className="text-link" href="/docs/">
 					설치 및 프레임워크별 사용법
 				</Link>

@@ -12,6 +12,7 @@ const types = {
 	".js": "text/javascript",
 	".css": "text/css",
 	".svg": "image/svg+xml",
+	".woff2": "font/woff2",
 	".json": "application/json",
 	".txt": "text/plain; charset=utf-8",
 };
@@ -58,8 +59,17 @@ try {
 	};
 	const desktop = { width: 1280, height: 900 };
 	const page = await openPage(desktop);
+	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
+	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름대로");
+	assert.ok(await page.locator("#hero-title").evaluate(async (title) => {
+		await document.fonts.ready;
+		const family = getComputedStyle(title).fontFamily.split(",")[0];
+		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
+	}), "the locally hosted display face loads");
+	await page.getByRole("link", { name: "줄바꿈 체험하기" }).click();
+	assert.equal(new URL(page.url()).hash, "#playground");
 	await page
 		.locator("#kowrap-preview br")
 		.first()
@@ -72,6 +82,27 @@ try {
 		await page.locator("#native-preview").textContent(),
 		await page.locator("#kowrap-preview").textContent(),
 	);
+	const range = page.locator("#demo-width");
+	await page.locator(".preview-ruler > span").first().evaluate((marker) => {
+		marker.addEventListener("transitionrun", (event) => {
+			if (event.propertyName === "transform") marker.dataset.animated = "true";
+		});
+	});
+	await range.press("Home");
+	await page.waitForFunction(() => [...document.querySelectorAll("#native-preview, #kowrap-preview")]
+		.every((element) => Math.abs(element.getBoundingClientRect().width - 180) < 1));
+	await page.locator(".preview-ruler > span[data-animated]").waitFor({ state: "attached" });
+	await range.press("End");
+	await range.press("ArrowLeft");
+	await page.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
+		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;
+		const transform = new DOMMatrixReadOnly(getComputedStyle(marker).transform);
+		return Math.abs(transform.m41 - width) < 1 && width === 456;
+	}));
+	assert.equal(await page.locator(".preview-ruler > span").first().evaluate((marker) => getComputedStyle(marker).transitionProperty), "transform");
+	await range.press("Home");
+	await page.locator(".comparison-featured summary").press("Enter");
+	assert.equal(await page.locator(".comparison-featured details").getAttribute("open"), "");
 	await page.getByRole("button", { name: "혼합 문장" }).click();
 	await page.waitForFunction(() =>
 		document
@@ -152,6 +183,18 @@ try {
 			() => document.documentElement.scrollWidth <= innerWidth + 2,
 		),
 	);
+	const reduced = await openPage({ width: 320, height: 812 });
+	await reduced.emulateMedia({ reducedMotion: "reduce" });
+	await reduced.route("**/*.woff2", (route) => route.abort());
+	await reduced.goto(`${origin}/`);
+	await reduced.locator("#demo-width").press("Home");
+	await reduced.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
+		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;
+		const style = getComputedStyle(marker);
+		return width === 180 && style.transitionProperty === "none" && new DOMMatrixReadOnly(style.transform).m41 === width;
+	}));
+	assert.equal(await reduced.locator(".hero-fold").evaluate((mark) => getComputedStyle(mark).animationName), "none");
+	assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), "the narrow landing fits when fonts fail");
 	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
 	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
 	for (const path of paths) {
