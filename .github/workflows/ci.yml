@@ -78,6 +78,13 @@ jobs:
             pnpm --dir site test:browser "$browser"
           done
 
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: site-renewal-captures
+          path: site/test-results/renewal/
+          if-no-files-found: warn
+
   verify:
     needs: [scope, test, site]
     if: always()
