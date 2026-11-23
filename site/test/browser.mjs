@@ -45,6 +45,51 @@ const server = createServer(async (request, response) => {
 
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
+const verifySpecimen = async (page, motion) => {
+	await page.evaluate(() => document.fonts.ready);
+	await page.locator('[data-layer="kowrap"] br').first().waitFor({ state: "attached" });
+	const ribbon = page.locator(".specimen-ribbon[data-positioned]");
+	await ribbon.waitFor();
+	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
+	const [css, kowrap] = await page.locator(".specimen-layer p").evaluateAll((samples) => samples.map((sample) => {
+		const style = getComputedStyle(sample);
+		return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
+	}));
+	assert.deepEqual(css, kowrap, "both modes use the same copy and rendering constraints");
+	const nativeWord = page.locator('[data-layer="css"] [data-word="3"]');
+	const before = await nativeWord.evaluate((word) => word.getBoundingClientRect().top);
+	await ribbon.evaluate((marker) => {
+		marker.addEventListener("transitionrun", (event) => {
+			if (event.propertyName === "transform") marker.dataset.animated = "true";
+		});
+	});
+	const kowrapMode = page.getByRole("button", { name: "Kowrap", exact: true });
+	await kowrapMode.press("Enter");
+	const moved = page.locator(".specimen-layer:visible [data-moved]");
+	assert.equal(await moved.textContent(), "한곳에서");
+	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top > top, before));
+	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
+	assert.equal(await kowrapMode.evaluate((button) => document.activeElement === button), true);
+	assert.match(await page.locator(".specimen [role=status]").textContent(), /2번째 줄/);
+	if (motion) await page.locator(".specimen-ribbon[data-animated]").waitFor();
+	else assert.equal(await ribbon.evaluate((marker) => getComputedStyle(marker).transitionProperty), "none");
+	await page.waitForFunction(() => {
+		const marker = document.querySelector(".specimen-ribbon").getBoundingClientRect();
+		const word = document.querySelector(".specimen-layer [data-moved]").getBoundingClientRect();
+		const text = document.querySelector('.specimen-layer[aria-hidden="false"] p').getBoundingClientRect();
+		return marker.top >= text.bottom && Math.abs((marker.left + marker.right - word.left - word.right) / 2) < 2;
+	});
+	await page.getByRole("button", { name: "기본 CSS", exact: true }).press("Enter");
+	await kowrapMode.press("Enter");
+	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
+	assert.equal(await page.locator(".specimen-layer:visible [data-moved]").textContent(), "한곳에서");
+	const width = page.locator("#specimen-width");
+	await width.press("Home");
+	await width.press("ArrowRight");
+	assert.equal(await width.inputValue(), "8.25");
+	assert.equal(await page.locator(".specimen [data-moved]").count(), 0);
+	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
+};
 let browser;
 try {
 	const engines = { chromium, firefox, webkit };
@@ -62,14 +107,18 @@ try {
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
-	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름대로");
+	assert.equal(await page.locator("#hero-title").textContent(), "한국어 줄바꿈을 자연스럽게");
 	assert.ok(await page.locator("#hero-title").evaluate(async (title) => {
 		await document.fonts.ready;
 		const family = getComputedStyle(title).fontFamily.split(",")[0];
 		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
 	}), "the locally hosted display face loads");
-	await page.getByRole("link", { name: "줄바꿈 체험하기" }).click();
-	assert.equal(new URL(page.url()).hash, "#playground");
+	assert.equal(await page.locator("#editor").getAttribute("open"), null);
+	await verifySpecimen(page, true);
+	await page.getByRole("link", { name: "직접 편집" }).click();
+	assert.equal(new URL(page.url()).hash, "#editor");
+	assert.equal(await page.locator("#editor").getAttribute("open"), "");
+	await page.getByText("인라인 마크업 예제", { exact: true }).click();
 	await page
 		.locator("#kowrap-preview br")
 		.first()
@@ -168,7 +217,11 @@ try {
 	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
 	const mobileViewport = { width: 375, height: 812 };
 	const mobile = await openPage(mobileViewport);
+	await mobile.emulateMedia({ reducedMotion: "reduce" });
 	await mobile.goto(`${origin}/`);
+	await verifySpecimen(mobile, false);
+	await mobile.getByRole("link", { name: "직접 편집" }).click();
+	await mobile.getByText("인라인 마크업 예제", { exact: true }).click();
 	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
 		left: element.getBoundingClientRect().left,
@@ -187,13 +240,15 @@ try {
 	await reduced.emulateMedia({ reducedMotion: "reduce" });
 	await reduced.route("**/*.woff2", (route) => route.abort());
 	await reduced.goto(`${origin}/`);
+	await reduced.locator("#specimen-width").press("Home");
+	assert.equal(await reduced.locator(".specimen-layer:visible").count(), 1);
+	await reduced.getByRole("link", { name: "직접 편집" }).click();
 	await reduced.locator("#demo-width").press("Home");
 	await reduced.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
 		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;
 		const style = getComputedStyle(marker);
 		return width === 180 && style.transitionProperty === "none" && new DOMMatrixReadOnly(style.transform).m41 === width;
 	}));
-	assert.equal(await reduced.locator(".hero-fold").evaluate((mark) => getComputedStyle(mark).animationName), "none");
 	assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), "the narrow landing fits when fonts fail");
 	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
 	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];

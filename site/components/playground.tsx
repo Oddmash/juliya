@@ -159,7 +159,7 @@ export const Playground = () => {
 
 	return (
 		<section
-			id="playground"
+			id="comparison-editor"
 			className="playground"
 			aria-labelledby="playground-title"
 		>
