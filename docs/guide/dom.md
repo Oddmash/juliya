@@ -1,8 +1,28 @@
 # 일반 HTML과 DOM
 
-일반 HTML에서 사용할 때는 `@oddmash/kowrap/dom` 모듈을 가져옵니다. DOM 어댑터는 화면 폭과 글꼴을 측정하고, 크기가 바뀔 때 공통 엔진으로 줄바꿈을 다시 계산합니다.
+HTML 요소의 줄바꿈을 화면에 적용할 때는 `mountKowrap`을 사용합니다. DOM 어댑터가 요소의 폭과 글꼴을 측정하고, 코어 엔진으로 줄을 계산해 화면에 적용합니다. 요소 크기가 바뀌면 다시 계산합니다. 폭을 직접 측정하고 줄 데이터만 받으려면 [코어 엔진](core.md)을 사용하세요.
 
-## 기본 사용
+## 번들러 없는 정적 HTML
+
+`npm install @oddmash/kowrap`으로 받은 패키지의 `dist` 폴더 전체를 웹 서버의 `/vendor/kowrap/dist/`에 복사하세요. 진입점이 주변 모듈을 함께 불러옵니다. HTML과 모듈 파일은 HTTP 서버를 통해 열고, 다른 경로에 복사했다면 `import`의 URL을 바꾸세요.
+
+```html
+<p id="title" style="max-width: 220px; font-size: 24px">
+  자연스러운 한국어 줄바꿈을 경험하세요.
+</p>
+<script type="module">
+  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';
+
+  const title = document.getElementById('title');
+  mountKowrap(title, { text: title.textContent.trim() });
+</script>
+```
+
+`type="module"`을 붙인 `<script>` 안에서 브라우저가 `import`를 처리합니다. 이 방식에서는 모듈의 URL을 사용합니다.
+
+## npm과 빌드 도구를 사용하는 경우
+
+Vite 같은 빌드 도구를 사용한다면 패키지 이름으로 가져올 수 있습니다.
 
 ```html
 <p id="title">자연스러운 한국어 줄바꿈을 경험하세요.</p>
@@ -85,14 +105,3 @@ const lines = wrap('한글과 English를 함께 사용합니다.', { width: 240,
 ```
 
 글꼴 문자열은 실제 Canvas의 font 속성으로 전달됩니다. 옵션은 `font`, `letterSpacing`, `wordSpacing`, `fontKerning`입니다. 문자 간격과 단어 간격은 해당 Canvas 속성을 지원하는 브라우저에서만 반영됩니다.
-
-## 번들러 없는 정적 HTML
-
-빌드된 패키지의 `dist` 전체를 정적 서버에 제공한 뒤 `dist/dom/index.js`에서 ESM을 가져올 수 있습니다. 상대 모듈들이 필요하므로 파일 하나만 복사하지 마세요.
-
-```html
-<script type="module">
-  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';
-  mountKowrap(document.getElementById('title'), { text: '한국어 줄바꿈' });
-</script>
-```

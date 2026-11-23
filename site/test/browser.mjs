@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { chromium, firefox, webkit } from "playwright";
 
 const root = fileURLToPath(new URL("../out/", import.meta.url));
+const dist = fileURLToPath(new URL("../../dist/", import.meta.url));
+const vendorPath = "/vendor/kowrap/dist/";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const types = {
 	".html": "text/html; charset=utf-8",
@@ -21,16 +23,19 @@ const server = createServer(async (request, response) => {
 		const pathname = decodeURIComponent(
 			new URL(request.url, "http://localhost").pathname,
 		);
+		const isVendor = pathname.startsWith(vendorPath);
 		if (
+			!isVendor &&
 			basePath &&
 			pathname !== basePath &&
 			!pathname.startsWith(`${basePath}/`)
 		)
 			throw new Error("Outside base path");
-		const relative = pathname.slice(basePath.length).replace(/^\/+/, "");
-		let path = resolve(root, relative);
-		if (path !== resolve(root) && !path.startsWith(`${resolve(root)}${sep}`))
-			throw new Error("Outside site root");
+		const directory = resolve(isVendor ? dist : root);
+		const relative = pathname.slice(isVendor ? vendorPath.length : basePath.length).replace(/^\/+/, "");
+		let path = resolve(directory, relative);
+		if (path !== directory && !path.startsWith(`${directory}${sep}`))
+			throw new Error("Outside served directory");
 		if ((await stat(path)).isDirectory()) path = resolve(path, "index.html");
 		const body = await readFile(path);
 		response.writeHead(200, {
@@ -183,6 +188,21 @@ try {
 			"kowrapDirective",
 		),
 	);
+	await page.getByRole("tab", { name: "HTML", exact: true }).click();
+	const landingHtml = await page.getByRole("tabpanel").locator("pre code").textContent();
+	const htmlGuide = await openPage(desktop);
+	await htmlGuide.goto(`${origin}/docs/dom/`);
+	const guideHtml = await htmlGuide.locator("#doc-content pre code").first().textContent();
+	const staticPage = await openPage(desktop);
+	const exampleUrl = `${origin}/html-example/`;
+	for (const html of [landingHtml, guideHtml]) {
+		await staticPage.route(exampleUrl, (route) => route.fulfill({
+			contentType: "text/html; charset=utf-8",
+			body: `<!doctype html><html lang="ko"><meta charset="utf-8">${html}</html>`,
+		}), { times: 1 });
+		await staticPage.goto(exampleUrl);
+		await staticPage.locator("#title > br").first().waitFor({ state: "attached" });
+	}
 	// Separate entry points so a forced page unload cannot abort an active prefetch.
 	const docs = await openPage(desktop);
 	await docs.goto(`${origin}/docs/`);

@@ -26,13 +26,13 @@ const examples = [
 	},
 	{
 		tab: "HTML",
-		label: "HTML / JavaScript",
+		label: "정적 HTML · 모듈 파일 설치는 사용 문서 참고",
 		doc: "dom",
-		code: `import { mountKowrap } from '@oddmash/kowrap/dom';\n\nconst element = document.querySelector('#title');\nmountKowrap(element, {\n  text: ${JSON.stringify(specimenText)}\n});`,
+		code: `<p id="title" style="max-width: 220px; font-size: 24px">\n  ${specimenText}\n</p>\n<script type="module">\n  import { mountKowrap } from '/vendor/kowrap/dist/dom/index.js';\n\n  const title = document.getElementById('title');\n  mountKowrap(title, { text: title.textContent.trim() });\n</script>`,
 	},
 	{
 		tab: "Core",
-		label: "JavaScript / TypeScript",
+		label: "직접 폭을 측정하고 줄 데이터를 받는 API",
 		doc: "core",
 		code: `import { wrap } from '@oddmash/kowrap';\n\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 8,\n  measure: text => [...text].length,\n});`,
 	},
