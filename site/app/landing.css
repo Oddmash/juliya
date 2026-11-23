@@ -127,20 +127,11 @@ body:has(> .landing) {
 .specimen-modes button {
 	min-block-size: 38px;
 	padding-inline: 13px;
-	border: 0;
-	background: transparent;
-	color: var(--ink);
 	font-size: .86rem;
 	white-space: nowrap;
 }
 
-.specimen-modes button:is(:hover, :focus-visible):not([aria-pressed="true"]) {
-	background: var(--surface-hover);
-}
-
 .specimen-modes button[aria-pressed="true"] {
-	background: var(--action);
-	color: var(--action-text);
 	font-weight: 700;
 }
 

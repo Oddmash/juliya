@@ -64,7 +64,9 @@ const verifySpecimen = async (page, motion) => {
 		});
 	});
 	const kowrapMode = page.getByRole("button", { name: "Kowrap", exact: true });
+	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--ghost\b/);
 	await kowrapMode.press("Enter");
+	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--primary\b/);
 	const moved = page.locator(".specimen-layer:visible [data-moved]");
 	assert.equal(await moved.textContent(), "한곳에서");
 	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top > top, before));

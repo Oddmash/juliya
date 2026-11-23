@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { WrapText } from "@oddmash/kowrap/react";
+import { Button } from "@oddmash/ui/button";
 import { specimenText } from "../lib/specimen";
 
 const words = specimenText.split(" ");
@@ -111,7 +112,8 @@ export const LandingSpecimen = () => {
 				</div>
 				<div className="specimen-modes" role="group" aria-label="줄바꿈 방식">
 					{modes.map(([value, label]) => (
-						<button key={value} type="button" aria-pressed={mode === value} onClick={() => changeMode(value)}>{label}</button>
+						<Button key={value} variant={mode === value ? "primary" : "ghost"} size="sm"
+							aria-pressed={mode === value} onClick={() => changeMode(value)}>{label}</Button>
 					))}
 				</div>
 				<a href="#editor" className="specimen-edit" onClick={() => {
