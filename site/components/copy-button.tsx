@@ -50,6 +50,7 @@ export const CopyButton = ({
 		timer.current = setTimeout(() => setState("복사"), 2000);
 	};
 	return (
+		<>
 		<Button variant="ghost" size="sm"
 			type="button"
 			className={`${className ?? ""} copy-feedback`}
@@ -70,7 +71,9 @@ export const CopyButton = ({
 					{state === "복사 완료" ? <path d="m5 12 4 4 10-10" /> : <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>}
 				</svg>
 			)}
-			<span role="status" aria-live="polite">{state}</span>
+			<span>{state}</span>
 		</Button>
+		<span className="sr-only" role="status" aria-live="polite">{state === "복사" ? "" : state}</span>
+		</>
 	);
 };

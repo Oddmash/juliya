@@ -214,7 +214,13 @@ try {
 	const docs = await openPage(desktop);
 	await docs.goto(`${origin}/docs/`);
 	await docs.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
-	assert.equal(await docs.locator("[data-copy-target]").first().getAttribute("aria-live"), "polite");
+	const docCopy = docs.locator("[data-copy-target]").first();
+	const docStatus = docs.locator("[data-copy-status]").first();
+	assert.equal(await docStatus.getAttribute("aria-live"), "polite");
+	assert.equal(await docStatus.textContent(), "");
+	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => {} } }));
+	await docCopy.click();
+	await docs.waitForFunction(() => document.querySelector("[data-copy-status]").textContent === "복사 완료");
 	await docs.keyboard.press("Control+k");
 	await docs.getByRole("dialog").waitFor();
 	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");

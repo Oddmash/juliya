@@ -39,8 +39,11 @@ export const MarkdownCopy = () => {
 			}
 			if (disposed || requests.get(button) !== current) return;
 			button.textContent = status;
+			const live = button.parentElement?.querySelector<HTMLElement>("[data-copy-status]");
+			if (live) live.textContent = status;
 			timers.set(button, setTimeout(() => {
 				button.textContent = "복사";
+				if (live) live.textContent = "";
 				timers.delete(button);
 			}, 2000));
 		};
