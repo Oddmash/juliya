@@ -950,6 +950,9 @@ h3 {
 	font-size: 14px;
 	text-align: left;
 }
+.doc-table code {
+	white-space: nowrap;
+}
 .doc-table th,
 .doc-table td {
 	border: 1px solid var(--border);

@@ -114,7 +114,7 @@ export const renderMarkdown = (markdown, basePath = "") => {
 						.join("")}</tr>`,
 				);
 			blocks.push(
-				`<div class="doc-table"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
+				`<div class="doc-table" tabindex="0" role="region" aria-label="표"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
 			);
 			continue;
 		}

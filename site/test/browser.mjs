@@ -294,6 +294,13 @@ try {
 		const headerOffset = await narrowDocs.locator("#dom").boundingBox();
 		const tocOffset = await toc.boundingBox();
 		assert.ok(tocOffset.y <= 1 && tocOffset.y + tocOffset.height < headerOffset.y);
+		const apiTable = narrowDocs.getByRole("region", { name: "표", exact: true }).filter({ hasText: "createCanvasMeasure(options" });
+		assert.equal(await apiTable.locator("td code").first().evaluate((signature) => getComputedStyle(signature).whiteSpace), "nowrap");
+		if (width === 390) {
+			assert.equal(await apiTable.evaluate((table) => table.scrollWidth > table.clientWidth), true);
+			await apiTable.focus();
+			assert.equal(await apiTable.evaluate((table) => document.activeElement === table), true);
+		}
 	}
 	const inlineDocs = await openPage({ width: 320, height: 812 });
 	await inlineDocs.addInitScript(() => { window.ResizeObserver = undefined; });
