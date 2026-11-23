@@ -29,6 +29,21 @@ const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
 
 위 예제의 `width: 12`는 픽셀이 아니라 유니코드 코드 포인트 12개를 뜻합니다. 브라우저에서 `width`를 픽셀로 전달한다면 `measure`도 동일한 글꼴, 글자 크기와 간격에서 픽셀 폭을 반환해야 합니다. 화면 요소가 이미 있다면 [DOM 측정과 HTML](dom.md)의 어댑터가 그 설정을 읽습니다.
 
+실제 화면 폭을 기준으로 코어 엔진을 직접 사용하려면 다음처럼 캔버스 측정 함수를 전달할 수 있습니다. 브라우저에서 실행하는 예제입니다.
+
+```ts
+import { wrap } from '@oddmash/kowrap';
+import { createCanvasMeasure } from '@oddmash/kowrap/dom';
+
+await document.fonts.ready;
+const measure = createCanvasMeasure({ font: '400 24px sans-serif' });
+const lines = wrap('팀의 모든 문서를 한곳에서 관리하세요', {
+  width: 280,
+  measure,
+});
+console.log(lines.map(line => line.text));
+```
+
 `wrap`의 결과를 렌더링할 때는 각 줄의 `text`를 쓰고, 원문 복원에는 `breakAfter`도 이어 붙이세요. 줄 끝의 공백은 시각적 폭에서 제외돼도 `text`에는 남아 있을 수 있습니다.
 
 ## 전략 선택

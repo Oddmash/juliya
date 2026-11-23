@@ -43,9 +43,9 @@ const examples = [
 	},
 	{
 		tab: "Core",
-		label: "직접 폭을 측정하고 줄 데이터를 받는 API",
+		label: "픽셀 단위로 측정하고 줄 데이터 받기",
 		doc: "core",
-		code: `import { wrap } from '@oddmash/kowrap';\n\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 8,\n  measure: text => [...text].length,\n});`,
+		code: `import { wrap } from '@oddmash/kowrap';\nimport { createCanvasMeasure } from '@oddmash/kowrap/dom';\n\nawait document.fonts.ready;\nconst measure = createCanvasMeasure({ font: '400 24px sans-serif' });\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 280,\n  measure,\n});\n\nconsole.log(lines.map(line => line.text));`,
 	},
 ];
 

@@ -243,6 +243,9 @@ h3 {
 .icon-button:hover {
 	background: var(--surface-hover);
 }
+.copy-feedback { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 80px; white-space: nowrap; font-weight: 500; }
+.copy-feedback.icon-button { width: auto; min-width: 102px; flex-shrink: 0; }
+.copy-feedback.icon-button svg { flex-shrink: 0; }
 .button {
 	display: inline-flex;
 	align-items: center;
@@ -714,7 +717,7 @@ h3 {
 }
 .code-body {
 	position: relative;
-	padding: 24px 18px;
+	padding: 54px 18px 24px;
 	min-height: 180px;
 }
 .code-body pre {

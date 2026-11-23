@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@oddmash/ui/button";
 
 export const copyText = async (value: string) => {
@@ -9,14 +9,18 @@ export const copyText = async (value: string) => {
 		return;
 	}
 	const input = document.createElement("textarea");
+	const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 	input.value = value;
 	input.style.position = "fixed";
 	input.style.opacity = "0";
 	document.body.append(input);
 	input.select();
-	const copied = document.execCommand("copy");
-	input.remove();
-	if (!copied) throw new Error("Clipboard unavailable");
+	try {
+		if (!document.execCommand("copy")) throw new Error("Clipboard unavailable");
+	} finally {
+		input.remove();
+		previousFocus?.focus({ preventScroll: true });
+	}
 };
 
 export const CopyButton = ({
@@ -29,24 +33,32 @@ export const CopyButton = ({
 	icon?: boolean;
 }) => {
 	const [state, setState] = useState("복사");
+	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+	const request = useRef(0);
+	useEffect(() => () => { request.current++; clearTimeout(timer.current); }, []);
 	const copy = async () => {
+		const current = ++request.current;
+		clearTimeout(timer.current);
+		let result = "복사 완료";
 		try {
 			await copyText(value);
-			setState("복사 완료");
 		} catch {
-			setState("복사 실패");
+			result = "복사 실패";
 		}
-		setTimeout(() => setState("복사"), 1500);
+		if (current !== request.current) return;
+		setState(result);
+		timer.current = setTimeout(() => setState("복사"), 2000);
 	};
 	return (
+		<>
 		<Button variant="ghost" size="sm"
 			type="button"
-			className={className}
+			className={`${className ?? ""} copy-feedback`}
 			onClick={copy}
 			aria-label={state}
 			title={state}
 		>
-			{icon ? (
+			{icon && (
 				<svg
 					width="18"
 					height="18"
@@ -56,12 +68,12 @@ export const CopyButton = ({
 					strokeWidth="1.6"
 					aria-hidden="true"
 				>
-					<rect x="8" y="8" width="12" height="12" rx="2" />
-					<path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+					{state === "복사 완료" ? <path d="m5 12 4 4 10-10" /> : <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>}
 				</svg>
-			) : (
-				state
 			)}
+			<span>{state}</span>
 		</Button>
+		<span className="sr-only" role="status" aria-live="polite">{state === "복사" ? "" : state}</span>
+		</>
 	);
 };
