@@ -80,9 +80,10 @@ export const renderMarkdown = (markdown, basePath = "") => {
 			used.set(base, count);
 			const id = count === 1 ? base : `${base}-${count}`;
 			if (level === 1 && title === "문서") title = text;
-			if (level === 2 || level === 3) headings.push({ level, text, id });
+			const tocEntry = level === 2 || level === 3;
+			if (tocEntry) headings.push({ level, text, id });
 			blocks.push(
-				`<h${level} id="${escapeHtml(id)}">${inline(text, basePath)}</h${level}>`,
+				`<h${level} id="${escapeHtml(id)}"${tocEntry ? ' tabindex="-1"' : ""}>${inline(text, basePath)}</h${level}>`,
 			);
 			index++;
 			continue;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { guideHref, getGuides } from "../lib/guides";
 import type { Guide } from "../lib/guides";
 import { DocsNavigation } from "./docs-navigation";
+import { DocsToc } from "./docs-toc";
 import { MarkdownCopy } from "./markdown-copy";
 
 export const DocsPage = ({ guide }: { guide: Guide }) => {
@@ -18,6 +19,7 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 	return (
 		<main id="main" className="container docs-shell">
 			<DocsNavigation items={items} current={guide.slug} />
+			<DocsToc key={guide.slug} headings={guide.headings} />
 			<article className="docs-content">
 				<div
 					id="doc-content"
@@ -37,14 +39,6 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 					)}
 				</div>
 			</article>
-			<aside className="toc" aria-label="이 문서의 내용">
-				<strong>이 문서의 내용</strong>
-				{guide.headings.map(({ id, text, level }) => (
-					<a key={id} data-level={level} href={`#${id}`}>
-						{text}
-					</a>
-				))}
-			</aside>
 		</main>
 	);
 };

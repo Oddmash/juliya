@@ -7,9 +7,17 @@ export interface ElementLayout {
   measure: Measure;
 }
 
-const numericPadding = (value: string) => {
+const numericLength = (value: string) => {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const computedContentWidth = (computed: CSSStyleDeclaration, padding: number, roundedWidth: number) => {
+  if (!computed.width.endsWith("px")) return undefined;
+  const border = numericLength(computed.borderLeftWidth) + numericLength(computed.borderRightWidth);
+  const inset = computed.boxSizing === "border-box" ? padding + border : 0;
+  const width = Number.parseFloat(computed.width) - inset;
+  return width > 0 && Math.abs(width - roundedWidth) <= 0.5 ? width : undefined;
 };
 
 const spacing = (value: string) => value === "normal" || !value ? "0px" : value;
@@ -39,11 +47,14 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     let layout: ElementLayout | undefined;
     try {
       const computed = view.getComputedStyle(element);
-      const fallback = element.clientWidth - numericPadding(computed.paddingLeft) - numericPadding(computed.paddingRight);
+      const padding = numericLength(computed.paddingLeft) + numericLength(computed.paddingRight);
+      const fallback = element.clientWidth - padding;
       if (contentWidth !== undefined) observedWidth = { fallback, exact: contentWidth };
       if (observedWidth?.fallback !== fallback) observedWidth = undefined;
-      // clientWidth is rounded. Prefer the observer's content box when available.
-      const width = observedWidth?.exact ?? (fallback > 0 ? Math.max(1, fallback - 1) : 0);
+      // clientWidth is rounded. Use it to validate the computed width until the observer delivers.
+      const width = observedWidth?.exact ?? (fallback > 0
+        ? computedContentWidth(computed, padding, fallback) ?? Math.max(1, fallback - 1)
+        : 0);
       if (!(width > 0)) {
         layout = undefined;
       } else {

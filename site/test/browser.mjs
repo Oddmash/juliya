@@ -272,12 +272,54 @@ try {
 	}));
 	assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), "the narrow landing fits when fonts fail");
 	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
+	const api = await openPage(desktop);
+	await api.emulateMedia({ reducedMotion: "reduce" });
+	await api.goto(`${origin}/docs/api/#dom`);
+	const apiToc = api.getByRole("navigation", { name: "이 문서의 내용" });
+	await apiToc.locator('a[href="#dom"][aria-current="location"]').waitFor();
+	await api.locator("#react").evaluate((heading) => heading.scrollIntoView());
+	await apiToc.locator('a[href="#react"][aria-current="location"]').waitFor();
+	assert.equal(await apiToc.locator('[aria-current="location"]').count(), 1);
+	for (const width of [390, 800]) {
+		const narrowDocs = await openPage({ width, height: 844 });
+		await narrowDocs.emulateMedia({ reducedMotion: "reduce" });
+		await narrowDocs.goto(`${origin}/docs/api/`);
+		const toc = narrowDocs.getByRole("navigation", { name: "이 문서의 내용" });
+		const toggle = toc.getByRole("button", { name: /이 문서의 내용/ });
+		await toggle.press("Enter");
+		await toc.getByRole("link", { name: "DOM", exact: true }).press("Enter");
+		await narrowDocs.waitForFunction(() => location.hash === "#dom" && document.activeElement?.id === "dom");
+		assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+		assert.match(await toggle.textContent(), /DOM/);
+		const headerOffset = await narrowDocs.locator("#dom").boundingBox();
+		const tocOffset = await toc.boundingBox();
+		assert.ok(tocOffset.y <= 1 && tocOffset.y + tocOffset.height < headerOffset.y);
+	}
+	const inlineDocs = await openPage({ width: 320, height: 812 });
+	await inlineDocs.addInitScript(() => { window.ResizeObserver = undefined; });
+	await inlineDocs.goto(`${origin}/docs/inline/`);
+	const inlineProse = inlineDocs.locator("#doc-content > p[data-kowrap-prose]").first();
+	await inlineProse.locator("br[data-kowrap-break]").first().waitFor({ state: "attached" });
+	const [kowrapHeight, cssHeight] = await inlineProse.evaluate(async (paragraph) => {
+		await document.fonts.ready;
+		const native = paragraph.cloneNode(true);
+		native.querySelectorAll("br[data-kowrap-break]").forEach((br) => br.remove());
+		native.style.position = "absolute";
+		native.style.visibility = "hidden";
+		native.style.width = `${paragraph.getBoundingClientRect().width}px`;
+		paragraph.after(native);
+		const heights = [paragraph.getBoundingClientRect().height, native.getBoundingClientRect().height];
+		native.remove();
+		return heights;
+	});
+	assert.ok(kowrapHeight <= cssHeight + 1, "the first measurement does not introduce an extra line");
 	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
 	for (const path of paths) {
 		const guide = await openPage(mobileViewport);
 		const response = await guide.goto(`${origin}/docs/${path}`);
 		assert.ok(response.ok(), `Guide loads: ${path}`);
 		await guide.locator("#doc-content h1[data-kowrap-prose]").waitFor();
+		assert.equal(await guide.locator(".doc-code br[data-kowrap-break], .doc-table br[data-kowrap-break]").count(), 0);
 		await guide.evaluate(async () => {
 			await document.fonts.ready;
 			await new Promise((resolve) => requestAnimationFrame(resolve));
