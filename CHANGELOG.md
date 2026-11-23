@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.3.2](docs/releases/v0.3.2.md)
+
+- Improve balanced wrapping around common Korean modifiers, nouns, and mixed-language technical phrases such as `CSS import`.
+- Keep the minimum-line-count constraint and preserve existing greedy behavior, source text, and public API compatibility.
+- Add eight real portfolio paragraphs with 88 proportional-width regression cases, plus Chromium, Firefox, and WebKit integration coverage.
+
 ## [0.3.1](docs/releases/v0.3.1.md)
 
 - Refresh the README with a screenshot of the public landing and a standalone HTML example pinned to Kowrap 0.3.0 on jsDelivr.
