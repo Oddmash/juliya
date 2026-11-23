@@ -26,3 +26,13 @@ test("registry lookup detects existing versions and fails closed on invalid resp
   await assert.rejects(isPublished("@oddmash/kowrap", version, response(500, {})));
   await assert.rejects(isPublished("@oddmash/kowrap", version, response(200, {})));
 });
+
+test("release installs the same browser engines as the full integration workflow", () => {
+  const browsersIn = (workflow) => {
+    const contents = readFileSync(new URL(`../.github/workflows/${workflow}`, import.meta.url), "utf8");
+    const install = contents.match(/^\s*- run: pnpm --dir test\/next-app exec playwright install --with-deps (.+)$/m);
+    assert.ok(install, `${workflow} must install the integration browsers`);
+    return install[1].trim().split(/\s+/).sort();
+  };
+  assert.deepEqual(browsersIn("publish.yml"), browsersIn("ci.yml"));
+});

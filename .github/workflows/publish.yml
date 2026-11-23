@@ -55,7 +55,7 @@ jobs:
         if: hashFiles('test/framework-app/package.json') != ''
       - run: pnpm test:frameworks
         if: hashFiles('test/framework-app/package.json') != ''
-      - run: pnpm --dir test/next-app exec playwright install --with-deps chromium
+      - run: pnpm --dir test/next-app exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:browser
       - run: pnpm test:package
       - name: Pack verified package
