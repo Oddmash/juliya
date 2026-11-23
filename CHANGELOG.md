@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.3.0](docs/releases/v0.3.0.md)
+
+- Preserve nested inline markup when wrapping text in React, plain HTML, Vue, and Svelte.
+- Improve Korean modifier–noun grouping and measure browser content widths more accurately, including before the first resize observation.
+- Refresh the landing editor and add a copy-ready HTML example, expanded guides, and a table of contents that follows the current section.
+
 ## [0.2.0](docs/releases/v0.2.0.md)
 
 - HTML, Vue, Svelte 지원과 React 훅을 추가했습니다.
