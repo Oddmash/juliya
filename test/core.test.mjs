@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { segmentSentences, splitLines, wrap } from "@oddmash/kowrap";
+import { portfolioCorpus } from "./fixtures/portfolio-prose.mjs";
+
+const proportionalMeasure = (text) => [...text].reduce((width, char) => width + (/[가-힣]/u.test(char) ? 1 : char === " " ? 0.3 : 0.5), 0);
 
 const measure = (text) => [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].length;
 const run = (text, width, options = {}) => wrap(text, { width, measure, ...options });
@@ -142,4 +145,33 @@ test("greedy visits only forward line candidates instead of all suffixes", () =>
   assert.equal(reconstruct(greedy), text);
   assert.equal(reconstruct(balanced), text);
   assert.ok(greedyCalls < balancedCalls / 2);
+});
+
+test("portfolio prose preserves technical phrases when a same-line-count layout can do so", () => {
+  const text = portfolioCorpus[1];
+  const lines = run(text, 40, { measure: proportionalMeasure });
+  assert.equal(reconstruct(lines), text);
+  assert.equal(lines.length, 5);
+  assert.ok(lines.some((line) => line.text.includes("CSS import를")));
+  assert.ok(lines.every((line) => line.width <= 40));
+});
+
+test("long Korean portfolio prose retains source, line count and width at varied widths", () => {
+  for (const text of portfolioCorpus) {
+    for (const width of [12, 15, 18, 22, 26, 30, 35, 40, 46, 55, 65]) {
+      const options = { measure: proportionalMeasure };
+      const balanced = run(text, width, options);
+      const greedy = run(text, width, { ...options, strategy: "greedy" });
+      assert.equal(reconstruct(balanced), text);
+      assert.ok(balanced.length <= greedy.length);
+      assert.ok(balanced.every((line) => line.width <= width));
+      for (const line of balanced) assert.equal(line.text, text.slice(line.start, line.end));
+    }
+  }
+});
+
+test("technical phrase lookup treats inherited object names as ordinary words", () => {
+  for (const text of ["constructor 가나 다라", "toString 가나 다라", "__proto__ 가나 다라"]) {
+    assert.equal(reconstruct(run(text, 12)), text);
+  }
 });

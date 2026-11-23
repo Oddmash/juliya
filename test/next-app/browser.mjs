@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { chromium, firefox, webkit } from "playwright";
+import { portfolioCorpus } from "../fixtures/portfolio-prose.mjs";
 
 const origin = "http://127.0.0.1:4319";
 const server = spawn(
@@ -107,6 +108,36 @@ try {
       }, natural);
       await title.locator("br").first().waitFor({ state: "attached" });
     }
+    const prose = page.locator("[data-prose]");
+    assert.equal(await prose.count(), portfolioCorpus.length);
+    const comparison = [];
+    for (const width of [320, 390, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      });
+      for (let index = 0; index < portfolioCorpus.length; index++) {
+        const paragraph = prose.nth(index);
+        assert.equal(await paragraph.textContent(), portfolioCorpus[index]);
+        const result = await paragraph.evaluate((element) => {
+          const style = getComputedStyle(element);
+          const copy = element.cloneNode(false);
+          copy.removeAttribute("data-prose");
+          copy.textContent = element.textContent;
+          Object.assign(copy.style, { whiteSpace: "pre-wrap", wordBreak: "keep-all", overflowWrap: "anywhere", position: "absolute", visibility: "hidden", width: style.width });
+          element.after(copy);
+          const lineHeight = Number.parseFloat(style.lineHeight);
+          const cssLines = Math.round(copy.getBoundingClientRect().height / lineHeight);
+          copy.remove();
+          return { lines: Math.round(element.getBoundingClientRect().height / lineHeight), cssLines, breaks: element.querySelectorAll("br").length, overflow: element.scrollWidth - element.clientWidth };
+        });
+        assert.ok(result.overflow <= 1, `Prose overflow at ${width}px: ${index}`);
+        comparison.push({ width, index, ...result });
+      }
+    }
+    assert.ok(comparison.some(({ breaks }) => breaks > 0));
+    console.log(`${engine.name()}: ${comparison.length} portfolio prose samples, CSS lines=${comparison.reduce((sum, sample) => sum + sample.cssLines, 0)}, Kowrap lines=${comparison.reduce((sum, sample) => sum + sample.lines, 0)}`);
     assert.deepEqual(errors, []);
     console.log(
       `${engine.name()}: Next.js SSR, hydration, responsive wrapping and fractional width passed`,
