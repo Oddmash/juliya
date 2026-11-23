@@ -25,6 +25,7 @@ const greedyPlan = (text: string, points: Boundary[], options: ParagraphOptions)
 const balancedPlan = (text: string, points: Boundary[], options: ParagraphOptions): PlannedLine[] => {
   const last = points.length - 1;
   const choices: Choice[] = [];
+  const nextWords = points.map(({ offset }) => text.slice(offset).match(/^\S+/u)?.[0] ?? "");
   choices[last] = { count: 0, cost: 0, next: last, width: 0 };
   for (let start = last - 1; start >= 0; start--) {
     let best: Choice | undefined;
@@ -32,7 +33,7 @@ const balancedPlan = (text: string, points: Boundary[], options: ParagraphOption
       const tail = choices[candidate.next]!;
       const choice = {
         count: tail.count + 1,
-        cost: tail.cost + lineCost(candidate, options.width, candidate.next === last),
+        cost: tail.cost + lineCost(candidate, options.width, candidate.next === last, nextWords[candidate.next]),
         next: candidate.next,
         width: candidate.width,
       };

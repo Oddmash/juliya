@@ -2,18 +2,41 @@ import type { LineCandidate } from "./types.js";
 
 const sentenceEnd = /[.!?。！？…][”’"')\]]*$/u;
 const clauseEnd = /[,;:，、；：]$/u;
-const boundModifier = /(?:^|\s)(?:이|그|저|각|모든|어떤|이런|그런|저런|다음|해당|본|여러|\S+(?:로운|스러운|적인|들의|에서의|로서의|으로의|와의|과의|사이의))$/u;
+const boundModifier = /(?:^|\s)(?:이|그|저|각|모든|어떤|이런|그런|저런|다음|해당|본|여러|다른|같은|기존|\S*(?:로운|스러운|적인|들의|에서의|로서의|으로의|와의|과의|사이의|하는|되는|있는|없는|않는|않은|했던|하던|보이는|필요한|위한|열린|닫는))$/u;
+const technicalPrefix = /^(?:[A-Z][A-Z0-9]{1,}|[A-Z][a-z]+(?:[A-Z][a-z]+)+|[a-z]+\.[a-z]+)$/u;
+const technicalHead = /^(?:import|export|module|runtime|client|server|layer|token|hook|input|output|API|CLI|SDK|파일|모듈|출력|레이어|토큰|컴포넌트|런타임|훅|스타일)(?:[가-힣]*|[.,;:]?)$/u;
+const compounds: Readonly<Record<string, readonly string[]>> = {
+  공통: ["패키지", "코드", "컴포넌트", "모듈"],
+  디자인: ["시스템", "토큰"],
+  배포: ["구조", "단위", "경계", "결과"],
+  사용: ["범위", "경험", "환경"],
+  런타임: ["의존성", "검증"],
+  퇴출: ["모션", "완료"],
+  완료: ["처리", "콜백"],
+  전체: ["스타일", "CSS", "코드"],
+  실제: ["사용", "화면", "입력"],
+  숨겨진: ["입력", "요소", "폼"],
+  키보드: ["포커스", "입력"],
+  접근: ["가능한"],
+};
 
-const boundaryCost = ({ fragment, emergency }: LineCandidate) => {
+const protectedPair = (fragment: string, nextWord: string) => {
+  const left = fragment.match(/\S+$/u)?.[0] ?? "";
+  if (technicalPrefix.test(left) && technicalHead.test(nextWord)) return true;
+  return Object.hasOwn(compounds, left) && compounds[left]!.some((head) => nextWord.startsWith(head));
+};
+
+const boundaryCost = ({ fragment, emergency }: LineCandidate, nextWord: string) => {
   if (emergency) return 0.75;
   if (sentenceEnd.test(fragment)) return 0;
   if (clauseEnd.test(fragment)) return 0.02;
-  if (boundModifier.test(fragment)) return 0.35;
+  if (protectedPair(fragment, nextWord)) return 0.65;
+  if (boundModifier.test(fragment)) return 0.45;
   return 0.06;
 };
 
-export const lineCost = (candidate: LineCandidate, availableWidth: number, isLast: boolean) => {
+export const lineCost = (candidate: LineCandidate, availableWidth: number, isLast: boolean, nextWord = "") => {
   const slack = (availableWidth - Math.min(candidate.width, availableWidth)) / availableWidth;
   const overflow = Math.max(0, candidate.width - availableWidth) / availableWidth;
-  return slack ** 2 + overflow ** 2 * 4 + (isLast ? 0 : boundaryCost(candidate));
+  return slack ** 2 + overflow ** 2 * 4 + (isLast ? 0 : boundaryCost(candidate, nextWord));
 };
