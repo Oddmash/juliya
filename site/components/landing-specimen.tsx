@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import { WrapText } from "@oddmash/kowrap/react";
 import { Button } from "@oddmash/ui/button";
 import { specimenText } from "../lib/specimen";
@@ -15,7 +14,6 @@ const wordBoxes = (layer: HTMLElement) =>
 
 export const LandingSpecimen = () => {
 	const [mode, setMode] = useState<Mode>("css");
-	const [width, setWidth] = useState(11);
 	const [moved, setMoved] = useState<{ index: number; line: number }>();
 	const [interacted, setInteracted] = useState(false);
 	const stage = useRef<HTMLDivElement>(null);
@@ -78,7 +76,7 @@ export const LandingSpecimen = () => {
 			document.fonts?.removeEventListener("loadingdone", schedule);
 			cancelAnimationFrame(frame);
 		};
-	}, [mode, moved, width]);
+	}, [mode, moved]);
 
 	const sample = (layer: Mode) => words.map((word, index) => (
 		<Fragment key={word}>
@@ -89,7 +87,7 @@ export const LandingSpecimen = () => {
 
 	return (
 		<section className="specimen" id="playground" aria-label="줄바꿈 비교">
-			<div className="specimen-stage" ref={stage} style={{ "--specimen-width": `${width}em` } as CSSProperties}>
+			<div className="specimen-stage" ref={stage}>
 				<div className="specimen-layer" data-layer="css" aria-hidden={mode !== "css"}>
 					<p className="specimen-text">{sample("css")}</p>
 				</div>
@@ -98,29 +96,20 @@ export const LandingSpecimen = () => {
 				</div>
 				<span className="specimen-ribbon" ref={ribbon} aria-hidden="true" data-interacted={interacted ? "" : undefined} />
 			</div>
-			<p className="sr-only" role="status">{moved ? `${moved.line}번째 줄로 이동한 어절은 ‘${words[moved.index]}’입니다.` : ""}</p>
 			<div className="specimen-controls">
-				<div className="specimen-width">
-					<label htmlFor="specimen-width">너비</label>
-					<input id="specimen-width" type="range" min="8" max="13" step="0.25" value={width}
-						onChange={(event) => {
-							setMoved(undefined);
-							setInteracted(true);
-							setWidth(Number(event.target.value));
-						}} />
-					<output htmlFor="specimen-width">{width} em</output>
-				</div>
 				<div className="specimen-modes" role="group" aria-label="줄바꿈 방식">
 					{modes.map(([value, label]) => (
 						<Button key={value} variant={mode === value ? "primary" : "ghost"} size="sm"
 							aria-pressed={mode === value} onClick={() => changeMode(value)}>{label}</Button>
 					))}
 				</div>
-				<a href="#editor" className="specimen-edit" onClick={() => {
-					const editor = document.getElementById("editor");
-					if (editor instanceof HTMLDetailsElement) editor.open = true;
-				}}>직접 편집 <span aria-hidden="true">↘</span></a>
+				<a href="#editor" className="specimen-edit">직접 편집 <span aria-hidden="true">↘</span></a>
 			</div>
+			<p className="specimen-status" role="status">
+				{moved ? `‘${words[moved.index]}’의 위치가 ${moved.line}번째 줄로 바뀌었습니다.` : interacted
+					? "이 너비에서는 두 방식의 줄바꿈이 같습니다."
+					: "Kowrap을 눌러 줄바꿈이 달라지는 곳을 보세요."}
+			</p>
 		</section>
 	);
 };

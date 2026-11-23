@@ -302,27 +302,14 @@ h3 {
 	padding: 23px 27px 17px;
 }
 .playground-settings {
-	border-top: 1px solid var(--border);
-	padding-top: 22px;
-}
-.settings-heading {
-	margin-bottom: 18px;
-}
-.settings-heading h3 {
-	font-size: 16px;
-	font-weight: 650;
-}
-.settings-heading p {
-	font-size: 14px;
-	color: var(--muted);
-	margin-top: 5px;
+	margin-bottom: 16px;
 }
 .controls {
 	display: flex;
 	align-items: center;
 	gap: 22px;
 	justify-content: space-between;
-	margin-bottom: 16px;
+	margin-top: 12px;
 }
 .preset-group {
 	display: flex;
@@ -380,6 +367,13 @@ h3 {
 	border-radius: var(--radius-lg);
 	overflow: hidden;
 	background: var(--surface);
+}
+.editor > label {
+	display: block;
+	padding: 10px 13px 0;
+	color: var(--muted);
+	font-size: .85rem;
+	font-weight: 650;
 }
 .editor textarea {
 	display: block;
