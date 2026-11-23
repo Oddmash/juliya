@@ -59,6 +59,10 @@ const verifySpecimen = async (page, motion) => {
 		return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
 	}));
 	assert.deepEqual(css, kowrap, "both panels use the same text and rendering constraints");
+	assert.equal(await page.locator(".specimen-panels").evaluate((panel) => {
+		const bounds = panel.getBoundingClientRect();
+		return bounds.left >= 0 && bounds.right <= innerWidth + 1;
+	}), true, "the comparison fits the viewport");
 	const before = await native.locator("[data-moved]").evaluate((word) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top);
 	const moved = applied.locator("[data-moved]");
 	assert.equal(await moved.textContent(), "한곳에서");
