@@ -63,6 +63,7 @@ const Page = () => (
 		<section className="landing-use-cases" aria-labelledby="use-cases-title">
 			<div className="landing-section-heading">
 				<h2 id="use-cases-title">문장이 놓이는 자리.</h2>
+				<Link className="text-link" href="/comparison/">활용 사례와 성능 비교</Link>
 			</div>
 			<div className="use-case-grid">
 				<article className="use-case"><span className="case-index">01 · 제목</span><div className="case-sample"><WrapText as="h3">좋은 글은 보기 편한 화면에서 시작됩니다.</WrapText></div><p>랜딩 페이지와 콘텐츠 제목의 어색한 줄바꿈을 다듬습니다.</p></article>

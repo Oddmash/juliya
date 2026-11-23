@@ -106,6 +106,13 @@ try {
 		return page;
 	};
 	const desktop = { width: 1280, height: 900 };
+	const comparison = await openPage(desktop);
+	await comparison.goto(`${origin}/comparison/`);
+	await comparison.getByRole('button', { name: '비교 실행' }).click();
+	await comparison.getByText('측정 완료', { exact: true }).waitFor();
+	assert.equal(await comparison.getByRole('row').count(), 3);
+	assert.equal(await comparison.getByRole('rowheader', { name: 'Kowrap' }).count(), 1);
+	await comparison.close();
 	const page = await openPage(desktop);
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
