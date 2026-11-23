@@ -102,3 +102,7 @@ npm publish --access public
 ## 라이선스
 
 독립적으로 작성된 구현입니다. 라이선스 및 최초 공개 배포 정책은 프로젝트 소유자의 결정에 따릅니다.
+
+## 공개 기여 언어
+
+이슈·PR 제목과 본문, 공개 리뷰 논의, 커밋 메시지, 변경 이력은 영어로 작성합니다. [Oddmash 공통 영문 이슈 및 PR 템플릿](https://github.com/Oddmash/.github/blob/main/CONTRIBUTING.md)을 사용합니다. 기존 한국어 제품 문서는 유지합니다.
