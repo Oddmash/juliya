@@ -1435,6 +1435,10 @@ h3 {
 .doc-code { background: var(--surface); margin-block: 20px 28px; }
 .doc-code-head { background: var(--surface-raised); }
 .doc-code pre { padding: 20px; font-size: 14px; line-height: 1.7; }
+.doc-code .syntax-keyword { color: var(--syntax-keyword); font-weight: 600; }
+.doc-code .syntax-string { color: var(--syntax-string); }
+.doc-code .syntax-number { color: var(--syntax-number); }
+.doc-code .syntax-comment { color: var(--subtle); font-style: italic; }
 .doc-table table { font-size: 14px; line-height: 1.7; }
 .doc-table :is(th, td) { padding: 12px 14px; }
 .doc-table td { color: var(--ink); background: var(--surface); }

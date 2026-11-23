@@ -68,4 +68,6 @@ test("Markdown escapes raw HTML and disallowed URLs and generates headings and c
 	assert.doesNotMatch(result.html, /href="javascript:/);
 	assert.match(result.html, /&lt;tag&gt;/);
 	assert.match(result.html, /data-copy-target="code-1"/);
+	assert.match(result.html, /class="syntax-keyword">const<\/span>/);
+	assert.match(result.html, /class="syntax-string">&#39;&lt;tag&gt;&#39;<\/span>/);
 });

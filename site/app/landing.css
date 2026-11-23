@@ -249,7 +249,7 @@ body:has(> .landing) { background: var(--paper); }
 }
 
 .landing-intro { padding-block-start: clamp(40px, 6vw, 80px); }
-.hero-copy h1 { font-weight: 650; }
+.hero-copy h1 { font-family: var(--landing-display), var(--sans); font-weight: 650; }
 .specimen-stage {
 	min-height: clamp(184px, 23vw, 268px);
 }
