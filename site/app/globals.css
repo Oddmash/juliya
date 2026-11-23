@@ -1341,3 +1341,39 @@ h3 {
 .code-tabs [role="tab"] {
 	white-space: nowrap;
 }
+
+.docs-content {
+	background: transparent;
+	border: 0;
+	padding-inline: clamp(12px, 2vw, 30px);
+}
+.docs-content h1 {
+	font-size: clamp(30px, 4vw, 42px);
+	font-weight: 600;
+}
+.docs-content h2 {
+	letter-spacing: -.035em;
+	padding-block-start: 16px;
+}
+.docs-content :is(p, li) {
+	overflow-wrap: anywhere;
+}
+.docs-sidebar {
+	border-inline-end: 1px solid var(--border);
+	padding-inline-end: 12px;
+}
+.doc-code-head {
+	min-height: 40px;
+}
+.doc-code-head button {
+	min-height: 32px;
+}
+.docs-bottom a {
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+}
+@media (max-width: 760px) {
+	.docs-content { padding-inline: 0; }
+	.docs-sidebar { border-inline-end: 0; padding-inline-end: 0; }
+}
