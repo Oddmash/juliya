@@ -17,3 +17,7 @@ Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/A
 - 안정 릴리스 태그는 `vX.Y.Z` 형식이며 태그 시점의 `package.json` 버전과 동일해야 한다. 릴리스 노트는 `docs/releases/`와 `CHANGELOG.md`를 함께 갱신하며 기존 태그를 덮어쓰지 않는다.
 - 문서 사이트는 `site/`의 Next.js 정적 export로 관리한다. 사용자용 문서 원본은 `docs/guide/`의 Markdown이며 사이트는 빌드 시 원본을 읽는다. 배포 산출물 `site/out`은 npm 패키지에 포함하지 않는다.
 - 사이트 디자인은 [Oddmash UI 작업 기준](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)과 중립 팔레트, 의미 기반 색상, Geist 폰트 계열을 따른다. `site/theme/tokens.json`에 사이트 토큰을 관리하고 파란색은 포커스, 빨간색은 오류에만 사용한다. 긴 대시를 장식 문자로 사용하지 않는다. 비교 예제는 실제 kowrap 컴포넌트와 대응 코드가 동기화되어야 한다.
+
+## Public contribution language
+
+Write issue and pull request titles, bodies, public review discussions, commit messages, and changelog entries in English. Use the shared English issue and PR templates from [Oddmash](https://github.com/Oddmash/.github/blob/main/CONTRIBUTING.md). Preserve existing product documentation localization and provide translation help when needed.
