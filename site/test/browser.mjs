@@ -66,7 +66,8 @@ const verifySpecimen = async (page, motion) => {
 	assert.match(await status.textContent(), /한곳에서.*1번째 줄 → 2번째 줄/);
 	const cue = page.locator(".specimen-cue");
 	if (motion) {
-		const pause = page.getByRole("button", { name: "일시 정지" });
+		const pause = page.getByRole("button", { name: "자동 재생", exact: true });
+		assert.equal(await pause.getAttribute("aria-pressed"), "true");
 		await pause.scrollIntoViewIfNeeded();
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
 		assert.ok(await cue.evaluate(marker => {
@@ -77,10 +78,11 @@ const verifySpecimen = async (page, motion) => {
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
 		await pause.press("Enter");
-		assert.equal(await page.getByRole("button", { name: "재생" }).evaluate(button => document.activeElement === button), true);
+		assert.equal(await pause.evaluate(button => document.activeElement === button), true);
+		assert.equal(await pause.getAttribute("aria-pressed"), "false");
 		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
 	} else {
-		assert.equal(await page.getByRole("button", { name: "모션 감소" }).isDisabled(), true);
+		assert.equal(await page.getByRole("button", { name: "자동 재생 (모션 감소)" }).isDisabled(), true);
 		assert.equal(await cue.evaluate((marker) => marker.getAnimations().length), 0);
 	}
 	assert.equal(await cue.evaluate((marker) => {

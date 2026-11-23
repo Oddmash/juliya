@@ -144,7 +144,7 @@ export const LandingSpecimen = () => {
 			</div>
 			<div className="specimen-controls">
 				<p className="specimen-status" role="status">{difference ? `‘${words[difference.index]}’ 위치: ${difference.from}번째 줄 → ${difference.to}번째 줄` : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}</p>
-				<Button type="button" size="sm" variant="ghost" className="specimen-replay" disabled={!difference || reduced} onClick={() => setPlaying(value => !value)}><span aria-hidden="true">{playing && !reduced ? "Ⅱ" : "▷"}</span> {reduced ? "모션 감소" : playing ? "일시 정지" : "재생"}</Button>
+				<Button type="button" size="sm" variant="ghost" className="specimen-replay" aria-pressed={playing && !reduced} disabled={!difference || reduced} onClick={() => setPlaying(value => !value)}><span aria-hidden="true">{playing && !reduced ? "Ⅱ" : "▷"}</span> {reduced ? "자동 재생 (모션 감소)" : "자동 재생"}</Button>
 			</div>
 		</section>
 	);
