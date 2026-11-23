@@ -2,22 +2,37 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  scope:
+    uses: Oddmash/.github/.github/workflows/ci-scope.yml@5ef0314056be10f868b9bf889b879e6d322beb1e
+    with:
+      profile: kowrap
   test:
-    runs-on: ubuntu-latest
+    needs: scope
+    if: needs.scope.outputs.core == 'true'
+    timeout-minutes: 30
+    runs-on: ubuntu-24.04
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
         with:
           version: 10.32.1
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
           cache: pnpm
@@ -30,10 +45,31 @@ jobs:
       - run: pnpm --dir test/next-app exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:browser
       - run: pnpm test:package
+  site:
+    needs: scope
+    if: needs.scope.outputs.site == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm --dir site install --no-frozen-lockfile
       - run: pnpm test:site
         env:
           NEXT_PUBLIC_BASE_PATH: /kowrap
+      - run: pnpm --dir site exec playwright install --with-deps chromium firefox webkit
       - name: Verify landing page and documentation in all browser engines
         env:
           NEXT_PUBLIC_BASE_PATH: /kowrap
@@ -41,3 +77,22 @@ jobs:
           for browser in chromium firefox webkit; do
             pnpm --dir site test:browser "$browser"
           done
+
+  verify:
+    needs: [scope, test, site]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Confirm appropriate checks passed
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          RUN_0: ${{ needs.scope.outputs.core }}
+          RESULT_0: ${{ needs.test.result }}
+          RUN_1: ${{ needs.scope.outputs.site }}
+          RESULT_1: ${{ needs.site.result }}
+        run: |
+          test "$SCOPE_RESULT" = success
+          verify() { case "$1:$2" in true:success|false:skipped) return 0 ;; *) return 1 ;; esac; }
+          verify "$RUN_0" "$RESULT_0"
+          verify "$RUN_1" "$RESULT_1"
