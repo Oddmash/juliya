@@ -2,6 +2,7 @@
 	"name": "kowrap-site",
 	"private": true,
 	"type": "module",
+	"packageManager": "pnpm@11.25.0",
 	"scripts": {
 		"dev": "next dev --webpack",
 		"build": "next build --webpack",

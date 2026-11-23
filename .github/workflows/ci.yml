@@ -30,17 +30,19 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-        with:
-          version: 10.32.1
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            test/next-app/pnpm-lock.yaml
+            test/framework-app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
-      - run: pnpm --dir test/next-app install --no-frozen-lockfile
+      - run: pnpm --dir test/next-app install --frozen-lockfile
       - run: pnpm test:hydration
-      - run: pnpm --dir test/framework-app install --no-frozen-lockfile
+      - run: pnpm --dir test/framework-app install --frozen-lockfile
       - run: pnpm test:frameworks
       - run: pnpm --dir test/next-app exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:browser
@@ -57,15 +59,16 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-        with:
-          version: 10.32.1
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            site/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm --dir site install --no-frozen-lockfile
+      - run: pnpm --dir site install --frozen-lockfile
       - run: pnpm test:site
         env:
           NEXT_PUBLIC_BASE_PATH: /kowrap

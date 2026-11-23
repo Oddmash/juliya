@@ -3,6 +3,7 @@
   "version": "0.3.2",
   "description": "Korean-aware text wrapping for JavaScript, HTML and frontend frameworks",
   "type": "module",
+  "packageManager": "pnpm@11.25.0",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./browser": { "types": "./dist/dom/index.d.ts", "import": "./dist/dom/index.js" },
@@ -20,15 +21,15 @@
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/*.test.mjs",
-    "test:next": "npm run build && npm --prefix test/next-app run build",
-    "test:hydration": "npm run build && npm --prefix test/next-app run test:hydration",
-    "test:frameworks": "npm run build && npm --prefix test/framework-app test",
-    "test:browser": "npm run test:next && npm --prefix test/next-app run test:browser",
-    "test:package": "npm run build && node --test test/package.mjs",
-    "build:site": "npm run build && npm --prefix site run build",
-    "test:site": "npm run build:site && node --test test/site.mjs",
-    "prepack": "npm run build"
+    "test": "pnpm run build && node --test test/*.test.mjs",
+    "test:next": "pnpm run build && pnpm --dir test/next-app run build",
+    "test:hydration": "pnpm run build && pnpm --dir test/next-app run test:hydration",
+    "test:frameworks": "pnpm run build && pnpm --dir test/framework-app test",
+    "test:browser": "pnpm run test:next && pnpm --dir test/next-app run test:browser",
+    "test:package": "pnpm run build && node --test test/package.mjs",
+    "build:site": "pnpm run build && pnpm --dir site run build",
+    "test:site": "pnpm run build:site && node --test test/site.mjs",
+    "prepack": "pnpm run build"
   },
   "engines": { "node": ">=20" },
   "peerDependencies": { "react": "^18.2.0 || ^19.0.0" },

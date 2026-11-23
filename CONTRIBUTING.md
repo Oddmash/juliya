@@ -4,7 +4,7 @@
 
 ## 개발 환경
 
-코어는 Node.js 20 이상을 지원하며 CI와 문서 사이트는 Node.js 24를 사용합니다.
+코어는 Node.js 20 이상을 지원하며 내부 개발 및 CI는 Node.js 24와 `package.json`에 고정된 pnpm을 사용합니다. 루트, 프레임워크 검증 앱, 문서 사이트는 각각 커밋된 lockfile로 독립 설치하며, 공개 npm 패키지의 설치 방법은 변경하지 않습니다.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -27,8 +27,8 @@ pnpm test
 프레임워크 테스트 전에 다음 의존성을 준비합니다.
 
 ```bash
-pnpm --dir test/next-app install --no-frozen-lockfile
-pnpm --dir test/framework-app install --no-frozen-lockfile
+pnpm --dir test/next-app install --frozen-lockfile
+pnpm --dir test/framework-app install --frozen-lockfile
 pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```
 
@@ -37,7 +37,7 @@ pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```bash
 pnpm build
 benchmark_dir=$(mktemp -d)
-npm install --prefix "$benchmark_dir" --no-save @chenglou/pretext@1.0.0
+pnpm --dir "$benchmark_dir" add --save-exact @chenglou/pretext@1.0.0
 node test/next-app/compare-wrap.mjs "$benchmark_dir/node_modules/@chenglou/pretext"
 ```
 
@@ -51,7 +51,7 @@ macOS의 세 브라우저에서 각 구현은 27개 조합당 100줄을 표시�
 
 ```bash
 pnpm build
-pnpm --dir site install --no-frozen-lockfile
+pnpm --dir site install --frozen-lockfile
 pnpm --dir site dev
 ```
 
