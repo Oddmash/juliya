@@ -68,7 +68,8 @@ export const Playground = () => {
 	const [counts, setCounts] = useState<{
 		native: number | null;
 		kowrap: number | null;
-	}>({ native: null, kowrap: null });
+		actualWidth: number | null;
+	}>({ native: null, kowrap: null, actualWidth: null });
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const nativeRef = useRef<HTMLParagraphElement>(null);
 	const kowrapRef = useRef<HTMLDivElement>(null);
@@ -99,9 +100,10 @@ export const Playground = () => {
 				const result = {
 					native: rowsOf(native),
 					kowrap: rowsOf(container.querySelector("p")),
+					actualWidth: Math.round(native.getBoundingClientRect().width),
 				};
 				setCounts((previous) =>
-					previous.native === result.native && previous.kowrap === result.kowrap
+					previous.native === result.native && previous.kowrap === result.kowrap && previous.actualWidth === result.actualWidth
 						? previous
 						: result,
 				);
@@ -165,7 +167,7 @@ export const Playground = () => {
 		>
 			<div className="playground-header">
 				<div>
-					<h2 id="playground-title">내 문장으로 비교하기</h2>
+					<h3 id="playground-title">내 문장으로 비교하기</h3>
 				</div>
 				<div className="control-range comparison-width">
 					<label htmlFor="demo-width">
@@ -180,6 +182,7 @@ export const Playground = () => {
 						value={width}
 						onChange={(event) => setWidth(Number(event.target.value))}
 					/>
+					{counts.actualWidth !== null && counts.actualWidth < width && <span className="actual-width">현재 화면의 실제 비교 폭: {counts.actualWidth}px</span>}
 				</div>
 			</div>
 			<div className="playground-body">
@@ -193,11 +196,14 @@ export const Playground = () => {
 							rows={2}
 							maxLength={400}
 							spellCheck={false}
+							name="text"
 							ref={inputRef}
 							value={text}
 							onChange={(event) => changeText(event.target.value)}
 						/>
-						<div className="editor-actions">
+						<details className="editor-advanced">
+							<summary>고급 설정: 강제 개행</summary>
+							<div className="editor-actions">
 							<Button variant="secondary" size="sm" type="button" className="button-small" onClick={addBreak}>
 								커서 위치에서 개행
 							</Button>
@@ -215,7 +221,8 @@ export const Playground = () => {
 							>
 								{message}
 							</span>
-						</div>
+							</div>
+						</details>
 					</div>
 					<div className="controls">
 						<div className="preset-group" role="group" aria-label="예시 문장">

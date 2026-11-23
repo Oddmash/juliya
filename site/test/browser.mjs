@@ -48,49 +48,40 @@ await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}${basePath}`;
 const verifySpecimen = async (page, motion) => {
 	await page.evaluate(() => document.fonts.ready);
-	await page.locator('[data-layer="kowrap"] br').first().waitFor({ state: "attached" });
-	const ribbon = page.locator(".specimen-ribbon[data-positioned]");
-	await ribbon.waitFor();
+	await page.locator(".specimen-applied .specimen-text br").first().waitFor({ state: "attached" });
 	const status = page.locator(".specimen [role=status]");
-	assert.equal(await status.isVisible(), true);
-	assert.match(await status.textContent(), /Kowrap을 눌러/);
-	assert.equal(await page.locator(".specimen input[type=range]").count(), 0);
-	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
-	const [css, kowrap] = await page.locator(".specimen-layer p").evaluateAll((samples) => samples.map((sample) => {
+	const native = page.locator(".specimen-native .specimen-text");
+	const applied = page.locator(".specimen-applied .specimen-text");
+	await page.locator(".specimen-applied [data-moved]").waitFor();
+	assert.equal(await page.locator(".specimen-text:visible").count(), 2);
+	const [css, kowrap] = await page.locator(".specimen-text").evaluateAll((samples) => samples.map((sample) => {
 		const style = getComputedStyle(sample);
 		return [sample.textContent, style.width, style.font, style.letterSpacing, style.whiteSpace, style.wordBreak, style.overflowWrap, style.textWrap];
 	}));
-	assert.deepEqual(css, kowrap, "both modes use the same copy and rendering constraints");
-	const nativeWord = page.locator('[data-layer="css"] [data-word="3"]');
-	const before = await nativeWord.evaluate((word) => word.getBoundingClientRect().top);
-	await ribbon.evaluate((marker) => {
-		marker.addEventListener("transitionrun", (event) => {
-			if (event.propertyName === "transform") marker.dataset.animated = "true";
-		});
-	});
-	const kowrapMode = page.getByRole("button", { name: "Kowrap", exact: true });
-	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--ghost\b/);
-	await kowrapMode.press("Enter");
-	assert.match(await kowrapMode.getAttribute("class"), /\bom-button--primary\b/);
-	const moved = page.locator(".specimen-layer:visible [data-moved]");
+	assert.deepEqual(css, kowrap, "both panels use the same text and rendering constraints");
+	const before = await native.locator("[data-moved]").evaluate((word) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top);
+	const moved = applied.locator("[data-moved]");
 	assert.equal(await moved.textContent(), "한곳에서");
-	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top > top, before));
-	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
-	assert.equal(await kowrapMode.evaluate((button) => document.activeElement === button), true);
-	assert.match(await status.textContent(), /한곳에서.*2번째 줄/);
-	if (motion) await page.locator(".specimen-ribbon[data-animated]").waitFor();
-	else assert.equal(await ribbon.evaluate((marker) => getComputedStyle(marker).transitionProperty), "none");
-	await page.waitForFunction(() => {
-		const marker = document.querySelector(".specimen-ribbon").getBoundingClientRect();
-		const word = document.querySelector(".specimen-layer [data-moved]").getBoundingClientRect();
-		const text = document.querySelector('.specimen-layer[aria-hidden="false"] p').getBoundingClientRect();
-		return marker.top >= text.bottom && Math.abs((marker.left + marker.right - word.left - word.right) / 2) < 2;
-	});
-	await page.getByRole("button", { name: "기본 CSS", exact: true }).press("Enter");
-	await kowrapMode.press("Enter");
-	assert.equal(await kowrapMode.getAttribute("aria-pressed"), "true");
-	assert.equal(await page.locator(".specimen-layer:visible [data-moved]").textContent(), "한곳에서");
-	assert.equal(await page.locator(".specimen-layer:visible").count(), 1);
+	assert.ok(await moved.evaluate((word, top) => word.getBoundingClientRect().top - word.closest("p").getBoundingClientRect().top > top, before));
+	assert.match(await status.textContent(), /한곳에서.*1번째 줄 → 2번째 줄/);
+	const replay = page.getByRole("button", { name: "변화 다시 보기" });
+	const cue = page.locator(".specimen-cue");
+	await replay.press("Enter");
+	assert.equal(await replay.evaluate((button) => document.activeElement === button), true);
+	if (motion) {
+		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().some((animation) => animation.playState === "running"));
+		await replay.press("Enter");
+		await page.waitForFunction(() => document.querySelector(".specimen-cue").getAnimations().every((animation) => animation.playState !== "running"));
+	} else {
+		assert.equal(await cue.evaluate((marker) => marker.getAnimations().length), 0);
+	}
+	assert.equal(await cue.evaluate((marker) => {
+		const bounds = marker.getBoundingClientRect();
+		const word = marker.parentElement.getBoundingClientRect();
+		return Math.abs(bounds.left - word.left) < 2 && Math.abs(bounds.width - word.width) < 2;
+	}), true);
+	assert.equal(await applied.locator("[data-moved]").textContent(), "한곳에서");
+	assert.equal(await page.locator(".specimen-text:visible").count(), 2);
 };
 let browser;
 try {
@@ -109,15 +100,15 @@ try {
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
-	assert.equal(await page.locator("#hero-title").textContent(), "한국어 줄바꿈을 자연스럽게");
-	assert.ok(await page.locator("#hero-title").evaluate(async (title) => {
+	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름에 맞춰.");
+	assert.ok(await page.locator(".specimen-native .specimen-text").evaluate(async (title) => {
 		await document.fonts.ready;
 		const family = getComputedStyle(title).fontFamily.split(",")[0];
 		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
-	await page.getByRole("link", { name: "직접 편집" }).click();
+	await page.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	assert.equal(new URL(page.url()).hash, "#editor");
 	assert.equal(await page.locator("#editor").evaluate((editor) => document.activeElement === editor), true);
 	await page.getByText("인라인 마크업 예제", { exact: true }).click();
@@ -164,6 +155,7 @@ try {
 		const offset = element.value.indexOf("TypeScript");
 		element.setSelectionRange(offset, offset);
 	});
+	await page.getByText("고급 설정: 강제 개행", { exact: true }).click();
 	await page.getByRole("button", { name: "커서 위치에서 개행" }).click();
 	await page.waitForFunction(() =>
 		document
@@ -245,7 +237,9 @@ try {
 	assert.equal(await mobileEditor.isVisible(), true);
 	assert.ok((await mobileEditor.boundingBox()).y < (await mobile.locator("#native-preview").boundingBox()).y);
 	await verifySpecimen(mobile, false);
-	await mobile.getByRole("link", { name: "직접 편집" }).click();
+	await mobile.locator(".actual-width").waitFor();
+	assert.ok(await mobile.locator(".actual-width").textContent().then((text) => /실제 비교 폭: \d+px/.test(text)));
+	await mobile.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	await mobile.getByText("인라인 마크업 예제", { exact: true }).click();
 	await mobile.locator("#inline-preview br[data-kowrap-break]").first().waitFor({ state: "attached" });
 	const inlineCode = await mobile.locator(".inline-example pre").evaluate((element) => ({
@@ -265,8 +259,8 @@ try {
 	await reduced.emulateMedia({ reducedMotion: "reduce" });
 	await reduced.route("**/*.woff2", (route) => route.abort());
 	await reduced.goto(`${origin}/`);
-	assert.equal(await reduced.locator(".specimen-layer:visible").count(), 1);
-	await reduced.getByRole("link", { name: "직접 편집" }).click();
+	assert.equal(await reduced.locator(".specimen-text:visible").count(), 2);
+	await reduced.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	await reduced.locator("#demo-width").press("Home");
 	await reduced.waitForFunction(() => [...document.querySelectorAll(".preview-ruler > span")].every((marker) => {
 		const width = marker.closest(".preview-stage").querySelector(".preview-text").getBoundingClientRect().width;

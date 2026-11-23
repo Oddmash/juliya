@@ -1,115 +1,131 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { WrapText } from "@oddmash/kowrap/react";
 import { Button } from "@oddmash/ui/button";
 import { specimenText } from "../lib/specimen";
 
 const words = specimenText.split(" ");
-const modes = [["css", "기본 CSS"], ["kowrap", "Kowrap"]] as const;
-type Mode = (typeof modes)[number][0];
-
 const wordBoxes = (layer: HTMLElement) =>
-	Array.from(layer.querySelectorAll<HTMLElement>("[data-word]"), (word) => word.getClientRects()[0]);
+	Array.from(layer.querySelectorAll<HTMLElement>("[data-word]"), (word) => word.getBoundingClientRect());
+
+type Difference = { index: number; from: number; to: number; dx: number; dy: number };
 
 export const LandingSpecimen = () => {
-	const [mode, setMode] = useState<Mode>("css");
-	const [moved, setMoved] = useState<{ index: number; line: number }>();
-	const [interacted, setInteracted] = useState(false);
-	const stage = useRef<HTMLDivElement>(null);
-	const ribbon = useRef<HTMLSpanElement>(null);
-
-	const changeMode = (next: Mode) => {
-		if (next === mode) return;
-		const current = stage.current?.querySelector<HTMLElement>(`[data-layer="${mode}"]`);
-		const target = stage.current?.querySelector<HTMLElement>(`[data-layer="${next}"]`);
-		if (!current || !target) return;
-		const before = wordBoxes(current);
-		const after = wordBoxes(target);
-		const index = after.findIndex((box, i) => box && before[i]
-			&& Math.abs(box.top - before[i].top) > box.height / 2);
-		const lineHeight = parseFloat(getComputedStyle(target.querySelector("p") ?? target).lineHeight);
-		setMoved(index < 0 ? undefined : { index, line: 1 + Math.round((after[index].top - after[0].top) / lineHeight) });
-		setInteracted(true);
-		setMode(next);
-	};
+	const before = useRef<HTMLParagraphElement>(null);
+	const after = useRef<HTMLDivElement>(null);
+	const marker = useRef<HTMLSpanElement>(null);
+	const ghost = useRef<HTMLSpanElement>(null);
+	const animation = useRef<Animation | null>(null);
+	const ghostAnimation = useRef<Animation | null>(null);
+	const differenceRef = useRef<Difference | null>(null);
+	const initialPlayed = useRef(false);
+	const [difference, setDifference] = useState<Difference | null>(null);
+	const [ready, setReady] = useState(false);
 
 	useEffect(() => {
-		const root = stage.current;
-		const marker = ribbon.current;
-		const layer = root?.querySelector<HTMLElement>(`[data-layer="${mode}"]`);
-		const text = layer?.querySelector("p");
-		if (!root || !marker || !layer || !text) return;
+		const native = before.current;
+		const applied = after.current;
+		if (!native || !applied) return;
 		let frame = 0;
-		const position = () => {
-			const boxes = wordBoxes(layer);
-			const first = boxes[0];
-			if (!first) return;
-			const anchor = moved
-				? boxes[moved.index]
-				: boxes.filter((box) => box && Math.abs(box.top - first.top) < first.height / 2).at(-1);
-			if (!anchor) return;
-			const origin = root.getBoundingClientRect();
-			const roomAtEnd = anchor.right + marker.offsetWidth + 8 <= origin.right;
-			const beside = !moved && roomAtEnd;
-			const edge = beside ? anchor.right + 8 : anchor.left + (anchor.width - marker.offsetWidth) / 2;
-			const x = Math.max(0, Math.min(edge - origin.left, origin.width - marker.offsetWidth));
-			const bottom = beside ? anchor.bottom - marker.offsetHeight * 0.7 : text.getBoundingClientRect().bottom + 8;
-			const y = bottom - origin.top;
-			marker.style.setProperty("--ribbon-x", `${x}px`);
-			marker.style.setProperty("--ribbon-y", `${y}px`);
-			marker.dataset.positioned = "";
+		const measure = () => {
+			const target = applied.querySelector("p");
+			if (!target) return;
+			const old = wordBoxes(native);
+			const next = wordBoxes(target);
+			if (old.length !== words.length || next.length !== words.length) return;
+			const fromLineHeight = parseFloat(getComputedStyle(native).lineHeight);
+			const toLineHeight = parseFloat(getComputedStyle(target).lineHeight);
+			const fromLine = (index: number) => 1 + Math.round((old[index].top - old[0].top) / fromLineHeight);
+			const toLine = (index: number) => 1 + Math.round((next[index].top - next[0].top) / toLineHeight);
+			const index = next.findIndex((_, i) => fromLine(i) !== toLine(i));
+			const result = index < 0 ? null : {
+				index, from: fromLine(index), to: toLine(index),
+				dx: old[index].left - old[0].left - (next[index].left - next[0].left),
+				dy: old[index].top - old[0].top - (next[index].top - next[0].top),
+			};
+			if (JSON.stringify(differenceRef.current) !== JSON.stringify(result)) {
+				animation.current?.cancel();
+				ghostAnimation.current?.cancel();
+			}
+			differenceRef.current = result;
+			setDifference((previous) => JSON.stringify(previous) === JSON.stringify(result) ? previous : result);
+			setReady(true);
 		};
 		const schedule = () => {
 			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(position);
+			frame = requestAnimationFrame(measure);
 		};
-		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
-		resize?.observe(root);
+		const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
+		observer?.observe(native);
+		observer?.observe(applied);
 		const mutation = new MutationObserver(schedule);
-		mutation.observe(layer, { childList: true, subtree: true });
+		mutation.observe(applied, { childList: true, subtree: true });
+		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
+		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const cancel = () => { animation.current?.cancel(); ghostAnimation.current?.cancel(); };
+		preference.addEventListener("change", cancel);
 		schedule();
 		return () => {
-			resize?.disconnect();
+			observer?.disconnect();
 			mutation.disconnect();
+			window.removeEventListener("resize", schedule);
 			document.fonts?.removeEventListener("loadingdone", schedule);
+			preference.removeEventListener("change", cancel);
 			cancelAnimationFrame(frame);
+			cancel();
 		};
-	}, [mode, moved]);
+	}, []);
 
-	const sample = (layer: Mode) => words.map((word, index) => (
-		<Fragment key={word}>
+	const replay = useCallback(() => {
+		initialPlayed.current = true;
+		const measured = differenceRef.current;
+		const cue = marker.current;
+		if (!measured || !cue) return;
+		const transform = animation.current?.playState === "running" ? getComputedStyle(cue).transform : `translate(${measured.dx}px, ${measured.dy}px)`;
+		animation.current?.cancel();
+		ghostAnimation.current?.cancel();
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !cue.animate) return;
+		const timing = { duration: 520, easing: "cubic-bezier(.22, 1, .36, 1)" };
+		animation.current = cue.animate([{ transform, opacity: 0.6 }, { transform: "translate(0, 0)", opacity: 1 }], timing);
+		ghostAnimation.current = ghost.current?.animate([{ transform, opacity: .65 }, { transform: "translate(0, 0)", opacity: 0 }], timing) ?? null;
+	}, []);
+
+	useEffect(() => {
+		if (!difference || initialPlayed.current) return;
+		const timer = window.setTimeout(() => {
+			if (!initialPlayed.current) replay();
+		}, 620);
+		return () => window.clearTimeout(timer);
+	}, [difference, replay]);
+
+	const sample = (applied: boolean) => words.map((word, index) => (
+		<Fragment key={index}>
 			{index > 0 && " "}
-			<span data-word={index} data-moved={mode === layer && moved?.index === index ? "" : undefined}>{word}</span>
+			<span data-word={index} data-moved={difference?.index === index ? "" : undefined}>
+				{word}
+				{applied && difference?.index === index && <><span className="specimen-cue" ref={marker} aria-hidden="true" /><span className="specimen-ghost" ref={ghost} data-label={word} aria-hidden="true" /></>}
+			</span>
 		</Fragment>
 	));
 
 	return (
 		<section className="specimen" id="playground" aria-label="줄바꿈 비교">
-			<div className="specimen-stage" ref={stage}>
-				<div className="specimen-layer" data-layer="css" aria-hidden={mode !== "css"}>
-					<p className="specimen-text">{sample("css")}</p>
+			<div className="specimen-panels">
+				<div className="specimen-panel specimen-native">
+					<div className="specimen-label"><span>01 / 기본 CSS</span><span>keep-all</span></div>
+					<div className="specimen-stage"><p className="specimen-text" ref={before}>{sample(false)}</p></div>
 				</div>
-				<div className="specimen-layer" data-layer="kowrap" aria-hidden={mode !== "kowrap"}>
-					<WrapText as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample("kowrap")}</WrapText>
+				<div className="specimen-panel specimen-applied">
+					<div className="specimen-label"><span>02 / Kowrap</span><span>의미 기반</span></div>
+					<div className="specimen-stage" ref={after}><WrapText as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample(true)}</WrapText></div>
 				</div>
-				<span className="specimen-ribbon" ref={ribbon} aria-hidden="true" data-interacted={interacted ? "" : undefined} />
 			</div>
 			<div className="specimen-controls">
-				<div className="specimen-modes" role="group" aria-label="줄바꿈 방식">
-					{modes.map(([value, label]) => (
-						<Button key={value} variant={mode === value ? "primary" : "ghost"} size="sm"
-							aria-pressed={mode === value} onClick={() => changeMode(value)}>{label}</Button>
-					))}
-				</div>
-				<a href="#editor" className="specimen-edit">직접 편집 <span aria-hidden="true">↘</span></a>
+				<p className="specimen-status" role="status">{difference ? `‘${words[difference.index]}’ 위치: ${difference.from}번째 줄 → ${difference.to}번째 줄` : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}</p>
+				<Button type="button" size="sm" variant="secondary" className="specimen-replay" disabled={!difference} onClick={replay}><span aria-hidden="true">↻</span> 변화 다시 보기</Button>
 			</div>
-			<p className="specimen-status" role="status">
-				{moved ? `‘${words[moved.index]}’의 위치가 ${moved.line}번째 줄로 바뀌었습니다.` : interacted
-					? "이 너비에서는 두 방식의 줄바꿈이 같습니다."
-					: "Kowrap을 눌러 줄바꿈이 달라지는 곳을 보세요."}
-			</p>
 		</section>
 	);
 };
