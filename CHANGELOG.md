@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.3.1](docs/releases/v0.3.1.md)
+
+- Refresh the README with a screenshot of the public landing and a standalone HTML example pinned to Kowrap 0.3.0 on jsDelivr.
+- Keep the README, landing, and HTML guide examples in sync and run the copied HTML in three browser engines.
+- Install all three browser engines during npm release verification.
+
 ## [0.3.0](docs/releases/v0.3.0.md)
 
 - Preserve nested inline markup when wrapping text in React, plain HTML, Vue, and Svelte.

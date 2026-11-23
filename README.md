@@ -6,7 +6,26 @@
 
 [체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
 
-[![kowrap 공개 사이트에서 CSS 기본 줄바꿈과 kowrap 적용 결과를 나란히 비교한 화면](docs/assets/kowrap-live.jpg)](https://oddmash.github.io/kowrap/#playground)
+[![Kowrap 공개 랜딩에서 줄바꿈을 비교하고 문장을 편집하는 화면](docs/assets/kowrap-live.jpg)](https://oddmash.github.io/kowrap/#playground)
+
+## HTML에서 바로 실행하기
+
+아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열면 jsDelivr가 Kowrap `0.3.0`을 불러옵니다.
+
+```html
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>Kowrap 예제</title>
+<p id="title" style="max-width: 220px; font-size: 24px">팀의 모든 문서를 한곳에서 관리하세요</p>
+<script type="module">
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
+
+  const title = document.getElementById('title');
+  mountKowrap(title, { text: title.textContent });
+</script>
+</html>
+```
 
 ## 특징
 

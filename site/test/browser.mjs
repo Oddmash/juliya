@@ -190,11 +190,14 @@ try {
 	const guideHtml = await htmlGuide.locator("#doc-content pre code").first().textContent();
 	assert.equal(guideHtml.trim(), landingHtml.trim(), "The guide and landing publish the same standalone HTML");
 	assert.match(landingHtml, /https:\/\/cdn\.jsdelivr\.net\/npm\/@oddmash\/kowrap@\d+\.\d+\.\d+\/dist\/dom\/index\.js\/\+esm/);
+	const readme = await readFile(new URL("../../README.md", import.meta.url), "utf8");
+	const readmeHtml = readme.match(/^```html\r?\n([\s\S]+?)^```$/m)?.[1].trim();
+	assert.equal(readmeHtml, landingHtml.trim(), "The README publishes the same standalone HTML");
 	const staticPage = await openPage(desktop);
 	const exampleDir = await mkdtemp(resolve(tmpdir(), "kowrap-cdn-"));
 	try {
 		const exampleFile = resolve(exampleDir, "index.html");
-		await writeFile(exampleFile, landingHtml);
+		await writeFile(exampleFile, readmeHtml);
 		await staticPage.goto(pathToFileURL(exampleFile).href);
 		await staticPage.locator("#title > br").first().waitFor({ state: "attached" });
 	} finally {
