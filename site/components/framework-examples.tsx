@@ -34,7 +34,7 @@ const examples = [
 <title>Kowrap 예제</title>
 <p id="title" style="max-width: 220px; font-size: 24px">${specimenText}</p>
 <script type="module">
-  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.2.0/dist/dom/index.js/+esm';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
   mountKowrap(title, { text: title.textContent });

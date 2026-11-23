@@ -4,7 +4,7 @@ HTML 요소의 줄바꿈을 화면에 적용할 때는 `mountKowrap`을 사용�
 
 ## 번들러 없는 정적 HTML
 
-아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열어보세요. jsDelivr가 Kowrap 0.2.0을 제공하므로 npm 설치나 파일 복사가 필요 없습니다.
+아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열어보세요. jsDelivr가 Kowrap 0.3.0을 제공하므로 npm 설치나 파일 복사가 필요 없습니다.
 
 ```html
 <!doctype html>
@@ -13,7 +13,7 @@ HTML 요소의 줄바꿈을 화면에 적용할 때는 `mountKowrap`을 사용�
 <title>Kowrap 예제</title>
 <p id="title" style="max-width: 220px; font-size: 24px">팀의 모든 문서를 한곳에서 관리하세요</p>
 <script type="module">
-  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.2.0/dist/dom/index.js/+esm';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
   mountKowrap(title, { text: title.textContent });
