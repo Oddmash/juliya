@@ -79,6 +79,7 @@ body:has(> .landing) { background: var(--paper); }
 	font: 530 clamp(26px, 4.6vw, 56px) / 1.43 var(--landing-display), var(--sans);
 	letter-spacing: -.035em;
 }
+.specimen-panels:not([data-example="0"]) .specimen-stage { font-family: var(--sans); }
 .specimen-layout, .specimen-ruler { inline-size: min(var(--specimen-width), 100%); }
 .specimen-layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; min-block-size: 3lh; }
 .specimen-layout > * { grid-area: 1 / 1; min-inline-size: 0; }
@@ -160,8 +161,6 @@ body:has(> .landing) { background: var(--paper); }
 	.landing .actual-width { flex-basis: 100%; }
 	.landing-install .install-command { flex-wrap: wrap; }
 	.landing-reading-grid { grid-template-columns: minmax(0, 1fr); }
-	.case-sample { min-height: 120px; }
-	.case-copy { gap: 8px; }
 	.landing-install { grid-template-columns: minmax(0, 1fr); }
 }
 
