@@ -9,6 +9,7 @@ import { JuliyaText } from "@oddmash/kowrap/react";
 import { Button } from "@oddmash/ui/button";
 import { Card } from "@oddmash/ui/card";
 import { Textarea } from "@oddmash/ui/textarea";
+import { SelectDropdown as Select } from "@oddmash/ui/select";
 import { CopyButton } from "./copy-button";
 
 const koreanPresets = [
@@ -183,16 +184,21 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 		>
 			<div className="playground-header">
 				<label htmlFor="demo-locale">{copy.language}</label>
-				<select id="demo-locale" value={locale} onChange={event => {
-					const next = event.target.value as DemoLocale;
-					setLocale(next);
-					changeText(languageSamples[next][0].value, 0);
-				}}>
-					<option value="ko">한국어</option>
-					<option value="en">English</option>
-					<option value="ja">日本語</option>
-					<option value="zh-Hans">简体中文</option>
-				</select>
+				<Select
+					id="demo-locale"
+					value={locale}
+					options={[
+						{ value: "ko", label: "한국어" },
+						{ value: "en", label: "English" },
+						{ value: "ja", label: "日本語" },
+						{ value: "zh-Hans", label: "简体中文" },
+					]}
+					onValueChange={value => {
+						const next = value as DemoLocale;
+						setLocale(next);
+						changeText(languageSamples[next][0].value, 0);
+					}}
+				/>
 				<div className="control-range comparison-width">
 					<label htmlFor="demo-width">
 						{copy.width} <output htmlFor="demo-width">{width}px</output>
