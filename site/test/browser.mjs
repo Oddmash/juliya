@@ -60,6 +60,11 @@ const verifySpecimen = async (page, motion) => {
 			const bounds = panel.getBoundingClientRect();
 			return bounds.left >= 0 && bounds.right <= innerWidth + 1;
 		}), true);
+		await page.waitForFunction(() => {
+			const width = Number(document.querySelector(".specimen-width")?.getAttribute("data-measured-width"));
+			return width > 0 && [...document.querySelectorAll(".specimen-text")].every(sample => Math.abs(sample.getBoundingClientRect().width - width) <= 1);
+		});
+		await page.waitForFunction(() => [...document.querySelectorAll(".specimen-stage")].every(stage => Math.abs(stage.querySelector(".specimen-ruler > span").getBoundingClientRect().width - stage.querySelector(".specimen-text").getBoundingClientRect().width) <= 1));
 		assert.ok(await page.locator(".specimen-text").evaluateAll(samples => samples.every(sample => {
 			const words = [...sample.querySelectorAll("[data-word]")].map(word => word.getBoundingClientRect());
 			return words.every((word, index) => words.slice(index + 1).every(other =>
@@ -70,14 +75,36 @@ const verifySpecimen = async (page, motion) => {
 	await compare();
 	const panels = page.locator(".specimen-panels");
 	const first = await panels.getAttribute("data-example");
+	const firstWidth = await page.locator(".specimen-width").getAttribute("data-measured-width");
+	if (motion) {
+		await page.locator(".specimen-motion").waitFor({ state: "attached" });
+		assert.ok(await page.locator(".specimen-motion").evaluate(element => {
+			const style = element.style;
+			const panel = element.parentElement.getBoundingClientRect();
+			const source = element.parentElement.querySelector(".specimen-native [data-moved]")?.getBoundingClientRect();
+			const target = element.parentElement.querySelector(".specimen-applied [data-moved]")?.getBoundingClientRect();
+			if (!source || !target) return false;
+			const close = (a, b) => Math.abs(a - b) <= 2;
+			const x = parseFloat(style.getPropertyValue("--motion-x"));
+			const y = parseFloat(style.getPropertyValue("--motion-y"));
+			const dx = parseFloat(style.getPropertyValue("--motion-dx"));
+			const dy = parseFloat(style.getPropertyValue("--motion-dy"));
+			return element.getAttribute("aria-hidden") === "true" && getComputedStyle(element).pointerEvents === "none" &&
+				getComputedStyle(element).animationName === "specimen-route" &&
+				close(x, source.left + source.width / 2 - panel.left) && close(y, source.bottom - panel.top + 5) &&
+				close(x + dx, target.left + target.width / 2 - panel.left) && close(y + dy, target.bottom - panel.top + 5);
+		}), "the animated cue is a measured non-interactive decoration");
+	}
 	assert.equal(await page.getByRole("button", { name: /자동 재생/ }).count(), 0);
 	if (motion) {
 		await panels.scrollIntoViewIfNeeded();
 		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
+		await page.waitForFunction(width => document.querySelector(".specimen-width").dataset.measuredWidth && document.querySelector(".specimen-width").dataset.measuredWidth !== width, firstWidth);
 		await compare();
 	} else {
 		assert.equal(await panels.getAttribute("data-example"), first);
 		assert.equal(await page.locator(".specimen-text").first().evaluate(element => element.getAnimations().length), 0);
+		assert.equal(await page.locator(".specimen-motion").count(), 0);
 	}
 	const selection = page.locator(".specimen").getByRole("button", { name: "서비스 제목" });
 	await selection.press("Enter");
@@ -121,6 +148,19 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	assert.equal(await page.locator(".use-case").count(), 3);
+	assert.ok(await page.locator(".use-case").evaluateAll(cases => cases.every(item => {
+		const native = item.querySelector(".case-native .case-text");
+		const applied = item.querySelector(".case-applied .case-text");
+		return native.textContent === applied.textContent && Math.abs(native.getBoundingClientRect().width - applied.getBoundingClientRect().width) <= 1;
+	})), "use case previews compare identical text at equal widths");
+	assert.ok(await page.locator(".use-case").evaluateAll(cases => cases.some(item => {
+		const linePositions = selector => {
+			const words = [...item.querySelectorAll(selector)].map(word => word.getBoundingClientRect());
+			return words.map(word => Math.round(word.top - words[0].top));
+		};
+		return JSON.stringify(linePositions(".case-native [data-case-word]")) !== JSON.stringify(linePositions(".case-applied [data-case-word]"));
+	})), "real use case examples exhibit a line-position change");
 	if (engine.name() === "chromium") {
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 		await page.screenshot({ path: "test-results/renewal/landing-desktop.png", fullPage: true, animations: "disabled" });
