@@ -144,8 +144,10 @@ try {
 		await localized.goto(`${origin}/${language}/`);
 		await localized.getByRole("button", { name: label, exact: true }).waitFor();
 		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		await localized.waitForLoadState("networkidle");
 		await localized.goto(`${origin}/${language}/docs/core/`);
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/kowrap/${language}`));
+		await localized.waitForLoadState("networkidle");
 		await localized.close();
 	}
 	const page = await openPage(desktop);
