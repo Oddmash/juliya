@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Toast } from "@oddmash/ui/toast";
+import { usePathname } from "next/navigation";
+import { copyLabels, languageFromPath } from "../lib/locales";
 
 type CopyResult = "복사 완료" | "복사 실패";
 type CopyNotice = { id: number; result: CopyResult; source: HTMLElement | null };
@@ -12,6 +14,7 @@ const CopyToastContext = createContext<(result: CopyResult) => void>(() => {});
 export const useCopyToast = () => useContext(CopyToastContext);
 
 const CopyToastItem = ({ notice, onDismiss }: { notice: CopyNotice; onDismiss: (id: number) => void }) => {
+	const labels = copyLabels[languageFromPath(usePathname() ?? "/")];
 	const region = useRef<HTMLDivElement>(null);
 	const [open, setOpen] = useState(false);
 	const [hovered, setHovered] = useState(false);
@@ -34,10 +37,10 @@ const CopyToastItem = ({ notice, onDismiss }: { notice: CopyNotice; onDismiss: (
 	};
 
 	return (
-		<Toast ref={region} className="copy-toast-item" data-copy-notice={notice.id} open={open} title={notice.result} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기"
+		<Toast ref={region} className="copy-toast-item" data-copy-notice={notice.id} open={open} title={notice.result === "복사 실패" ? labels.failure : labels.success} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel={labels.dismiss}
 			onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
 			onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
-			{notice.result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : null}
+			{notice.result === "복사 실패" ? labels.hint : null}
 		</Toast>
 	);
 };
