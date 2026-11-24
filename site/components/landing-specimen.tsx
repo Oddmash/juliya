@@ -46,7 +46,7 @@ export const LandingSpecimen = () => {
 		}
 		let animations: Animation[] = [];
 		let frame = 0;
-		
+
 		let settle: number | undefined;
 		let played = false;
 		const measure = () => {
