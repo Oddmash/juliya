@@ -12,6 +12,7 @@ const checkedMeasure = (measure: Measure): Measure => (value) => {
 export const wrap = (text: string, options: WrapOptions): WrappedLine[] => {
   if (!Number.isFinite(options.width) || options.width <= 0) throw new RangeError("width must be positive and finite");
   const paragraphOptions: ParagraphOptions = {
+    locale: options.locale ?? "ko",
     width: options.width,
     measure: checkedMeasure(options.measure),
     strategy: options.strategy ?? "balanced",
