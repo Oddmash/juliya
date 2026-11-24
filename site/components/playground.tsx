@@ -166,9 +166,6 @@ export const Playground = () => {
 			aria-labelledby="playground-title"
 		>
 			<div className="playground-header">
-				<div>
-					<h3 id="playground-title">내 문장으로 비교하기</h3>
-				</div>
 				<div className="control-range comparison-width">
 					<label htmlFor="demo-width">
 						비교 폭 <output htmlFor="demo-width">{width}px</output>
@@ -182,7 +179,7 @@ export const Playground = () => {
 						value={width}
 						onChange={(event) => setWidth(Number(event.target.value))}
 					/>
-					{counts.actualWidth !== null && <span className="actual-width">실제 비교 폭: {counts.actualWidth}px{counts.actualWidth < width ? " (화면 폭에 맞춤)" : ""}</span>}
+					{counts.actualWidth !== null && counts.actualWidth < width && <span className="actual-width">실제 비교 폭: {counts.actualWidth}px</span>}
 				</div>
 			</div>
 			<div className="playground-body">
@@ -258,7 +255,7 @@ export const Playground = () => {
 						<div className="comparison-top">
 							<span className="comparison-label">
 								<span className="marker marker-neutral" />
-								적용 전 (CSS keep-all)
+								기본 CSS
 							</span>
 							<span className="line-count">
 								{counts.native === null ? "측정 중" : `${counts.native}줄`}
@@ -281,7 +278,7 @@ export const Playground = () => {
 						<div className="comparison-top">
 							<span className="comparison-label">
 								<span className="marker marker-active" />
-								적용 후 (kowrap)
+								Kowrap
 							</span>
 							<span className="line-count">
 								{counts.kowrap === null ? "측정 중" : `${counts.kowrap}줄`}
@@ -306,7 +303,7 @@ export const Playground = () => {
 					<span>
 						{breaks.length
 							? "강제 개행은 kowrap에만 적용됩니다."
-							: "같은 글꼴과 폭에서 실제 브라우저 CSS와 kowrap을 비교합니다."}
+							: null}
 					</span>
 					<Link href="/docs/core/">코어 API</Link>
 				</div>

@@ -28,9 +28,9 @@ const mono = localFont({
 const installCommand = "npm install @oddmash/kowrap";
 
 const useCases = [
-	{ type: "article", label: "콘텐츠 제목", context: "읽기 흐름이 중요한 콘텐츠", text: "좋은 글은 보기 편한 화면에서 시작됩니다.", description: "제목의 의미 단위를 유지하면서 다음 줄의 균형을 맞춥니다." },
-	{ type: "mobile", label: "모바일 카드", context: "폭이 좁은 서비스 소식", text: "새로운 기능을 지금 만나보세요.", description: "좁은 카드에서도 수식어와 이어지는 표현을 함께 읽을 수 있도록 배치합니다." },
-	{ type: "mixed", label: "개발 문서", context: "한글과 영문이 섞인 인터페이스", text: "React와 TypeScript로 더 나은 UI를 만드세요.", description: "영문 기술 용어와 한국어 표현을 같은 화면에서 자연스럽게 배치합니다." },
+	{ type: "article", label: "오늘의 이야기", context: "콘텐츠 제목", text: "오늘의 발견을 함께 나누는 작은 이야기", description: "의미가 이어지는 표현을 함께 읽을 수 있도록 배치합니다." },
+	{ type: "mobile", label: "업데이트", context: "모바일 알림", text: "새로운 기능을 지금 만나보세요.", description: "좁은 카드에서도 수식어와 이어지는 표현을 함께 읽을 수 있도록 배치합니다." },
+	{ type: "mixed", label: "개발 가이드", context: "개발 문서", text: "Next.js와 TypeScript로 만든 화면을 자연스럽게 구성하세요.", description: "영문 기술 용어와 한국어 표현을 같은 화면에서 자연스럽게 배치합니다." },
 ] as const;
 
 const caseWords = (text: string) => text.split(" ").map((word, i) => <Fragment key={i}>{i > 0 && " "}<span data-case-word={i}>{word}</span></Fragment>);
@@ -38,7 +38,6 @@ const caseWords = (text: string) => text.split(" ").map((word, i) => <Fragment k
 const UseCase = ({ item }: { item: typeof useCases[number] }) => (
 	<article className={`use-case use-case-${item.type}`}>
 		<div className="case-copy">
-			<span className="case-index">{item.label}</span>
 			<h3>{item.context}</h3>
 			<p>{item.description}</p>
 		</div>
@@ -61,7 +60,7 @@ const Page = () => (
 			<div className="hero-copy">
 				<p className="landing-kicker"><span aria-hidden="true" /> 한국어 줄바꿈 라이브러리</p>
 				<WrapText as="h1" id="hero-title">한국어를 읽는 흐름에 맞춰.</WrapText>
-				<p className="hero-description">같은 화면 폭에서도 읽기 흐름은 달라집니다. 어절과 문장의 의미를 함께 계산하는 오픈소스 줄바꿈 엔진입니다.</p>
+				<p className="hero-description">한국어 문장의 의미 단위를 지켜 더 자연스럽게 줄을 바꿉니다. React, Vue, Svelte와 일반 HTML에서 사용할 수 있습니다.</p>
 				<div className="hero-actions">
 					<a className="button button-primary" href="#editor">내 문장으로 체험하기 <span aria-hidden="true">↘</span></a>
 					<Link className="hero-docs" href="/docs/">문서 보기 <span aria-hidden="true">↗</span></Link>
@@ -69,27 +68,10 @@ const Page = () => (
 			</div>
 			<LandingSpecimen />
 		</header>
-		<div className="landing-proof-note">화면 속 실제 CSS 결과와 Kowrap 결과를 같은 문장, 글꼴, 폭으로 비교합니다.</div>
-		<div id="editor" className="landing-editor" tabIndex={-1}>
-			<div className="landing-section-heading">
-				<h2>직접 써 보세요.</h2>
-				<p>문장과 너비를 바꾸며 차이를 확인하세요.</p>
-			</div>
-			<Playground />
-			<Link className="text-link inline-guide-link" href="/docs/inline/">강조, 링크가 포함된 문장에 적용하는 방법 →</Link>
-		</div>
-		<section className="landing-use-cases" aria-labelledby="use-cases-title">
-			<div className="landing-section-heading">
-				<h2 id="use-cases-title">실제 UI에서 달라지는 줄바꿈</h2>
-				<p>콘텐츠 제목, 서비스 카드, 개발 문서의 적용 전후를 비교한 예시입니다.</p>
-				<Link className="text-link" href="/comparison/">활용 사례와 성능 비교</Link>
-			</div>
-			<div className="use-case-grid">{useCases.map(item => <UseCase key={item.type} item={item} />)}</div>
-		</section>
 		<section id="install" className="landing-install" aria-labelledby="install-title">
 			<div>
-				<h2 id="install-title">몇 줄이면 충분합니다.</h2>
-				<p>React, Next.js, Vue, Svelte 또는 일반 HTML에서 사용할 수 있습니다.</p>
+				<h2 id="install-title">바로 시작하기</h2>
+				<p>패키지를 설치하고 사용하는 환경에 맞는 코드를 복사하세요.</p>
 				<div className="install-command">
 					<span className="command-prefix" aria-hidden="true">$</span>
 					<code>{installCommand}</code>
@@ -97,6 +79,20 @@ const Page = () => (
 				</div>
 			</div>
 			<FrameworkExamples />
+		</section>
+		<div id="editor" className="landing-editor" tabIndex={-1}>
+			<div className="landing-section-heading">
+				<h2 id="playground-title">내 문장으로 비교하기</h2>
+			</div>
+			<Playground />
+			<Link className="text-link inline-guide-link" href="/docs/inline/">강조, 링크가 포함된 문장에 적용하는 방법 →</Link>
+		</div>
+		<section className="landing-use-cases" aria-labelledby="use-cases-title">
+			<div className="landing-section-heading">
+				<h2 id="use-cases-title">실제 UI에서 달라지는 줄바꿈</h2>
+				<Link className="text-link" href="/comparison/">활용 사례와 성능 비교</Link>
+			</div>
+			<div className="use-case-grid">{useCases.map(item => <UseCase key={item.type} item={item} />)}</div>
 		</section>
 	</main>
 );

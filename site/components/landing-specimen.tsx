@@ -7,7 +7,7 @@ import { specimenText } from "../lib/specimen";
 
 const examples = [
 	{ label: "서비스 제목", text: specimenText, width: "10.8em" },
-	{ label: "콘텐츠", text: "좋은 글은 보기 편한 화면에서 시작됩니다.", width: "9.4em" },
+	{ label: "콘텐츠", text: "좋은 글은 보기 편한 화면에서 시작됩니다.", width: "8.4em" },
 	{ label: "제품 소개", text: "새로운 기능을 지금 만나보세요.", width: "8.8em" },
 	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요", width: "10.8em" },
 ];
@@ -29,7 +29,6 @@ export const LandingSpecimen = () => {
 	const [focused, setFocused] = useState(false);
 	const [difference, setDifference] = useState<Difference | null>(null);
 	const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
-	const [ready, setReady] = useState(false);
 	const example = examples[index];
 	const words = example.text.split(" ");
 	const specimenStyle = { "--specimen-width": example.width } as CSSProperties;
@@ -49,7 +48,6 @@ export const LandingSpecimen = () => {
 	useEffect(() => {
 		if (!rotating) return;
 		const timer = window.setTimeout(() => {
-			setReady(false);
 			setMeasuredWidth(null);
 			setDifference(null);
 			setIndex(value => value + 1);
@@ -83,7 +81,6 @@ export const LandingSpecimen = () => {
 			};
 			setMeasuredWidth(Math.round(native.getBoundingClientRect().width));
 			setDifference(previous => JSON.stringify(previous) === JSON.stringify(result) ? previous : result);
-			setReady(true);
 		};
 		const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
 		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
@@ -104,9 +101,9 @@ export const LandingSpecimen = () => {
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" data-rotating={rotating ? "true" : "false"} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
 			<div className="specimen-examples" aria-label="비교할 예제">
-				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setReady(false); setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
+				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
 			</div>
-			<div className="specimen-panels" data-example={index} ref={panels} style={specimenStyle}>
+			<div className="specimen-panels" data-example={index} data-measured-width={measuredWidth ?? ""} ref={panels} style={specimenStyle}>
 				<div className="specimen-panel specimen-native">
 					<div className="specimen-label"><span>기본 CSS</span><code>keep-all</code></div>
 					<div className="specimen-stage"><div className="specimen-ruler" aria-hidden="true"><span /></div><p key={index} className="specimen-text" ref={before}>{sample()}</p></div>
@@ -125,13 +122,6 @@ export const LandingSpecimen = () => {
 						} as CSSProperties}
 					/>
 				)}
-			</div>
-			<div className="specimen-footer">
-				<p className="specimen-status" aria-live={selected ? "polite" : "off"}>
-					<span className="specimen-step"><span aria-hidden="true" />{String(index + 1).padStart(2, "0")} / {String(examples.length).padStart(2, "0")}</span><span className="specimen-progress" aria-hidden="true"><span key={index} /></span>
-					{difference ? <><strong>‘{words[difference.index]}’</strong><span> {difference.from}번째 줄에서 {difference.to}번째 줄로 이동</span></> : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}
-				</p>
-				<span className="specimen-width" data-measured-width={measuredWidth ?? ""}>{measuredWidth === null ? "폭 측정 중" : `실제 비교 폭 ${measuredWidth}px`}</span>
 			</div>
 		</section>
 	);
