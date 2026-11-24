@@ -19,7 +19,6 @@ const display = localFont({
 const Page = () => (
 	<main id="main" className={`container landing ${display.variable}`}>
 		<header className="landing-intro">
-			<LandingSpecimen initialLocale="ko" />
 			<div className="hero-copy">
 				<h1 id="hero-title">줄이야<span className="sr-only"> 다국어 줄바꿈 라이브러리</span></h1>
 				<p className="hero-description">언어별 줄바꿈 경계와 화면 폭을 고려해 읽는 흐름을 지킵니다.</p>
@@ -28,6 +27,7 @@ const Page = () => (
 					<a className="button hero-secondary" href="#editor">내 문장으로 체험하기</a>
 				</div>
 			</div>
+			<LandingSpecimen initialLocale="ko" />
 			<a className="hero-scroll" href="#install" aria-label="설치 방법 보기"><span aria-hidden="true" /></a>
 		</header>
 		<section id="install" className="landing-install" aria-labelledby="install-title">
