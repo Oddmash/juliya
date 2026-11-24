@@ -1,5 +1,6 @@
 {
   "name": "@oddmash/kowrap",
+  "license": "MIT",
   "version": "0.3.4",
   "description": "Locale-aware text wrapping for Korean, English, Japanese and Simplified Chinese",
   "type": "module",
