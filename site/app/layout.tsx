@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import manifest from "../../package.json";
 import tokens from "../theme/tokens.json";
-import { HeaderSearch } from "../components/header-search";
+import { SiteNavigation } from "../components/site-navigation";
 import { CopyToastProvider } from "../components/copy-toast";
 import { getGuides, guideHref } from "../lib/guides";
 import "@oddmash/ui/styles.css";
@@ -11,11 +11,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
 	title: {
-		default: "kowrap | 한국어 줄바꿈을 자연스럽게",
-		template: "%s | kowrap",
+		default: "줄이야 (Juliya) | 자연스러운 다국어 줄바꿈",
+		template: "%s | Juliya",
 	},
 	description:
-		"어절을 보존하며 실제 화면 폭에 맞춰 자연스럽게 줄을 바꾸는 한국어 줄바꿈 엔진.",
+		"한국어, 영어, 일본어, 중국어의 문장과 실제 화면 폭을 고려하는 줄바꿈 엔진.",
 };
 
 const Logo = ({ size = 28 }: { size?: number }) => (
@@ -54,7 +54,7 @@ const theme = {
 } as CSSProperties;
 
 const RootLayout = ({ children }: { children: ReactNode }) => (
-	<html lang="ko" data-om-theme="light" style={theme}>
+	<html lang="ko" data-om-theme="dark" style={theme}>
 		<body>
 			<CopyToastProvider>
 			<a className="skip-link" href="#main">
@@ -62,28 +62,18 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 			</a>
 			<header className="header">
 				<div className="nav container">
-					<Link className="brand" href="/" aria-label="kowrap 홈">
+					<Link className="brand" href="/" aria-label="줄이야 홈">
 						<Logo />
-						kowrap<span className="version">v{manifest.version}</span>
+						줄이야<span className="version">v{manifest.version}</span>
 					</Link>
-					<nav className="nav-links" aria-label="주 메뉴">
-						<HeaderSearch items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
-						<Link href="/docs/">문서</Link>
-						<a
-							href="https://github.com/Oddmash/kowrap"
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							GitHub
-						</a>
-					</nav>
+					<SiteNavigation items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
 				</div>
 			</header>
 			{children}
 			<footer className="footer container">
 				<Link className="brand" href="/">
 					<Logo size={23} />
-					kowrap
+					줄이야
 				</Link>
 				<div>
 					<a href="https://github.com/Oddmash">Oddmash</a>
