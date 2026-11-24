@@ -9,6 +9,7 @@
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
+pnpm lint
 pnpm test
 ```
 
@@ -16,6 +17,8 @@ pnpm test
 
 | 명령 | 역할 |
 | --- | --- |
+| `pnpm lint` | ESLint 검사 (소스, 스크립트, 테스트 및 문서 사이트) |
+| `pnpm lint:fix` | 자동 수정 가능한 ESLint 문제 수정 |
 | `pnpm test` | 코어, 아키텍처, SSR 및 릴리스 검사 |
 | `pnpm test:hydration` | React 하이드레이션과 DOM 어댑터 검사 |
 | `pnpm test:frameworks` | 실제 Vue와 Svelte 런타임 검사 |
