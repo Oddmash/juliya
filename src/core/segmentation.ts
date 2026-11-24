@@ -6,6 +6,10 @@ const trailingSpace = /[ \t\f\v\u2000-\u2006\u2008-\u200a\u205f\u3000]+$/u;
 const hardBreak = /\r\n|[\r\n\u2028\u2029]/gu;
 
 export const graphemesOf = (text: string) => Array.from(graphemeSegmenter.segment(text));
+export const wordBoundariesOf = (text: string, locale: string) => {
+  const segmenter = new Intl.Segmenter(locale, { granularity: "word" });
+  return new Set(Array.from(segmenter.segment(text), ({ index, segment }) => index + segment.length));
+};
 export const isBreakableSpace = (segment: string) => breakableSpace.test(segment);
 export const visibleText = (text: string) => text.replace(trailingSpace, "");
 
