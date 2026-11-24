@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.3.4](docs/releases/v0.3.4.md)
+
+- Add ESLint checks for source, scripts, tests, and the documentation site.
+- Require lint and contribution metadata verification in CI.
+- Preserve public exports, wrapping behavior, and supported consumer runtimes.
+
 ## [0.3.3](docs/releases/v0.3.3.md)
 
 - Prefer keeping common Korean counting expressions together when a layout with the same line count fits.
