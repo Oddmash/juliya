@@ -1,7 +1,46 @@
-import { graphemesOf, isBreakableSpace, visibleText } from "./segmentation.js";
+import { graphemesOf, isBreakableSpace, visibleText, wordBoundariesOf } from "./segmentation.js";
 import type { Boundary, LineCandidate, ParagraphOptions } from "./types.js";
 
-export const boundariesOf = (text: string, { width, measure, measureRange, breakLongWords }: ParagraphOptions): Boundary[] => {
+const cjk = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
+const opening = /[（［｛〈《「『【〔〖〘〚“‘(\[{]$/u;
+const closing = /^[、。，．！？；：）］｝〉》」』】〕〗〙〛”’、.,!?;:%)\]}ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー々]/u;
+
+const cjkBoundaries = (text: string, options: ParagraphOptions): Boundary[] => {
+  const units = graphemesOf(text);
+  const words = wordBoundariesOf(text, options.locale === "ja" ? "ja" : "zh-Hans");
+  const points: Boundary[] = [{ offset: 0, emergency: false }];
+  for (let i = 1; i < units.length; i++) {
+    const left = units[i - 1]!.segment;
+    const right = units[i]!.segment;
+    const offset = units[i]!.index;
+    if (opening.test(left) || closing.test(right) || isBreakableSpace(right)) continue;
+    if (isBreakableSpace(left) || cjk.test(left) || cjk.test(right) || words.has(offset)) {
+      points.push({ offset, emergency: !words.has(offset) && !isBreakableSpace(left) });
+    }
+  }
+  points.push({ offset: text.length, emergency: false });
+  if (!options.breakLongWords) return points;
+  const expanded: Boundary[] = [];
+  let cursor = 0;
+  for (let i = 0; i < points.length - 1; i++) {
+    const start = points[i]!.offset;
+    const end = points[i + 1]!.offset;
+    expanded.push(points[i]!);
+    const fragment = visibleText(text.slice(start, end));
+    const measured = options.measureRange ? options.measureRange(start, start + fragment.length) : options.measure(fragment);
+    while (cursor < units.length && units[cursor]!.index <= start) cursor++;
+    while (cursor < units.length && units[cursor]!.index < end) {
+      if (measured > options.width) expanded.push({ offset: units[cursor]!.index, emergency: true });
+      cursor++;
+    }
+  }
+  expanded.push(points.at(-1)!);
+  return expanded;
+};
+
+export const boundariesOf = (text: string, options: ParagraphOptions): Boundary[] => {
+  const { width, measure, measureRange, breakLongWords, locale } = options;
+  if (locale === "ja" || locale === "zh" || locale === "zh-Hans") return cjkBoundaries(text, options);
   const points: Boundary[] = [{ offset: 0, emergency: false }];
   const graphemes = graphemesOf(text);
   let cursor = 0;
