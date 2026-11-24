@@ -23,6 +23,21 @@ jobs:
     uses: Oddmash/.github/.github/workflows/ci-scope.yml@9a2077a4b0ff9188ef2cb2ab306f181a134d3110
     with:
       profile: kowrap
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
   test:
     needs: scope
     if: needs.scope.outputs.core == 'true'
@@ -102,13 +117,14 @@ jobs:
           if-no-files-found: warn
 
   verify:
-    needs: [scope, test, site]
+    needs: [scope, lint, test, site]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Confirm appropriate checks passed
         env:
+          LINT_RESULT: ${{ needs.lint.result }}
           SCOPE_RESULT: ${{ needs.scope.result }}
           RUN_0: ${{ needs.scope.outputs.core }}
           RESULT_0: ${{ needs.test.result }}
@@ -116,6 +132,7 @@ jobs:
           RESULT_1: ${{ needs.site.result }}
         run: |
           test "$SCOPE_RESULT" = success
+          test "$LINT_RESULT" = success
           verify() { case "$1:$2" in true:success|false:skipped) return 0 ;; *) return 1 ;; esac; }
           verify "$RUN_0" "$RESULT_0"
           verify "$RUN_1" "$RESULT_1"
