@@ -59,7 +59,7 @@ export const FrameworkExamples = () => {
 			<TabsList className="code-tabs" aria-label="환경별 예제">
 				{examples.map(({ tab }) => <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>)}
 			</TabsList>
-			<CopyButton key={selected.tab} className="copy-code" value={selected.code} />
+			<CopyButton key={selected.tab} className="copy-code" value={selected.code} icon />
 			</div>
 			{examples.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
 				<div className="code-body"><pre><code>{example.code}</code></pre></div>

@@ -61,7 +61,7 @@ const verifySpecimen = async (page, motion) => {
 			return bounds.left >= 0 && bounds.right <= innerWidth + 1;
 		}), true);
 		await page.waitForFunction(() => {
-			const width = Number(document.querySelector(".specimen-width")?.getAttribute("data-measured-width"));
+			const width = Number(document.querySelector(".specimen-panels")?.getAttribute("data-measured-width"));
 			return width > 0 && [...document.querySelectorAll(".specimen-text")].every(sample => Math.abs(sample.getBoundingClientRect().width - width) <= 1);
 		});
 		await page.waitForFunction(() => [...document.querySelectorAll(".specimen-stage")].every(stage => Math.abs(stage.querySelector(".specimen-ruler > span").getBoundingClientRect().width - stage.querySelector(".specimen-text").getBoundingClientRect().width) <= 1));
@@ -75,10 +75,10 @@ const verifySpecimen = async (page, motion) => {
 	await compare();
 	const panels = page.locator(".specimen-panels");
 	const first = await panels.getAttribute("data-example");
-	const firstWidth = await page.locator(".specimen-width").getAttribute("data-measured-width");
+	const firstWidth = await page.locator(".specimen-panels").getAttribute("data-measured-width");
 	if (motion) {
 		assert.equal(await page.locator(".specimen-word-visual").first().evaluate(element => getComputedStyle(element).animationName), "specimen-word-enter");
-		assert.equal(await page.locator(".specimen-progress > span").evaluate(element => getComputedStyle(element).animationName), "specimen-dwell");
+		assert.equal(await page.locator(".specimen-progress, .specimen-footer, .landing-proof-note").count(), 0);
 		await page.locator(".specimen-motion").waitFor({ state: "attached" });
 		assert.ok(await page.locator(".specimen-motion").evaluate(element => {
 			const style = element.style;
@@ -101,7 +101,7 @@ const verifySpecimen = async (page, motion) => {
 	if (motion) {
 		await panels.scrollIntoViewIfNeeded();
 		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
-		await page.waitForFunction(width => document.querySelector(".specimen-width").dataset.measuredWidth && document.querySelector(".specimen-width").dataset.measuredWidth !== width, firstWidth);
+		await page.waitForFunction(width => document.querySelector(".specimen-panels").dataset.measuredWidth && document.querySelector(".specimen-panels").dataset.measuredWidth !== width, firstWidth);
 		await compare();
 	} else {
 		assert.equal(await panels.getAttribute("data-example"), first);
@@ -119,6 +119,21 @@ const verifySpecimen = async (page, motion) => {
 	assert.equal(await panels.getAttribute("data-example"), "0", "manual selection stops automatic progression");
 	assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "false");
 	await compare();
+};
+const verifyLandingGeometry = async (page) => {
+	assert.equal(await page.locator(".specimen-footer, .specimen-progress, .landing-proof-note").count(), 0);
+	assert.ok(await page.locator(".code-toolbar").evaluate(toolbar => {
+		const list = toolbar.querySelector(".code-tabs");
+		const copy = toolbar.querySelector(".copy-code");
+		const { top, bottom, left, right } = toolbar.getBoundingClientRect();
+		const inside = element => {
+			const box = element.getBoundingClientRect();
+			return box.top >= top && box.bottom <= bottom + 1 && box.left >= left && box.right <= right + 1;
+		};
+		return getComputedStyle(list).overflowY === "visible" && list.scrollHeight <= list.clientHeight + 1 &&
+			[...list.querySelectorAll('[role="tab"]'), copy].every(inside) &&
+			document.querySelector("#install").compareDocumentPosition(document.querySelector("#editor")) & Node.DOCUMENT_POSITION_FOLLOWING;
+	}), "framework tabs have no internal scrollbar, controls fit, and installation precedes the editor");
 };
 let browser;
 try {
@@ -152,6 +167,7 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	await verifyLandingGeometry(page);
 	assert.equal(await page.locator(".use-case").count(), 3);
 	assert.ok(await page.locator(".use-case").evaluateAll(cases => cases.every(item => {
 		const native = item.querySelector(".case-native .case-text");
@@ -291,13 +307,24 @@ try {
 	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/kowrap");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length >= 2);
 	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4, "rapid copy events display a bounded stack");
-	await docs.evaluate(async () => {
+	const stackOverflow = await docs.evaluate(async () => {
 		const button = document.querySelector("[data-package-tabs] [data-copy-target]");
+		const region = document.querySelector(".copy-toast-region");
+		let maximumOverflow = 0;
+		const sample = () => {
+			maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight, region.scrollWidth - region.clientWidth);
+		};
 		for (let i = 0; i < 5; i++) {
 			button.click();
-			await new Promise(resolve => setTimeout(resolve, 35));
+			await new Promise(resolve => requestAnimationFrame(() => { sample(); requestAnimationFrame(() => { sample(); resolve(); }); }));
 		}
+		const start = performance.now();
+		while (performance.now() - start < 220) {
+			await new Promise(resolve => requestAnimationFrame(() => { sample(); resolve(); }));
+		}
+		return maximumOverflow;
 	});
+	assert.ok(stackOverflow <= 0, "stacked toast entrance never creates an incidental scrollbar");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
 	const oldestNotice = docs.locator("[data-copy-notice]").first();
 	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
@@ -352,6 +379,7 @@ try {
 	assert.equal(await mobileEditor.isVisible(), true);
 	assert.ok((await mobileEditor.boundingBox()).y < (await mobile.locator("#native-preview").boundingBox()).y);
 	await verifySpecimen(mobile, false);
+	await verifyLandingGeometry(mobile);
 	if (engine.name() === "chromium") await mobile.screenshot({ path: "test-results/renewal/landing-mobile.png", fullPage: true, animations: "disabled" });
 	await mobile.locator(".actual-width").waitFor();
 	assert.ok(await mobile.locator(".actual-width").textContent().then((text) => /실제 비교 폭: \d+px/.test(text)));
@@ -375,6 +403,7 @@ try {
 	await reduced.emulateMedia({ reducedMotion: "reduce" });
 	await reduced.route("**/*.woff2", (route) => route.abort());
 	await reduced.goto(`${origin}/`);
+	await verifyLandingGeometry(reduced);
 	assert.equal(await reduced.locator(".specimen-text:visible").count(), 2);
 	await reduced.getByRole("link", { name: "내 문장으로 체험하기" }).click();
 	await reduced.locator("#demo-width").press("Home");

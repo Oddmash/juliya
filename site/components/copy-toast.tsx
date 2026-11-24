@@ -37,7 +37,7 @@ const CopyToastItem = ({ notice, onDismiss }: { notice: CopyNotice; onDismiss: (
 		<Toast ref={region} className="copy-toast-item" data-copy-notice={notice.id} open={open} title={notice.result} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기"
 			onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
 			onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
-			{notice.result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : "클립보드에 복사했어요."}
+			{notice.result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : null}
 		</Toast>
 	);
 };

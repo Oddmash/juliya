@@ -23,8 +23,8 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /data-om-theme="light"/);
 	assert.match(html, /aria-keyshortcuts="Meta\+K Control\+K"/);
 	assert.doesNotMatch(html, /id="hero-title"[^>]*>[^<]*<br/);
-	assert.match(html, /적용 전 \(CSS keep-all\)/);
-	assert.match(html, /적용 후 \(kowrap\)/);
+	assert.match(html, /기본 CSS/);
+	assert.match(html, /Kowrap/);
 	assert.ok(html.includes(`${basePath}/_next/`));
 	assert.ok(html.includes(`${basePath}/docs/`));
 	assert.ok(html.includes("@oddmash/kowrap/react"));
