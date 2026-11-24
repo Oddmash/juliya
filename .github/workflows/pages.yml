@@ -34,7 +34,7 @@ jobs:
       pages: read
     env:
       NEXT_TELEMETRY_DISABLED: "1"
-      NEXT_PUBLIC_BASE_PATH: /kowrap
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
