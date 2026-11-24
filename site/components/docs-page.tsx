@@ -39,7 +39,7 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 						<Link href="/#playground">체험하기</Link>
 					)}
 				</div>
-				<p className="docs-technical-link"><Link href="/comparison/">기술 참고: 성능 측정</Link></p>
+				<p className="docs-technical-link"><Link href="/comparison/">실제 UI 활용 예시</Link></p>
 			</article>
 		</main>
 	);

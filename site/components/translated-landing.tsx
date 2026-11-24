@@ -14,11 +14,11 @@ export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
 	return (
 		<main id="main" lang={engineLocale(locale)} className="container landing">
 			<header className="landing-intro">
-				<LandingSpecimen key={locale} initialLocale={locale} />
 				<div className="hero-copy">
 					<h1 id="hero-title">{copy.title}</h1><p className="hero-description">{copy.description}</p>
 					<div className="hero-actions"><Link className="button button-primary" href={docs}>{copy.start}</Link><a className="button hero-secondary" href="#editor">{copy.try}</a></div>
 				</div>
+				<LandingSpecimen key={locale} initialLocale={locale} />
 				<a className="hero-scroll" href="#install" aria-label={copy.start}><span aria-hidden="true" /></a>
 			</header>
 			<section id="install" className="landing-install">
