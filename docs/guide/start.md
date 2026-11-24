@@ -6,13 +6,10 @@ CSS의 `word-break: keep-all`은 어절 중간에서 줄이 나뉘지 않게 합
 
 ## 설치
 
-```bash
+사용 중인 패키지 매니저에 맞는 명령어 하나만 실행하세요.
+
+```package-managers
 npm install @oddmash/kowrap
-```
-
-pnpm이나 Yarn을 사용해도 됩니다.
-
-```bash
 pnpm add @oddmash/kowrap
 yarn add @oddmash/kowrap
 ```

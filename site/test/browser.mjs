@@ -66,7 +66,7 @@ const verifySpecimen = async (page, motion) => {
 		});
 		await page.waitForFunction(() => [...document.querySelectorAll(".specimen-stage")].every(stage => Math.abs(stage.querySelector(".specimen-ruler > span").getBoundingClientRect().width - stage.querySelector(".specimen-text").getBoundingClientRect().width) <= 1));
 		assert.ok(await page.locator(".specimen-text").evaluateAll(samples => samples.every(sample => {
-			const words = [...sample.querySelectorAll("[data-word]")].map(word => word.getBoundingClientRect());
+			const words = [...sample.querySelectorAll(".specimen-word-visual")].map(word => word.getBoundingClientRect());
 			return words.every((word, index) => words.slice(index + 1).every(other =>
 				word.right <= other.left + 1 || other.right <= word.left + 1 || word.bottom <= other.top + 1 || other.bottom <= word.top + 1
 			));
@@ -77,6 +77,8 @@ const verifySpecimen = async (page, motion) => {
 	const first = await panels.getAttribute("data-example");
 	const firstWidth = await page.locator(".specimen-width").getAttribute("data-measured-width");
 	if (motion) {
+		assert.equal(await page.locator(".specimen-word-visual").first().evaluate(element => getComputedStyle(element).animationName), "specimen-word-enter");
+		assert.equal(await page.locator(".specimen-progress > span").evaluate(element => getComputedStyle(element).animationName), "specimen-dwell");
 		await page.locator(".specimen-motion").waitFor({ state: "attached" });
 		assert.ok(await page.locator(".specimen-motion").evaluate(element => {
 			const style = element.style;
@@ -105,6 +107,7 @@ const verifySpecimen = async (page, motion) => {
 		assert.equal(await panels.getAttribute("data-example"), first);
 		assert.equal(await page.locator(".specimen-text").first().evaluate(element => element.getAnimations().length), 0);
 		assert.equal(await page.locator(".specimen-motion").count(), 0);
+		assert.equal(await page.locator(".specimen-word-visual").first().evaluate(element => getComputedStyle(element).animationName), "none");
 	}
 	const selection = page.locator(".specimen").getByRole("button", { name: "서비스 제목" });
 	await selection.press("Enter");
@@ -114,6 +117,7 @@ const verifySpecimen = async (page, motion) => {
 	await page.locator("#editor").focus();
 	await page.waitForTimeout(4900);
 	assert.equal(await panels.getAttribute("data-example"), "0", "manual selection stops automatic progression");
+	assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "false");
 	await compare();
 };
 let browser;
@@ -232,11 +236,19 @@ try {
 	);
 	await page.getByRole("tab", { name: "Core", exact: true }).click();
 	assert.match(await page.getByRole("tabpanel").locator("pre code").textContent(), /createCanvasMeasure/);
-	await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => {} } }));
-	const copy = page.getByRole("tabpanel").getByRole("button", { name: "복사", exact: true });
-	await copy.click();
-	await page.getByRole("tabpanel").getByRole("button", { name: "복사 완료", exact: true }).waitFor();
-	await page.getByRole("tabpanel").getByRole("button", { name: "복사", exact: true }).waitFor();
+	await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value) => { window.copiedText = value; } } }));
+	const copy = page.locator(".code-toolbar").getByRole("button", { name: "복사", exact: true });
+	const coreSnippet = await page.getByRole("tabpanel").locator("pre code").textContent();
+	await copy.press("Enter");
+	await page.locator(".code-toolbar").getByRole("button", { name: "복사 완료", exact: true }).waitFor();
+	await page.locator(".copy-toast-region .om-toast").getByRole("status").getByText("복사 완료", { exact: true }).waitFor();
+	assert.equal(await page.evaluate(() => window.copiedText), coreSnippet);
+	assert.equal(await page.locator(".code-toolbar .copy-code").evaluate(button => document.activeElement === button), true);
+	assert.equal(await page.locator(".copy-toast-region .om-toast").count(), 1);
+	assert.ok(await page.locator(".code-body:visible").evaluate(body => parseFloat(getComputedStyle(body).paddingTop) <= 20), "code starts close to the toolbar");
+	await page.locator(".copy-toast-region").getByRole("button", { name: "알림 닫기" }).click();
+	await page.locator(".copy-toast-region .om-toast").waitFor({ state: "hidden" });
+	await page.locator(".code-toolbar").getByRole("button", { name: "복사", exact: true }).waitFor();
 	await page.getByRole("tab", { name: "HTML", exact: true }).click();
 	const landingHtml = await page.getByRole("tabpanel").locator("pre code").textContent();
 	const htmlGuide = await openPage(desktop);
@@ -261,13 +273,47 @@ try {
 	const docs = await openPage(desktop);
 	await docs.goto(`${origin}/docs/`);
 	await docs.locator("#doc-content h1[data-kowrap-prose]").waitFor({ state: "attached" });
-	const docCopy = docs.locator("[data-copy-target]").first();
-	const docStatus = docs.locator("[data-copy-status]").first();
-	assert.equal(await docStatus.getAttribute("aria-live"), "polite");
-	assert.equal(await docStatus.textContent(), "");
-	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => {} } }));
+	const installTabs = docs.getByRole("tablist", { name: "패키지 매니저" });
+	const docCopy = docs.locator("[data-package-tabs] [data-copy-target]");
+	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value) => { window.copiedText = value; } } }));
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "npm install @oddmash/kowrap");
 	await docCopy.click();
-	await docs.waitForFunction(() => document.querySelector("[data-copy-status]").textContent === "복사 완료");
+	await docs.locator(".copy-toast-region .om-toast").getByRole("status").getByText("복사 완료", { exact: true }).waitFor();
+	assert.equal(await docs.evaluate(() => window.copiedText), "npm install @oddmash/kowrap");
+	await installTabs.getByRole("tab", { name: "npm", exact: true }).press("ArrowRight");
+	assert.equal(await installTabs.getByRole("tab", { name: "pnpm", exact: true }).getAttribute("aria-selected"), "true");
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "pnpm add @oddmash/kowrap");
+	await docCopy.click();
+	await docs.waitForFunction(() => window.copiedText === "pnpm add @oddmash/kowrap");
+	await installTabs.getByRole("tab", { name: "Yarn", exact: true }).click();
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "yarn add @oddmash/kowrap");
+	await docCopy.click();
+	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/kowrap");
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length >= 2);
+	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4, "rapid copy events display a bounded stack");
+	await docs.evaluate(async () => {
+		const button = document.querySelector("[data-package-tabs] [data-copy-target]");
+		for (let i = 0; i < 5; i++) {
+			button.click();
+			await new Promise(resolve => setTimeout(resolve, 35));
+		}
+	});
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
+	const oldestNotice = docs.locator("[data-copy-notice]").first();
+	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
+	const previousNewest = Number(await docs.locator("[data-copy-notice]").last().getAttribute("data-copy-notice"));
+	const oldestDismiss = oldestNotice.getByRole("button", { name: "알림 닫기" });
+	await oldestDismiss.focus();
+	await docCopy.evaluate(button => button.click());
+	await docs.waitForFunction(previous => document.querySelectorAll(".copy-toast-region .om-toast").length === 4 && [...document.querySelectorAll("[data-copy-notice]")].some(notice => Number(notice.dataset.copyNotice) > previous), previousNewest);
+	assert.equal(await docs.locator(`[data-copy-notice="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "overflow preserves the focused toast");
+	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw Error("unavailable"); } } }));
+	await docCopy.click();
+	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").getByText("복사 실패", { exact: true }).waitFor();
+	assert.equal(await docCopy.textContent(), "복사 실패");
+	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4);
+	await docs.locator(".copy-toast-region .om-toast").filter({ has: docs.getByRole("alert") }).getByRole("button", { name: "알림 닫기" }).click();
+	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").waitFor({ state: "hidden" });
 	await docs.keyboard.press("Control+k");
 	await docs.getByRole("dialog").waitFor();
 	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");

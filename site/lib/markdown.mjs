@@ -21,6 +21,14 @@ const highlightCode = (value, language) => {
 	return result + escapeHtml(value.slice(cursor));
 };
 
+const packageTabs = (content, id) => {
+	const managers = ["npm", "pnpm", "yarn"];
+	if (content.length !== managers.length || managers.some((manager, i) => !content[i].startsWith(manager + " "))) return null;
+	const tabs = managers.map((manager, i) => `<button type="button" role="tab" id="${id}-${manager}-tab" aria-selected="${i === 0}" aria-controls="${id}-${manager}-panel" tabindex="${i === 0 ? 0 : -1}" data-package-tab data-package-code="${id}-${manager}">${manager === "yarn" ? "Yarn" : manager}</button>`).join("");
+	const panels = managers.map((manager, i) => `<div role="tabpanel" id="${id}-${manager}-panel" aria-labelledby="${id}-${manager}-tab" tabindex="0"${i === 0 ? "" : " hidden"}><pre><code id="${id}-${manager}">${escapeHtml(content[i])}</code></pre></div>`).join("");
+	return `<div class="doc-code package-manager-code" data-package-tabs><div class="doc-code-head"><div class="package-manager-tabs" role="tablist" aria-label="패키지 매니저">${tabs}</div><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}-npm">복사</button></div>${panels}</div>`;
+};
+
 const safeLink = (href, basePath) => {
 	if (/^https?:\/\//i.test(href) || href.startsWith("#")) return href;
 	const match = href.match(/^(?:\.\/)?([a-z0-9-]+)\.md(#[\p{L}\p{N}_-]+)?$/u);
@@ -110,8 +118,13 @@ export const renderMarkdown = (markdown, basePath = "") => {
 				content.push(lines[index++]);
 			if (index < lines.length) index++;
 			const id = `code-${++codeIndex}`;
+			const packageGroup = code[1] === "package-managers" ? packageTabs(content, id) : null;
+			if (packageGroup) {
+				blocks.push(packageGroup);
+				continue;
+			}
 			blocks.push(
-				`<div class="doc-code"><div class="doc-code-head"><span>${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button><span class="sr-only" role="status" aria-live="polite" data-copy-status="${id}"></span></div><pre><code id="${id}">${highlightCode(content.join("\n"), code[1])}</code></pre></div>`,
+				`<div class="doc-code"><div class="doc-code-head"><span>${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button></div><pre><code id="${id}">${highlightCode(content.join("\n"), code[1])}</code></pre></div>`,
 			);
 			continue;
 		}
