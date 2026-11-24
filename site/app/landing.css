@@ -111,6 +111,7 @@ body:has(.landing) > .header { position: sticky; top: 0; z-index: 30; background
 	.hero-copy { gap: 12px; }
 	.hero-copy h1 { font-size: clamp(38px, 10vw, 58px); }
 	.specimen-stage { font-size: clamp(26px, 7vw, 42px); min-height: 210px; padding: 12px 0; gap: 14px; }
+	.specimen-layout { min-block-size: 4lh; }
 	.landing-install, .capability-grid { grid-template-columns: minmax(0, 1fr); }
 	.capability-grid article + article { border-inline-start: 0; border-block-start: 1px solid var(--border); }
 	.landing .actual-width { flex-basis: 100%; }

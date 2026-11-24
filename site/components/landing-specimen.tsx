@@ -101,7 +101,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		const applied = after.current;
 		if (!native || !applied || !rotating) return;
 		const animations = new Map<string, Animation>();
-		let frame = 0;
+		let frame: number | undefined;
 		let settle: number | undefined;
 		let previous: ReturnType<typeof positions> | undefined;
 		let played = false;
@@ -146,9 +146,12 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 					settle = window.setTimeout(() => setPhase(phase => phase === "css" ? "kowrap" : phase), 1450);
 				}
 			}
-			previous = positions(target);
+			previous = moved.length ? positions(target) : current;
 		};
-		const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
+		const schedule = () => {
+			if (frame !== undefined) return;
+			frame = requestAnimationFrame(() => { frame = undefined; measure(); });
+		};
 		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
 		resize?.observe(native);
 		const mutation = new MutationObserver(schedule);
@@ -161,7 +164,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			mutation.disconnect();
 			window.removeEventListener("resize", schedule);
 			document.fonts?.removeEventListener("loadingdone", schedule);
-			cancelAnimationFrame(frame);
+			if (frame !== undefined) cancelAnimationFrame(frame);
 			window.clearTimeout(settle);
 			animations.forEach(animation => animation.cancel());
 			applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
