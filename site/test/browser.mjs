@@ -426,6 +426,7 @@ try {
 	const coreReference = await openPage(desktop);
 	await coreReference.goto(`${origin}/docs/core/`);
 	assert.equal(await coreReference.locator(".doc-requirement.is-required").count(), 2);
+	assert.equal(await coreReference.getByRole("columnheader", { name: "필수 여부" }).evaluate(header => getComputedStyle(header).whiteSpace), "nowrap");
 	assert.ok(await coreReference.locator(".doc-requirement").filter({ hasText: "선택" }).count() >= 4);
 	assert.match(await coreReference.locator("tr").filter({ hasText: "measure" }).first().innerText(), /필수/);
 	await coreReference.close();
