@@ -20,6 +20,22 @@ const positions = (element: HTMLElement) => {
 	}));
 };
 
+const narrowWidthFor = (element: HTMLElement, preset: number) => {
+	const rows = new Map<number, { left: number; right: number }>();
+	let widestWord = 0;
+	for (const { bounds, row } of positions(element).values()) {
+		const key = Math.round(row);
+		const previous = rows.get(key);
+		rows.set(key, { left: Math.min(previous?.left ?? bounds.left, bounds.left), right: Math.max(previous?.right ?? bounds.right, bounds.right) });
+		widestWord = Math.max(widestWord, bounds.width);
+	}
+	const longestLine = Math.max(0, ...Array.from(rows.values(), ({ left, right }) => right - left));
+	const width = element.getBoundingClientRect().width;
+	const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
+	const narrow = Math.min(preset * fontSize, width * .88, longestLine * .88);
+	return Math.max(1, Math.min(width - 12, Math.max(widestWord + 2, narrow)));
+};
+
 const specimenUnits = (text: string, locale: SiteLocale) => locale === "ja" || locale === "zh"
 	? Array.from(new Intl.Segmenter(engineLocale(locale), { granularity: "grapheme" }).segment(text), item => item.segment)
 	: text.split(/(\s+)/u).filter(Boolean);
@@ -51,6 +67,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const queue = useRef<number[]>([]);
 	const [index, setIndex] = useState(0);
 	const [widthStep, setWidthStep] = useState<0 | 1 | 2>(0);
+	const [narrowWidth, setNarrowWidth] = useState<number>();
 	const [visible, setVisible] = useState(false);
 	const [reduced, setReduced] = useState(true);
 	const [paused, setPaused] = useState(false);
@@ -80,7 +97,15 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			return;
 		}
 		const timers = [
-			window.setTimeout(() => { setWidthStep(1); setPhase("resize"); }, 2050),
+			window.setTimeout(() => {
+				const target = after.current?.querySelector("p");
+				if (target) {
+					const measured = narrowWidthFor(target, example.widths[1]);
+					setNarrowWidth(existing => existing ?? measured);
+				}
+				setWidthStep(1);
+				setPhase("resize");
+			}, 2050),
 			window.setTimeout(() => setPhase("kowrap"), 3350),
 			window.setTimeout(() => { setWidthStep(2); setPhase("resize"); }, 3900),
 			window.setTimeout(() => setPhase("kowrap"), 5200),
@@ -89,12 +114,13 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 				if (!queue.current.length) queue.current = shuffledSceneIndices(examples.length, index);
 				const next = queue.current.shift() ?? 0;
 				setWidthStep(0);
+				setNarrowWidth(undefined);
 				setIndex(next);
 				setPhase("kowrap");
 			}, 6600),
 		];
 		return () => timers.forEach(timer => window.clearTimeout(timer));
-	}, [examples, index, rotating]);
+	}, [example, examples, index, rotating]);
 
 	useEffect(() => {
 		const native = before.current;
@@ -111,7 +137,11 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			const current = positions(target);
 			if (!current.size) return;
 			const initial = !played;
-			if (initial && !target.querySelector("[data-kowrap-break]")) return;
+			if (initial && !target.querySelector("[data-kowrap-break]")) {
+				played = true;
+				previous = current;
+				return;
+			}
 			const old = initial ? positions(native) : previous;
 			if (!old) return;
 			played = true;
@@ -154,7 +184,9 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		};
 		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
 		resize?.observe(native);
-		const mutation = new MutationObserver(schedule);
+		const target = applied.querySelector("p");
+		if (target) resize?.observe(target);
+		const mutation = new MutationObserver(measure);
 		mutation.observe(applied, { childList: true, subtree: true, characterData: true });
 		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
@@ -173,7 +205,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label={motionLabels[initialLocale][0]} data-rotating={rotating}>
-			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": `${example.widths[widthStep]}em`, "--specimen-ratio": widthRatios[widthStep] } as CSSProperties}>
+			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": widthStep === 1 && narrowWidth !== undefined ? `${narrowWidth}px` : `${example.widths[widthStep]}em`, "--specimen-ratio": widthRatios[widthStep] } as CSSProperties}>
 				<div className="specimen-stage">
 					<div className="specimen-ruler" aria-hidden="true"><span /></div>
 					<div className="specimen-layout">

@@ -71,35 +71,92 @@ const verifySpecimen = async (page, motion) => {
 		await panels.scrollIntoViewIfNeeded();
 		const first = await panels.getAttribute("data-example");
 		const firstText = await page.locator(".specimen-applied .specimen-text").textContent();
-		const firstLayout = await page.locator(".specimen-applied .specimen-text").evaluate(sample => ({
-			width: sample.getBoundingClientRect().width,
-			rows: [...sample.querySelectorAll("[data-word]")].map(word => Math.round(word.getBoundingClientRect().top - sample.getBoundingClientRect().top)),
-		}));
-		await page.emulateMedia({ reducedMotion: "no-preference" });
-		await page.waitForFunction(({ index, width, rows }) => {
-			const panel = document.querySelector(".specimen-panels");
+		await panels.evaluate((panel, expectedText) => {
 			const sample = panel.querySelector(".specimen-applied .specimen-text");
-			const bounds = sample.getBoundingClientRect();
-			const moved = [...sample.querySelectorAll("[data-word]")].some((word, i) => Math.abs(word.getBoundingClientRect().top - bounds.top - rows[i]) > 8);
-			const animating = [...sample.querySelectorAll(".specimen-word-visual")].some(word => word.getAnimations().some(animation => animation.playState === "running" && animation.effect?.getKeyframes().some(frame => frame.transform && frame.transform !== "none")));
-			return panel.dataset.example === index && panel.dataset.widthStep === "1" && bounds.width < width - 8 && moved && animating;
-		}, { index: first, ...firstLayout });
-		assert.equal(await page.locator(".specimen-applied .specimen-text").textContent(), firstText, "the same text reflows during actual width changes");
-		await page.waitForFunction(index => {
-			const panel = document.querySelector(".specimen-panels");
-			return panel.dataset.example === index && panel.dataset.widthStep === "1" && panel.dataset.phase === "kowrap";
-		}, first);
-		const narrow = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
-		await page.waitForFunction(({ index, narrow }) => {
-			const panel = document.querySelector(".specimen-panels");
-			return panel.dataset.example === index && panel.dataset.widthStep === "2" && panel.querySelector(".specimen-applied .specimen-text").getBoundingClientRect().width > narrow + 8;
-		}, { index: first, narrow });
-		await page.waitForFunction(index => {
-			const panel = document.querySelector(".specimen-panels");
-			if (panel.dataset.example !== index || panel.dataset.phase !== "leaving") return false;
-			return panel.getAnimations({ subtree: true }).some(animation => animation.playState === "running" && animation.effect?.getKeyframes().some(frame => frame.opacity !== undefined));
-		}, first);
-		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
+			const breaksOf = () => {
+				let offset = 0;
+				const breaks = [];
+				for (const node of sample.childNodes) {
+					if (node instanceof HTMLBRElement) breaks.push(offset);
+					else offset += node.textContent.length;
+				}
+				return breaks.join(",");
+			};
+			const firstBounds = sample.getBoundingClientRect();
+			const firstRows = Object.fromEntries([...sample.querySelectorAll("[data-word]")].map(word => [word.dataset.word, word.getBoundingClientRect().top - firstBounds.top]));
+			const firstBreaks = breaksOf();
+			const firstIndex = panel.dataset.example;
+			const observation = window.specimenObservation = {
+				firstWidth: firstBounds.width,
+				firstRows,
+				firstBreaks,
+				viewport: [innerWidth, innerHeight],
+				steps: {},
+				phases: [],
+				rotating: false,
+				textPreserved: true,
+				partialOpacity: false,
+				maxRulerDifference: 0,
+				done: false,
+			};
+			const observe = () => {
+				if (panel.dataset.example !== firstIndex) {
+					observation.done = true;
+					return;
+				}
+				const phase = panel.dataset.phase;
+				const step = panel.dataset.widthStep;
+				observation.rotating ||= panel.closest(".specimen").dataset.rotating === "true";
+				const phaseKey = `${step}:${phase}`;
+				if (!observation.phases.includes(phaseKey)) observation.phases.push(phaseKey);
+				const bounds = sample.getBoundingClientRect();
+				const summary = observation.steps[step] ??= { min: bounds.width, max: bounds.width, rowChanges: false, breakChanges: false, verticalMotion: false, rows: {}, breaks: [], widths: [], frames: 0 };
+				summary.min = Math.min(summary.min, bounds.width);
+				summary.max = Math.max(summary.max, bounds.width);
+				summary.frames++;
+				const roundedWidth = Math.round(bounds.width);
+				if (!summary.widths.includes(roundedWidth)) summary.widths.push(roundedWidth);
+				const breaks = breaksOf();
+				summary.breakChanges ||= breaks !== firstBreaks;
+				if (!summary.breaks.includes(breaks)) summary.breaks.push(breaks);
+				observation.textPreserved &&= sample.textContent === expectedText;
+				for (const word of sample.querySelectorAll("[data-word]")) {
+					const key = word.dataset.word;
+					const row = word.getBoundingClientRect().top - bounds.top;
+					summary.rows[key] = Math.round(row);
+					if (key in firstRows && Math.abs(row - firstRows[key]) > 8) summary.rowChanges = true;
+					const transform = getComputedStyle(word.firstElementChild).transform;
+					if (transform !== "none" && Math.abs(new DOMMatrixReadOnly(transform).m42) > 2) summary.verticalMotion = true;
+				}
+				const rulerWidth = panel.querySelector(".specimen-ruler > span").getBoundingClientRect().width;
+				observation.maxRulerDifference = Math.max(observation.maxRulerDifference, Math.abs(bounds.width - rulerWidth));
+				const opacity = Number(getComputedStyle(panel.querySelector(".specimen-applied")).opacity);
+				if (phase === "leaving" && opacity > .02 && opacity < .98) observation.partialOpacity = true;
+				requestAnimationFrame(observe);
+			};
+			requestAnimationFrame(observe);
+		}, firstText);
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		try {
+			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 15000 });
+			const observation = await page.evaluate(() => window.specimenObservation);
+			const { firstWidth, steps, partialOpacity, textPreserved } = observation;
+			assert.ok(observation.rotating, "the specimen entered its rotating state");
+			assert.ok(steps[1] && steps[2], "both width stages were displayed");
+			assert.ok(steps[1].min < firstWidth - 8, "the actual text container shrank");
+			assert.ok(steps[2].max > steps[1].min + 8, "the actual text container expanded again");
+			assert.ok(steps[1].widths.length > 2 && steps[2].widths.length > 2, "both width changes passed through intermediate rendered sizes");
+			assert.ok(steps[1].rowChanges || steps[2].rowChanges, "the same text moved between actual rendered rows during the width cycle");
+			assert.ok(steps[1].breakChanges || steps[2].breakChanges, "the wrapping engine recomputed line-break boundaries at the new width");
+			assert.ok(steps[1].verticalMotion || steps[2].verticalMotion, "the moving words had a measured in-progress vertical transform during the width cycle");
+			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
+			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
+			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
+		} catch (error) {
+			console.error("Specimen motion observation:", JSON.stringify(await page.evaluate(() => window.specimenObservation)));
+			throw error;
+		}
+		assert.notEqual(await panels.getAttribute("data-example"), first);
 		assert.notEqual(await page.locator(".specimen-applied .specimen-text").textContent(), firstText, "a different example replaces the first");
 		assert.equal(await panels.getAttribute("lang"), "ko");
 		await compare();

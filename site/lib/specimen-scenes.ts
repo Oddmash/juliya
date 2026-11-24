@@ -5,7 +5,7 @@ type SpecimenScene = { text: string; widths: readonly [number, number, number] }
 
 export const specimenScenes: Record<SiteLocale, readonly SpecimenScene[]> = {
 	ko: [
-		{ text: specimenText, widths: [10.8, 8.3, 12] },
+		{ text: specimenText, widths: [10.8, 6.6, 12] },
 		{ text: "오늘의 발견을 함께 나누는 작은 이야기", widths: [11.4, 8.1, 10.1] },
 		{ text: "새로운 기능을 지금 만나보세요.", widths: [10.5, 7.7, 12.1] },
 		{ text: "당신의 일상을 조금 더 특별하게", widths: [11.2, 8.6, 10.3] },
