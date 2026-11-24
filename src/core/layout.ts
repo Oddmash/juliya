@@ -33,7 +33,7 @@ const balancedPlan = (text: string, points: Boundary[], options: ParagraphOption
       const tail = choices[candidate.next]!;
       const choice = {
         count: tail.count + 1,
-        cost: tail.cost + lineCost(candidate, options.width, candidate.next === last, nextWords[candidate.next]),
+        cost: tail.cost + lineCost(candidate, options.width, candidate.next === last, nextWords[candidate.next], options.locale),
         next: candidate.next,
         width: candidate.width,
       };
