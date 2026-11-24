@@ -1440,6 +1440,7 @@ h3 {
 .doc-code .syntax-comment { color: var(--subtle); font-style: italic; }
 .doc-table table { font-size: 14px; line-height: 1.7; }
 .doc-table :is(th, td) { padding: 12px 14px; }
+.doc-table th { white-space: nowrap; }
 .doc-table td { color: var(--ink); background: var(--surface); }
 .docs-content blockquote { border-left-color: var(--action); background: var(--accent-tint); padding: 14px 18px; }
 .docs-bottom a { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; background: var(--surface); }
