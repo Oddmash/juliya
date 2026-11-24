@@ -26,7 +26,7 @@ const baseStyle: CSSProperties = {
 
 const PlainText = ({ children, as: Tag = "span", locale, strategy = "balanced", breakLongWords = true, forcedBreaks, style, className, ...props }: WrapTextProps & { children: string }) => {
   const { ref, lines } = useWrapLayout({ text: children, locale, strategy, breakLongWords, forcedBreaks, style, className, tag: Tag });
-  return <Tag {...props} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={ref}>
+  return <Tag {...props} lang={props.lang ?? locale} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={ref}>
     {lines.length > 1 ? lines.map((line, index) => <Fragment key={line.start}>
       {line.text}{line.breakAfter || (index < lines.length - 1 ? <br /> : null)}
     </Fragment>) : children}
@@ -79,7 +79,7 @@ const InlineText = ({ children, as: Tag = "span", locale, strategy = "balanced",
     });
     return observer.destroy;
   }, [key, children, locale, strategy, breakLongWords, style, className, Tag]);
-  return <Tag {...props} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={(element) => { ref.current = element; }}>{renderInline(children, offsets)}</Tag>;
+  return <Tag {...props} lang={props.lang ?? locale} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={(element) => { ref.current = element; }}>{renderInline(children, offsets)}</Tag>;
 };
 
 export const WrapText = (props: WrapTextProps) => typeof props.children === "string" ? <PlainText {...props} children={props.children} /> : <InlineText {...props} />;
