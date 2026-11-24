@@ -14,12 +14,12 @@ export interface UseKowrapOptions extends KowrapOptions {
 }
 
 export const useKowrap = ({
-  text, strategy = "balanced", breakLongWords = true, forcedBreaks: controlledBreaks,
+  text, locale, strategy = "balanced", breakLongWords = true, forcedBreaks: controlledBreaks,
   initialForcedBreaks = [], onForcedBreaksChange, style, className, tag = "span",
 }: UseKowrapOptions) => {
   const [internal, setInternal] = useState({ text, breaks: initialForcedBreaks });
   const forcedBreaks = controlledBreaks ?? (internal.text === text ? internal.breaks : []);
-  const layout = useWrapLayout({ text, strategy, breakLongWords, forcedBreaks, style, className, tag });
+  const layout = useWrapLayout({ text, locale, strategy, breakLongWords, forcedBreaks, style, className, tag });
   const setForcedBreaks = useCallback((breaks: readonly number[]) => {
     manualLines(text, breaks);
     if (controlledBreaks === undefined) setInternal({ text, breaks: [...breaks] });
