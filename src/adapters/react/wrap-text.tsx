@@ -10,6 +10,7 @@ import { manualLines } from "../../core/segmentation.js";
 
 export interface WrapTextProps extends Omit<TextProps, "children"> {
   children: ReactNode;
+  locale?: WrapOptions["locale"];
   strategy?: WrapOptions["strategy"];
   breakLongWords?: boolean;
   forcedBreaks?: readonly number[];
@@ -23,8 +24,8 @@ const baseStyle: CSSProperties = {
   textWrap: "pretty",
 };
 
-const PlainText = ({ children, as: Tag = "span", strategy = "balanced", breakLongWords = true, forcedBreaks, style, className, ...props }: WrapTextProps & { children: string }) => {
-  const { ref, lines } = useWrapLayout({ text: children, strategy, breakLongWords, forcedBreaks, style, className, tag: Tag });
+const PlainText = ({ children, as: Tag = "span", locale, strategy = "balanced", breakLongWords = true, forcedBreaks, style, className, ...props }: WrapTextProps & { children: string }) => {
+  const { ref, lines } = useWrapLayout({ text: children, locale, strategy, breakLongWords, forcedBreaks, style, className, tag: Tag });
   return <Tag {...props} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={ref}>
     {lines.length > 1 ? lines.map((line, index) => <Fragment key={line.start}>
       {line.text}{line.breakAfter || (index < lines.length - 1 ? <br /> : null)}
@@ -65,19 +66,19 @@ const renderInline = (children: ReactNode, offsets: number[]) => {
   return visit(children);
 };
 
-const InlineText = ({ children, as: Tag = "span", strategy = "balanced", breakLongWords = true, forcedBreaks, style, className, ...props }: WrapTextProps) => {
+const InlineText = ({ children, as: Tag = "span", locale, strategy = "balanced", breakLongWords = true, forcedBreaks, style, className, ...props }: WrapTextProps) => {
   const ref = useRef<HTMLElement | null>(null);
   const text = inlineText(children);
-  const key = `${text}:${forcedBreaks?.join(",") ?? ""}`;
+  const key = `${text}:${locale ?? "ko"}:${forcedBreaks?.join(",") ?? ""}`;
   const [layout, setLayout] = useState<{ key: string; offsets: number[] }>();
   const offsets = layout?.key === key ? layout.offsets : breakOffsets(manualLines(text, forcedBreaks));
   useEffect(() => {
     if (!ref.current) return;
-    const observer = observeInline(ref.current, () => ({ inline: true, strategy, breakLongWords, forcedBreaks }), (next) => {
+    const observer = observeInline(ref.current, () => ({ inline: true, locale, strategy, breakLongWords, forcedBreaks }), (next) => {
       setLayout((previous) => previous?.key === key && previous.offsets.join(",") === next.join(",") ? previous : { key, offsets: next });
     });
     return observer.destroy;
-  }, [key, children, strategy, breakLongWords, style, className, Tag]);
+  }, [key, children, locale, strategy, breakLongWords, style, className, Tag]);
   return <Tag {...props} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={(element) => { ref.current = element; }}>{renderInline(children, offsets)}</Tag>;
 };
 
