@@ -46,7 +46,7 @@ export const LandingSpecimen = () => {
 		}
 		let animations: Animation[] = [];
 		let frame = 0;
-		let advance: number | undefined;
+		
 		let settle: number | undefined;
 		let played = false;
 		const measure = () => {
@@ -56,20 +56,22 @@ export const LandingSpecimen = () => {
 			const next = wordsIn(target);
 			if (!old.length || old.length !== next.length) return;
 			if (played) return;
-			if (!target.querySelector("br[data-kowrap-break]")) return;
+			if (!target.querySelector("br[data-kowrap-break]") || document.fonts?.status === "loading") return;
 			played = true;
+			const moved = next.some((word, i) => Math.abs(word.getBoundingClientRect().top - old[i].getBoundingClientRect().top) > 1);
+			if (!moved) { setPhase("kowrap"); return; }
 			setPhase("css");
 			animations = next.flatMap((word, i) => {
 				const source = old[i].getBoundingClientRect();
 				const destination = word.getBoundingClientRect();
 				const visual = word.firstElementChild;
-				if (!(visual instanceof HTMLElement)) return [];
+				if (!(visual instanceof HTMLElement) || typeof visual.animate !== "function") return [];
 				const from = `translate(${source.left - destination.left}px, ${source.top - destination.top}px)`;
 				return [visual.animate([
 					{ transform: from, offset: 0 },
-					{ transform: from, offset: .47 },
+					{ transform: from, offset: .47, easing: "cubic-bezier(.22, 1, .36, 1)" },
 					{ transform: "translate(0, 0)", offset: 1 },
-				], { duration: 1850, easing: "cubic-bezier(.22, 1, .36, 1)", fill: "both" })];
+				], { duration: 1850, fill: "both" })];
 			});
 			settle = window.setTimeout(() => setPhase("kowrap"), 870);
 		};
@@ -89,7 +91,7 @@ export const LandingSpecimen = () => {
 		window.addEventListener("resize", finish);
 		document.fonts?.addEventListener("loadingdone", schedule);
 		schedule();
-		advance = window.setTimeout(() => setIndex(value => (value + 1) % examples.length), 5200);
+		const advance = window.setTimeout(() => setIndex(value => (value + 1) % examples.length), 5200);
 		return () => {
 			resize?.disconnect();
 			mutation.disconnect();
