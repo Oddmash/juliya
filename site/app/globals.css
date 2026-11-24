@@ -1280,6 +1280,7 @@ h3 {
 @media (max-width: 380px) {
 	.nav-links { gap: 8px; }
 	.nav-links > a:last-child { display: none; }
+	.nav-links > a:not(.desktop-link) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
 	html {
