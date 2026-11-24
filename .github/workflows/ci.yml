@@ -51,7 +51,7 @@ jobs:
     needs: scope
     if: needs.scope.outputs.site == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
