@@ -5,6 +5,8 @@ const clauseEnd = /[,;:，、；：]$/u;
 const boundModifier = /(?:^|\s)(?:이|그|저|각|모든|어떤|이런|그런|저런|다음|해당|본|여러|다른|같은|기존|\S*(?:로운|스러운|적인|들의|에서의|로서의|으로의|와의|과의|사이의|하는|되는|있는|없는|않는|않은|했던|하던|보이는|필요한|위한|열린|닫는))$/u;
 const technicalPrefix = /^(?:[A-Z][A-Z0-9]{1,}|[A-Z][a-z]+(?:[A-Z][a-z]+)+|[a-z]+\.[a-z]+)$/u;
 const technicalHead = /^(?:import|export|module|runtime|client|server|layer|token|hook|input|output|API|CLI|SDK|파일|모듈|출력|레이어|토큰|컴포넌트|런타임|훅|스타일)(?:[가-힣]*|[.,;:]?)$/u;
+const numeralModifier = /^(?:한|두|세|네|다섯|여섯|일곱|여덟|아홉|열|스무|\d+(?:[.,]\d+)?)$/u;
+const counterHead = /^(?:개|명|건|번|권|회|종|가지|대|장|쪽|줄|단계|시간|분|초|일|개월|년|주)(?:의|이|가|을|를|은|는|에|로|으로|와|과|도|만|부터|까지|에서|에게|이나|나|씩|마다|으로는|로는)?[.,!?。！？…]?$/u;
 const compounds: Readonly<Record<string, readonly string[]>> = {
   공통: ["패키지", "코드", "컴포넌트", "모듈"],
   디자인: ["시스템", "토큰"],
@@ -22,6 +24,7 @@ const compounds: Readonly<Record<string, readonly string[]>> = {
 
 const protectedPair = (fragment: string, nextWord: string) => {
   const left = fragment.match(/\S+$/u)?.[0] ?? "";
+  if (numeralModifier.test(left) && counterHead.test(nextWord)) return true;
   if (technicalPrefix.test(left) && technicalHead.test(nextWord)) return true;
   return Object.hasOwn(compounds, left) && compounds[left]!.some((head) => nextWord.startsWith(head));
 };
