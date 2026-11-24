@@ -182,7 +182,7 @@ export const Playground = () => {
 						value={width}
 						onChange={(event) => setWidth(Number(event.target.value))}
 					/>
-					{counts.actualWidth !== null && counts.actualWidth < width && <span className="actual-width">현재 화면의 실제 비교 폭: {counts.actualWidth}px</span>}
+					{counts.actualWidth !== null && <span className="actual-width">실제 비교 폭: {counts.actualWidth}px{counts.actualWidth < width ? " (화면 폭에 맞춤)" : ""}</span>}
 				</div>
 			</div>
 			<div className="playground-body">

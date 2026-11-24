@@ -1454,3 +1454,26 @@ h3 {
 	.docs-content h2 { font-size: 24px; margin-top: 36px; }
 	.doc-code pre { padding: 14px; font-size: 13px; }
 }
+
+.docs-shell { padding-top: clamp(24px, 4vw, 56px); }
+.docs-sidebar { padding-inline-end: 16px; }
+.docs-nav a { border-inline-start: 2px solid transparent; border-radius: 4px; padding-inline: 12px; transition: color 120ms, background-color 120ms; }
+.docs-nav a[aria-current="page"] { border-inline-start-color: var(--action); }
+.docs-content { max-inline-size: 740px; }
+.docs-content .docs-breadcrumb { margin-block-end: 18px; }
+.docs-content #doc-content > h1 + p { font-size: clamp(17px, 2vw, 20px); line-height: 1.8; }
+.docs-content h2 { font-size: clamp(24px, 3vw, 29px); margin-block-start: 52px; padding-block-start: 20px; }
+.doc-code { border-color: var(--control-border); border-radius: 8px; }
+.doc-code-head { padding-inline: 16px; }
+.doc-code-head button { border: 1px solid transparent; border-radius: 4px; padding-inline: 10px; color: var(--action); transition: background-color 120ms, border-color 120ms; }
+.doc-code-head button:hover { background: var(--surface); border-color: var(--border); }
+.doc-code pre { padding: 20px; }
+@media (min-width: 761px) and (max-width: 1040px) {
+	.toc .toc-toggle { width: fit-content; min-width: 168px; gap: 16px; font-size: 13px; }
+	.docs-content { margin-block-start: 55px; }
+}
+@media (max-width: 760px) {
+	.docs-sidebar { padding-inline-end: 12px; }
+	.docs-content h2 { margin-block-start: 36px; }
+	.doc-code pre { padding: 14px; }
+}
