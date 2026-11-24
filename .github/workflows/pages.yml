@@ -25,6 +25,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+      options: --ipc=host
     permissions:
       contents: read
       pages: read
@@ -55,8 +59,9 @@ jobs:
       - run: pnpm build
       - run: pnpm --dir site install --frozen-lockfile
       - run: pnpm test:site
-      - run: pnpm --dir site exec playwright install --with-deps chromium
       - run: pnpm --dir site test:browser
+        env:
+          HOME: /root
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site/out
