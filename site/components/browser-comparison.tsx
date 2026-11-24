@@ -55,7 +55,7 @@ export const BrowserComparison = () => {
           timing[index].push(performance.now() - start);
         }
       }
-      setResults(modes.map((applied, index) => ({ mode: applied ? "Kowrap" : "CSS keep-all", ...batch(applied), median: median(timing[index]) })));
+      setResults(modes.map((applied, index) => ({ mode: applied ? "Juliya" : "CSS keep-all", ...batch(applied), median: median(timing[index]) })));
       setStatus("측정 완료");
     } catch {
       setStatus("측정할 수 없습니다. 브라우저를 확인해 주세요.");
