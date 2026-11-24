@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@oddmash/ui/button";
+import { useCopyToast } from "./copy-toast";
 
 export const copyText = async (value: string) => {
 	if (navigator.clipboard?.writeText) {
@@ -33,13 +34,14 @@ export const CopyButton = ({
 	icon?: boolean;
 }) => {
 	const [state, setState] = useState("복사");
+	const notifyCopy = useCopyToast();
 	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const request = useRef(0);
 	useEffect(() => () => { request.current++; clearTimeout(timer.current); }, []);
 	const copy = async () => {
 		const current = ++request.current;
 		clearTimeout(timer.current);
-		let result = "복사 완료";
+		let result: "복사 완료" | "복사 실패" = "복사 완료";
 		try {
 			await copyText(value);
 		} catch {
@@ -47,6 +49,7 @@ export const CopyButton = ({
 		}
 		if (current !== request.current) return;
 		setState(result);
+		notifyCopy(result);
 		timer.current = setTimeout(() => setState("복사"), 2000);
 	};
 	return (
@@ -73,7 +76,6 @@ export const CopyButton = ({
 			)}
 			<span>{state}</span>
 		</Button>
-		<span className="sr-only" role="status" aria-live="polite">{state === "복사" ? "" : state}</span>
 		</>
 	);
 };

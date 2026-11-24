@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import manifest from "../../package.json";
 import tokens from "../theme/tokens.json";
 import { HeaderSearch } from "../components/header-search";
+import { CopyToastProvider } from "../components/copy-toast";
 import { getGuides, guideHref } from "../lib/guides";
 import "@oddmash/ui/styles.css";
 import "./globals.css";
@@ -55,6 +56,7 @@ const theme = {
 const RootLayout = ({ children }: { children: ReactNode }) => (
 	<html lang="ko" data-om-theme="light" style={theme}>
 		<body>
+			<CopyToastProvider>
 			<a className="skip-link" href="#main">
 				본문 바로가기
 			</a>
@@ -92,6 +94,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 					<a href="https://github.com/Oddmash/kowrap">GitHub</a>
 				</div>
 			</footer>
+			</CopyToastProvider>
 		</body>
 	</html>
 );

@@ -52,6 +52,10 @@ test("all Markdown guides are prerendered and have base-path-safe navigation", (
 	const start = read("docs/index.html");
 	assert.ok(start.includes(`${basePath}/docs/core/`));
 	assert.ok(start.includes("npm install @oddmash/kowrap"));
+	assert.match(start, /aria-label="패키지 매니저"/);
+	assert.match(start, /data-copy-target="code-1-npm"/);
+	assert.match(start, /id="code-1-pnpm-panel"[^>]*hidden/);
+	assert.match(start, /id="code-1-yarn-panel"[^>]*hidden/);
 });
 
 test("Markdown escapes raw HTML and disallowed URLs and generates headings and code", () => {
