@@ -132,16 +132,31 @@ try {
 	const desktop = { width: 1280, height: 900 };
 	const comparison = await openPage(desktop);
 	await comparison.goto(`${origin}/comparison/`);
+	await comparison.getByText("브라우저 벤치마크 열기", { exact: true }).click();
 	await comparison.getByRole('button', { name: '비교 실행' }).click();
 	await comparison.getByText('측정 완료', { exact: true }).waitFor();
 	assert.equal(await comparison.getByRole('row').count(), 3);
-	assert.equal(await comparison.getByRole('rowheader', { name: 'Kowrap' }).count(), 1);
+	assert.equal(await comparison.getByRole('rowheader', { name: 'Juliya' }).count(), 1);
 	await comparison.close();
+	for (const [language, label] of [["en", "Search docs"], ["ja", "検索"], ["zh", "搜索文档"]]) {
+		const localized = await openPage(desktop);
+		await localized.emulateMedia({ reducedMotion: "reduce" });
+		await localized.goto(`${origin}/${language}/`);
+		await localized.getByRole("button", { name: label, exact: true }).waitFor();
+		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		await localized.goto(`${origin}/${language}/docs/core/`);
+		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/kowrap/${language}`));
+		await localized.close();
+	}
 	const page = await openPage(desktop);
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto(`${origin}/`);
-	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "light");
-	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름에 맞춰.");
+	assert.ok(await page.getByRole("button", { name: "문서 검색" }).isVisible());
+	assert.equal(await page.locator(".specimen-mode").count(), 0);
+	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
+	assert.equal(await page.locator("#hero-title").textContent(), "줄이야 다국어 줄바꿈 라이브러리");
+	assert.equal(await page.locator(".landing-kicker").count(), 0);
+	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.querySelector(".specimen").compareDocumentPosition(hero.querySelector(".hero-copy")) & Node.DOCUMENT_POSITION_FOLLOWING), "the reflow demonstration precedes the wordmark and calls to action");
 	assert.ok(await page.locator(".specimen-native.specimen-text").evaluate(async (title) => {
 		await document.fonts.ready;
 		const family = getComputedStyle(title).fontFamily.split(",")[0];
@@ -152,10 +167,9 @@ try {
 	assert.equal(await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "체험하기", exact: true }).count(), 0);
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.getBoundingClientRect().height >= innerHeight - 80), "desktop hero fills the first view");
 	await verifyLandingGeometry(page);
-	assert.equal(await page.locator(".reading-sample").count(), 1);
-	assert.equal(await page.locator(".reading-principles article").count(), 3);
+	assert.equal(await page.locator(".capability-grid article").count(), 3);
+	assert.equal(await page.locator(".landing a[href$='/comparison/']").count(), 0);
 	assert.equal(await page.locator(".case-comparison").count(), 0);
-	assert.equal(await page.locator(".reading-sample strong").count(), 1);
 	if (engine.name() === "chromium") {
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 		await page.screenshot({ path: "test-results/renewal/landing-desktop.png", fullPage: true, animations: "disabled" });
