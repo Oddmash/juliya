@@ -159,14 +159,18 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 				const source = old.get(key);
 				return source && Math.abs(source.row - destination.row) > 1;
 			});
-			if (moved.length) {
+			const shifted = [...current].some(([key, destination]) => {
+				const source = old.get(key);
+				return source && Math.abs(source.bounds.top - destination.bounds.top) > 1;
+			});
+			if (moved.length || shifted) {
 				const movedKeys = new Set(moved.map(([key]) => key));
 				const movedRows = moved.map(([, destination]) => destination.row);
 				for (const [key, destination] of current) {
 					if (movedRows.some(row => Math.abs(row - destination.row) <= 1)) destination.word.dataset.reflow = movedKeys.has(key) ? "moved" : "neighbor";
 					else delete destination.word.dataset.reflow;
 					const source = old.get(key);
-					if (!source || (!initial && !movedKeys.has(key)) || typeof destination.visual.animate !== "function") continue;
+					if (!source || (!initial && !movedKeys.has(key) && Math.abs(source.bounds.top - destination.bounds.top) <= 1) || typeof destination.visual.animate !== "function") continue;
 					const dx = source.visualBounds.left - destination.bounds.left;
 					const dy = source.visualBounds.top - destination.bounds.top;
 					if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
@@ -186,7 +190,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 					settle = window.setTimeout(() => setPhase(phase => phase === "css" ? "kowrap" : phase), 1450);
 				}
 			}
-			previous = moved.length ? positions(target) : current;
+			previous = moved.length || shifted ? positions(target) : current;
 		};
 		const schedule = () => {
 			if (frame !== undefined) return;
