@@ -33,6 +33,15 @@ app.mount('#app');
 
 이후 각 템플릿에서 `v-kowrap`을 사용할 수 있습니다.
 
+## 필수 옵션
+
+| 모드 | 필수 입력 | 선택 입력 |
+| --- | --- | --- |
+| 문자열 | `text` | `strategy`, `breakLongWords`, `forcedBreaks` |
+| 인라인 | `inline: true` | `strategy`, `breakLongWords`, `forcedBreaks` |
+
+인라인 모드에서는 `text`를 전달하지 않습니다. 자세한 타입과 기본값은 [DOM 옵션](dom.md#옵션)을 확인하세요.
+
 ## 인라인 마크업
 
 ```vue

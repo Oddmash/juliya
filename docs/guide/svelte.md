@@ -16,6 +16,15 @@ Svelte에서는 `kowrap` 액션을 사용합니다. 라이브러리가 Svelte �
 
 문자열 모드에서는 자식 콘텐츠를 Svelte에서 동시에 변경하지 마세요.
 
+## 필수 옵션
+
+| 모드 | 필수 입력 | 선택 입력 |
+| --- | --- | --- |
+| 문자열 | `text` | `strategy`, `breakLongWords`, `forcedBreaks` |
+| 인라인 | `inline: true` | `strategy`, `breakLongWords`, `forcedBreaks` |
+
+인라인 모드에서는 `text`를 전달하지 않습니다. 자세한 타입과 기본값은 [DOM 옵션](dom.md#옵션)을 확인하세요.
+
 ## 인라인 마크업
 
 ```svelte

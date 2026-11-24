@@ -4,7 +4,11 @@
 	--landing-space: clamp(48px, 6vw, 88px);
 }
 body:has(> .landing) { background: var(--paper); }
-.landing-intro { padding-block-start: clamp(28px, 3.4vw, 44px); }
+.landing-intro { padding-block: clamp(28px, 3.4vw, 44px) 24px; }
+@media (min-width: 761px) {
+	.landing-intro { min-block-size: calc(100svh - 70px); display: flex; flex-direction: column; justify-content: center; }
+	.landing-intro .hero-copy { margin-block-end: clamp(24px, 4vh, 48px); }
+}
 .hero-copy {
 	display: grid;
 	grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr);
@@ -48,10 +52,11 @@ body:has(> .landing) { background: var(--paper); }
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	border: 1px solid var(--border);
-	border-radius: var(--radius-lg);
+	border-radius: max(18px, var(--radius-lg));
 	overflow: hidden;
 	position: relative;
 	isolation: isolate;
+	box-shadow: 0 10px 34px color-mix(in srgb, var(--ink) 6%, transparent);
 }
 .specimen-panel { min-inline-size: 0; background: transparent; }
 .specimen-applied { background: var(--surface-inset); border-inline-start: 1px solid var(--border); }
@@ -110,28 +115,28 @@ body:has(> .landing) { background: var(--paper); }
 	position: absolute;
 	left: var(--motion-x);
 	top: var(--motion-y);
-	width: 9px;
-	height: 9px;
-	margin: -4px;
+	width: 10px;
+	height: 10px;
+	margin: -5px;
 	border-radius: 50%;
 	background: var(--action);
-	box-shadow: 0 0 0 4px color-mix(in srgb, var(--action) 15%, transparent);
+	box-shadow: 0 0 0 5px color-mix(in srgb, var(--action) 15%, transparent);
 	pointer-events: none;
 	opacity: 0;
 	z-index: 2;
 }
 @media (prefers-reduced-motion: no-preference) {
-	.specimen-motion { animation: specimen-route 780ms cubic-bezier(.22, 1, .36, 1) both; }
+	.specimen-motion { animation: specimen-route 940ms cubic-bezier(.22, 1, .36, 1) both; }
 	@keyframes specimen-route {
 		0% { transform: translate(0, 0); opacity: 0; }
 		13% { opacity: 1; }
 		78% { opacity: 1; }
 		100% { transform: translate(var(--motion-dx), var(--motion-dy)); opacity: 0; }
 	}
-	.specimen-applied [data-moved] { animation: specimen-highlight 950ms ease-out both; }
+	.specimen-applied [data-moved] { animation: specimen-highlight 1180ms ease-out both; }
 	@keyframes specimen-highlight {
-		0%, 58% { background-color: transparent; }
-		76% { background-color: color-mix(in srgb, var(--action) 18%, transparent); }
+		0%, 45% { background-color: transparent; }
+		70% { background-color: color-mix(in srgb, var(--action) 20%, transparent); }
 		100% { background-color: transparent; }
 	}
 }
@@ -269,7 +274,7 @@ body:has(> .landing) { background: var(--paper); }
 
 .hero-copy h1 { font-family: var(--landing-display), var(--sans); font-weight: 600; }
 .specimen-stage {
-	min-height: clamp(160px, 16vw, 200px);
+	min-height: clamp(184px, 25vh, 260px);
 }
 .specimen-panels:not([data-example="0"]) .specimen-stage { font-family: var(--sans); }
 .specimen-applied .specimen-label > span:first-child { color: var(--action); font-weight: 700; }
@@ -277,8 +282,8 @@ body:has(> .landing) { background: var(--paper); }
 @media (prefers-reduced-motion: no-preference) {
 	.specimen-word-visual { animation: specimen-word-enter 340ms cubic-bezier(.22, 1, .36, 1) both; animation-delay: calc(var(--word-order, 0) * 28ms); }
 	.specimen-applied .specimen-word-visual { animation-delay: calc(64ms + var(--word-order, 0) * 28ms); }
-	@keyframes specimen-word-enter { from { opacity: .78; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-	.specimen-applied [data-moved]::after { animation: specimen-underline 460ms ease-out 480ms both; }
+	@keyframes specimen-word-enter { from { opacity: .65; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+	.specimen-applied [data-moved]::after { animation: specimen-underline 520ms ease-out 540ms both; }
 	@keyframes specimen-underline { from { transform: scaleX(0); opacity: .5; } to { transform: scaleX(1); opacity: 1; } }
 }
 @media (max-width: 760px) {
@@ -314,4 +319,10 @@ body:has(> .landing) { background: var(--paper); }
 @media (max-width: 900px) {
 	.landing .copy-code > span { display: none; }
 	.landing .code-tabs [role="tab"] { padding-inline: 5px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.specimen-text { transition: opacity 180ms ease-out; }
+	.specimen-panels[data-exiting="true"] .specimen-text { opacity: .52; }
+	.specimen-ruler > span { transition-duration: 320ms; }
 }

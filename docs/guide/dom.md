@@ -56,6 +56,20 @@ const controller = mountKowrap(document.getElementById('rich')!, { inline: true 
 
 `strong`, `em`, `span`, `a` 등 텍스트를 포함하는 중첩 인라인 요소의 실제 계산된 글꼴로 폭을 측정합니다. 기존 요소, 속성, 이벤트는 유지하고 필요한 위치에만 개행을 삽입합니다. `destroy()`로 추가한 개행을 제거합니다.
 
+## 옵션
+
+`mountKowrap`은 요소와 옵션 객체가 필수입니다. 문자열 모드와 인라인 모드 중 하나를 선택하세요.
+
+| 옵션 | 필수 여부 | 기본값 | 설명 |
+| --- | --- | --- | --- |
+| `text` | 조건부 필수 | 없음 | 문자열 모드에서 필수, 인라인 모드에는 전달하지 않음 |
+| `inline` | 조건부 필수 | `false` | 인라인 모드에서 반드시 `true` |
+| `strategy` | 선택 | `balanced` | 줄바꿈 전략 |
+| `breakLongWords` | 선택 | `true` | 긴 어절 분리 |
+| `forcedBreaks` | 선택 | 없음 | 강제 경계 |
+
+`observeKowrap`은 문자열 모드 전용이므로 요소, `text`가 포함된 옵션, 레이아웃 콜백이 모두 필수입니다.
+
 ## 업데이트와 해제
 
 ```ts
@@ -113,4 +127,11 @@ const measure = createCanvasMeasure({
 const lines = wrap('한글과 English를 함께 사용합니다.', { width: 240, measure });
 ```
 
-글꼴 문자열은 실제 Canvas의 font 속성으로 전달됩니다. 옵션은 `font`, `letterSpacing`, `wordSpacing`, `fontKerning`입니다. 문자 간격과 단어 간격은 해당 Canvas 속성을 지원하는 브라우저에서만 반영됩니다.
+| 옵션 | 필수 여부 | 기본값 | 설명 |
+| --- | --- | --- | --- |
+| `font` | 필수 | 없음 | Canvas의 font 속성에 전달할 문자열 |
+| `letterSpacing` | 선택 | 브라우저 기본값 | 문자 간격 |
+| `wordSpacing` | 선택 | 브라우저 기본값 | 단어 간격 |
+| `fontKerning` | 선택 | 브라우저 기본값 | 글꼴 커닝 |
+
+글꼴 문자열은 실제 Canvas의 font 속성으로 전달됩니다. 문자 간격과 단어 간격은 해당 Canvas 속성을 지원하는 브라우저에서만 반영됩니다.

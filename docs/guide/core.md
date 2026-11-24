@@ -15,13 +15,16 @@ const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
 });
 ```
 
-| 옵션 | 기본값 | 설명 |
-| --- | --- | --- |
-| `width` | 필수 | 양수의 최대 줄 폭 |
-| `measure` | 필수 | 문자열을 받아 같은 단위의 폭을 반환하는 함수 |
-| `strategy` | `balanced` | 균형 최적화 또는 `greedy` 순차 탐색 |
-| `breakLongWords` | `true` | 한 줄에 들어가지 않는 긴 어절의 grapheme 분리 |
-| `forcedBreaks` | 없음 | 반드시 줄을 나눌 원문 UTF-16 위치 |
+**필수 입력:** 원문 `text`와 `width`, `measure`가 필요합니다.
+
+| 옵션 | 필수 여부 | 타입 | 기본값 | 설명 |
+| --- | --- | --- | --- | --- |
+| `width` | 필수 | number | 없음 | 양수의 최대 줄 폭 |
+| `measure` | 필수 | Measure | 없음 | 문자열을 받아 같은 단위의 폭을 반환하는 함수 |
+| `measureRange` | 선택 | (start: number, end: number) => number | 없음 | 원문 범위의 폭을 직접 측정하는 함수 |
+| `strategy` | 선택 | WrapOptions["strategy"] | `balanced` | 균형 최적화 또는 `greedy` 순차 탐색 |
+| `breakLongWords` | 선택 | boolean | `true` | 긴 어절의 grapheme 분리 |
+| `forcedBreaks` | 선택 | readonly number[] | 없음 | 반드시 줄을 나눌 원문 UTF-16 위치 |
 
 `width`는 유한한 양수여야 합니다. `measure`는 유한하고 음수가 아닌 수를 반환해야 합니다. 유효하지 않은 값은 `RangeError`를 발생시킵니다. 같은 입력을 같은 단위로 일관되게 측정해야 합니다.
 

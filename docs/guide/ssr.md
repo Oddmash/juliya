@@ -26,7 +26,14 @@ import { SentenceText } from '@oddmash/kowrap/react/server';
 </SentenceText>
 ```
 
-문장 구간은 CSS inline-block으로 묶이므로 문장 사이가 우선 줄 경계가 됩니다. 문장이 한 줄보다 길면 그 안에서 자연스러운 CSS 줄바꿈이 가능하도록 합니다. `locale`과 `forcedBreaks`를 전달할 수 있습니다.
+문장 구간은 CSS inline-block으로 묶이므로 문장 사이가 우선 줄 경계가 됩니다. 문장이 한 줄보다 길면 그 안에서 자연스러운 CSS 줄바꿈이 가능하도록 합니다. 다음 옵션을 사용할 수 있습니다.
+
+| prop | 필수 여부 | 기본값 | 역할 |
+| --- | --- | --- | --- |
+| `children` | 필수 | 없음 | 문자열 원문 |
+| `as` | 선택 | `span` | 렌더링 태그 |
+| `locale` | 선택 | `ko` | 문장 분리 언어 |
+| `forcedBreaks` | 선택 | 없음 | 강제 경계 |
 
 ## 강제 개행과 초기 화면
 

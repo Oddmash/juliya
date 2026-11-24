@@ -14,14 +14,16 @@ const Title = ({ text }: { text: string }) => (
 );
 ```
 
-| prop | 기본값 | 역할 |
-| --- | --- | --- |
-| `children` | 필수 | 문자열 또는 중첩 인라인 JSX |
-| `as` | `span` | span, p, div, h1부터 h6 중 선택 |
-| `strategy` | `balanced` | 줄바꿈 전략 |
-| `breakLongWords` | `true` | 긴 어절 분리 여부 |
-| `forcedBreaks` | 없음 | 강제 줄바꿈 위치 |
-| `style`, `className` | 없음 | 사용자 스타일 및 HTML 속성 |
+**필수 prop:** `children`만 전달하면 기본 동작을 사용할 수 있습니다.
+
+| prop | 필수 여부 | 타입 | 기본값 | 역할 |
+| --- | --- | --- | --- | --- |
+| `children` | 필수 | ReactNode | 없음 | 문자열 또는 중첩 인라인 JSX |
+| `as` | 선택 | TextTag | `span` | span, p, div, h1부터 h6 중 선택 |
+| `strategy` | 선택 | WrapOptions["strategy"] | `balanced` | 줄바꿈 전략 |
+| `breakLongWords` | 선택 | boolean | `true` | 긴 어절 분리 여부 |
+| `forcedBreaks` | 선택 | readonly number[] | 없음 | 강제 줄바꿈 위치 |
+| `style`, `className` | 선택 | CSSProperties / string | 없음 | 사용자 스타일 |
 
 `WrapText`는 기본적으로 block 레이아웃, `white-space: pre-wrap`, `word-break: keep-all`을 적용합니다. 자체 레이아웃 CSS로 덮어쓸 수 있지만 정확한 측정을 위해 요소가 콘텐츠 폭을 갖도록 해야 합니다.
 
@@ -80,6 +82,19 @@ const CustomText = ({ text }: { text: string }) => {
 ```
 
 `ref`는 실제 글의 폭과 글꼴이 적용되는 요소에 연결해야 합니다. 훅은 `lines`, `measured`, `forcedBreaks`와 제어 함수를 반환합니다.
+
+### 훅 옵션
+
+| 옵션 | 필수 여부 | 기본값 | 역할 |
+| --- | --- | --- | --- |
+| `text` | 필수 | 없음 | 줄바꿈할 문자열 |
+| `strategy` | 선택 | `balanced` | 줄바꿈 전략 |
+| `breakLongWords` | 선택 | `true` | 긴 어절 분리 |
+| `forcedBreaks` | 선택 | 없음 | 제어형 강제 경계 |
+| `initialForcedBreaks` | 선택 | `[]` | 비제어형 초기 경계 |
+| `onForcedBreaksChange` | 선택 | 없음 | 경계 변경 콜백 |
+| `tag` | 선택 | `span` | 측정 태그 |
+| `style`, `className` | 선택 | 없음 | 측정 스타일 |
 
 ### 제어형과 비제어형
 
