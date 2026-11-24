@@ -2,23 +2,27 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import type { WrapLocale } from "@oddmash/kowrap";
 import { WrapText } from "@oddmash/kowrap/react";
 import { specimenText } from "../lib/specimen";
+import { engineLocale } from "../lib/locales";
+import type { SiteLocale } from "../lib/locales";
 
-const examples = [
-	{ label: "서비스 제목", text: specimenText, width: "10.8em" },
-	{ label: "콘텐츠", text: "오늘의 발견을 함께 나누는 작은 이야기", width: "11.6em" },
-	{ label: "제품 소개", text: "새로운 기능을 지금 만나보세요.", width: "8.8em" },
-	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요", width: "10.8em" },
+const examples: { label: string; text: string; width: string; locale: WrapLocale }[] = [
+	{ label: "한국어", text: specimenText, width: "10.8em", locale: "ko" },
+	{ label: "English", text: "Build a better experience for everyone.", width: "12em", locale: "en" },
+	{ label: "日本語", text: "読みやすい文章を、もっと自然に。", width: "9em", locale: "ja" },
+	{ label: "简体中文", text: "让每一句话都读起来更加自然。", width: "8em", locale: "zh-Hans" },
 ];
 
 const wordsIn = (element: HTMLElement) => Array.from(element.querySelectorAll<HTMLElement>("[data-word]"));
 
-export const LandingSpecimen = () => {
+const motionLabels = { ko: ["자동 줄바꿈 시연", "시연 재생", "시연 일시정지"], en: ["Live wrapping demonstration", "Play", "Pause"], ja: ["改行のデモ", "再生", "一時停止"], zh: ["换行演示", "播放", "暂停"] } as const;
+export const LandingSpecimen = ({ initialLocale = "ko" }: { initialLocale?: SiteLocale }) => {
 	const section = useRef<HTMLElement>(null);
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
-	const [index, setIndex] = useState(0);
+	const [index, setIndex] = useState(() => Math.max(0, examples.findIndex(example => example.locale === engineLocale(initialLocale))));
 	const [visible, setVisible] = useState(false);
 	const [reduced, setReduced] = useState(true);
 	const [paused, setPaused] = useState(false);
@@ -60,26 +64,33 @@ export const LandingSpecimen = () => {
 			if (!target.querySelector("br[data-kowrap-break]") || document.fonts?.status === "loading") return;
 			played = true;
 			measuredWidth = native.getBoundingClientRect().width;
-			const moved = next.some((word, i) => Math.abs(word.getBoundingClientRect().top - old[i].getBoundingClientRect().top) > 1);
-			if (!moved) { setPhase("kowrap"); return; }
+			const destinations = next.map(word => word.getBoundingClientRect());
+			const sources = old.map(word => word.getBoundingClientRect());
+			const moved = destinations.map((box, i) => Math.abs(box.top - sources[i].top) > 1);
+			if (!moved.some(Boolean)) { setPhase("kowrap"); return; }
+			next.forEach((word, i) => {
+				const changedLine = destinations.some((box, j) => moved[j] && Math.abs(box.top - destinations[i].top) <= 1);
+				if (changedLine) word.dataset.reflow = moved[i] ? "moved" : "neighbor";
+			});
 			setPhase("css");
 			animations = next.flatMap((word, i) => {
-				const source = old[i].getBoundingClientRect();
-				const destination = word.getBoundingClientRect();
+				const source = sources[i];
+				const destination = destinations[i];
 				const visual = word.firstElementChild;
 				if (!(visual instanceof HTMLElement) || typeof visual.animate !== "function") return [];
 				const from = `translate(${source.left - destination.left}px, ${source.top - destination.top}px)`;
 				return [visual.animate([
 					{ transform: from, offset: 0 },
-					{ transform: from, offset: .47, easing: "cubic-bezier(.22, 1, .36, 1)" },
+					{ transform: from, offset: .42, easing: "cubic-bezier(.22, 1, .36, 1)" },
 					{ transform: "translate(0, 0)", offset: 1 },
 				], { duration: 1850, fill: "both" })];
 			});
-			settle = window.setTimeout(() => setPhase("kowrap"), 870);
+			settle = window.setTimeout(() => setPhase("kowrap"), 1850);
 		};
 		const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
 		const finish = () => {
 			animations.forEach(animation => animation.cancel());
+			applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
 			setPhase("kowrap");
 			played = true;
 		};
@@ -103,28 +114,31 @@ export const LandingSpecimen = () => {
 			window.clearTimeout(advance);
 			window.clearTimeout(settle);
 			animations.forEach(animation => animation.cancel());
+			applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
 		};
 	}, [index, rotating]);
 
-	const sample = () => example.text.split(" ").map((word, i) => (
-		<Fragment key={i}>{i > 0 && " "}<span data-word={i}><span className="specimen-word-visual">{word}</span></span></Fragment>
+	const units = example.locale === "ja" || example.locale === "zh-Hans"
+		? Array.from(new Intl.Segmenter(example.locale, { granularity: "grapheme" }).segment(example.text), item => item.segment)
+		: example.text.split(/(\s+)/u);
+	const sample = () => units.map((word, i) => /^\s+$/u.test(word) ? <Fragment key={i}>{word}</Fragment> : (
+		<span key={i} data-word={i}><span className="specimen-word-visual">{word}</span></span>
 	));
 
 	return (
-		<section ref={section} className="specimen" id="playground" aria-label="자동 줄바꿈 시연" data-rotating={rotating}>
-			<div className="specimen-panels" data-example={index} data-phase={phase} style={{ "--specimen-width": example.width } as CSSProperties}>
-				<div className="specimen-label">
-					<span>{example.label}</span>
-					<span className="specimen-mode"><span aria-hidden="true" />{phase === "css" ? "기본 CSS" : "Kowrap 적용"}</span>
-				</div>
+		<section ref={section} className="specimen" id="playground" aria-label={motionLabels[initialLocale][0]} data-rotating={rotating}>
+			<div className="specimen-panels" lang={example.locale} data-example={index} data-phase={phase} style={{ "--specimen-width": example.width } as CSSProperties}>
 				<div className="specimen-stage">
 					<div className="specimen-ruler" aria-hidden="true"><span /></div>
 					<div className="specimen-layout">
 						<p key={`css-${index}`} ref={before} className="specimen-text specimen-native" aria-hidden="true">{sample()}</p>
-						<div ref={after} className="specimen-applied"><WrapText key={index} as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample()}</WrapText></div>
+						<div ref={after} className="specimen-applied"><WrapText key={index} as="p" locale={example.locale} className="specimen-text" style={{ textWrap: "wrap" }}>{sample()}</WrapText></div>
 					</div>
 				</div>
-				<div className="specimen-footer"><span>같은 문장, 더 자연스러운 줄바꿈.</span>{!reduced && <button type="button" className="specimen-pause" aria-label={paused ? "시연 재생" : "시연 일시정지"} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>}</div>
+				<div className="specimen-label">
+					<span className="sr-only">{example.label}</span>
+					{!reduced && <button type="button" className="specimen-pause" aria-label={motionLabels[initialLocale][paused ? 1 : 2]} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>}
+				</div>
 			</div>
 		</section>
 	);
