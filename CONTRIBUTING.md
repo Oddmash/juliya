@@ -4,7 +4,7 @@
 
 ## 개발 환경
 
-코어는 Node.js 20 이상을 지원하며 CI와 문서 사이트는 Node.js 24를 사용합니다.
+코어는 Node.js 20 이상을 지원하며 내부 개발 및 CI는 Node.js 24와 `package.json`에 고정된 pnpm을 사용합니다. 루트, 프레임워크 검증 앱, 문서 사이트는 각각 커밋된 lockfile로 독립 설치하며, 공개 npm 패키지의 설치 방법은 변경하지 않습니다.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -27,8 +27,8 @@ pnpm test
 프레임워크 테스트 전에 다음 의존성을 준비합니다.
 
 ```bash
-pnpm --dir test/next-app install --no-frozen-lockfile
-pnpm --dir test/framework-app install --no-frozen-lockfile
+pnpm --dir test/next-app install --frozen-lockfile
+pnpm --dir test/framework-app install --frozen-lockfile
 pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```
 
@@ -37,7 +37,7 @@ pnpm --dir test/next-app exec playwright install chromium firefox webkit
 ```bash
 pnpm build
 benchmark_dir=$(mktemp -d)
-npm install --prefix "$benchmark_dir" --no-save @chenglou/pretext@1.0.0
+pnpm --dir "$benchmark_dir" add --save-exact @chenglou/pretext@1.0.0
 node test/next-app/compare-wrap.mjs "$benchmark_dir/node_modules/@chenglou/pretext"
 ```
 
@@ -51,13 +51,13 @@ macOS의 세 브라우저에서 각 구현은 27개 조합당 100줄을 표시�
 
 ```bash
 pnpm build
-pnpm --dir site install --no-frozen-lockfile
+pnpm --dir site install --frozen-lockfile
 pnpm --dir site dev
 ```
 
 로컬 개발 서버에서 랜딩의 실제 적용 전후 비교, 입력 변경, 강제 개행 및 문서 검색을 확인합니다. 비교는 실제 일반 p 요소와 kowrap의 WrapText를 사용하며 코드가 설정과 동기화되어야 합니다.
 
-Oddmash의 [시각 지침](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)에 맞춘 중립 팔레트 및 토큰은 `site/theme/tokens.json`에 둡니다. 파란색은 포커스, 빨간색은 오류에 사용합니다. UI에서 긴 대시를 장식 문자로 사용하지 않습니다.
+Oddmash의 [시각 지침](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)에 맞춘 밝은 편집형 팔레트 및 토큰은 `site/theme/tokens.json`에 둡니다. 초록색은 적용 결과와 동작을 강조하고, 파란색은 포커스, 빨간색은 오류에 사용합니다. UI에서 긴 대시를 장식 문자로 사용하지 않습니다. 첫 화면의 예제는 한 번씩 이동한 후 정지하며 예제를 직접 선택하거나 모션 감소 설정을 사용하면 자동으로 전환하지 않습니다.
 
 랜딩의 `site/app/fonts/`는 로컬 WOFF2 두 개를 사용합니다. 제목과 첫 화면의 비교 문장은 [Noto Sans KR](https://github.com/google/fonts/tree/main/ofl/notosanskr)의 고정 문구 서브셋을, 코드와 너비 값은 [Geist Mono 1.9.2](https://www.npmjs.com/package/geist/v/1.9.2)의 ASCII 서브셋을 사용합니다. 제목이나 `site/lib/specimen.ts`의 문장을 바꾸면 FontTools로 두 문구를 모두 포함하는 WOFF2를 다시 만드세요. 라이선스는 `site/public/licenses/`에 있습니다. 사용자가 입력하는 전체 편집기의 비교 문장은 공통 본문 서체를 상속합니다.
 

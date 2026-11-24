@@ -2,6 +2,7 @@
   "name": "kowrap-next-integration",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "build": "next build --webpack",
     "test:hydration": "node --test hydration.test.mjs adapters.test.mjs",

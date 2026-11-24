@@ -23,6 +23,9 @@ jobs:
     if: needs.scope.outputs.core == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+      options: --ipc=host
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
@@ -30,26 +33,36 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-        with:
-          version: 10.32.1
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            test/next-app/pnpm-lock.yaml
+            test/framework-app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
-      - run: pnpm --dir test/next-app install --no-frozen-lockfile
+      - run: pnpm --dir test/next-app install --frozen-lockfile
       - run: pnpm test:hydration
-      - run: pnpm --dir test/framework-app install --no-frozen-lockfile
+      - run: pnpm --dir test/framework-app install --frozen-lockfile
       - run: pnpm test:frameworks
-      - run: pnpm --dir test/next-app exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:browser
+        env:
+          HOME: /root
       - run: pnpm test:package
   site:
     needs: scope
     if: needs.scope.outputs.site == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+      options: --ipc=host
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
@@ -57,31 +70,29 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-        with:
-          version: 10.32.1
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            site/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm --dir site install --no-frozen-lockfile
+      - run: pnpm --dir site install --frozen-lockfile
       - run: pnpm test:site
         env:
           NEXT_PUBLIC_BASE_PATH: /kowrap
-      - run: pnpm --dir site exec playwright install --with-deps chromium firefox webkit
-      - name: Verify landing page and documentation in all browser engines
+      - name: Verify landing page and documentation
         env:
+          HOME: /root
           NEXT_PUBLIC_BASE_PATH: /kowrap
-        run: |
-          for browser in chromium firefox webkit; do
-            pnpm --dir site test:browser "$browser"
-          done
+        run: pnpm --dir site test:browser "${{ matrix.browser }}"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: site-renewal-captures
+          name: site-renewal-captures-${{ matrix.browser }}
           path: site/test-results/renewal/
           if-no-files-found: warn
 

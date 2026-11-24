@@ -47,18 +47,7 @@ const Page = () => (
 				<p>문장과 너비를 바꾸며 차이를 확인하세요.</p>
 			</div>
 			<Playground />
-			<details className="inline-details">
-				<summary>인라인 마크업 예제</summary>
-				<div className="inline-example">
-					<div className="inline-result">
-						<WrapText as="p" id="inline-preview" style={{ maxWidth: 320, fontSize: 24 }}>
-							읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과 <a href="#playground">실제 예제</a>를 만나보세요.
-						</WrapText>
-					</div>
-					<pre><code>{`<WrapText as="p">\n  읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과\n  <a href="#playground">실제 예제</a>를 만나보세요.\n</WrapText>`}</code></pre>
-				</div>
-				<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법</Link>
-			</details>
+			<Link className="text-link inline-guide-link" href="/docs/inline/">강조, 링크가 포함된 문장에 적용하는 방법 →</Link>
 		</div>
 		<section className="landing-use-cases" aria-labelledby="use-cases-title">
 			<div className="landing-section-heading">

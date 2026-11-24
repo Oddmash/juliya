@@ -1,6 +1,8 @@
 # 빠르게 시작하기
 
-kowrap은 한국어 제목과 짧은 문장을 실제 폭에 맞춰 읽기 좋은 위치에서 줄바꿈하는 라이브러리입니다. React, Next.js, Vue, Svelte 또는 프레임워크 없는 JavaScript에서 같은 코어를 사용할 수 있습니다.
+Kowrap은 한국어 제목과 짧은 문장을 실제 화면 폭에 맞춰 읽기 좋은 위치에서 줄바꿈하는 라이브러리입니다.
+
+CSS의 `word-break: keep-all`은 어절 중간에서 줄이 나뉘지 않게 합니다. Kowrap은 여기에 문장의 의미와 각 줄의 너비를 함께 고려합니다. React, Next.js, Vue, Svelte, 일반 HTML에서 사용할 수 있습니다.
 
 ## 설치
 
@@ -16,6 +18,22 @@ yarn add @oddmash/kowrap
 ```
 
 Node.js 20 이상과 `Intl.Segmenter`를 지원하는 현대 브라우저를 대상으로 합니다. 패키지는 ESM을 제공하고 전역 CSS나 프레임워크 런타임을 강제로 추가하지 않습니다. React를 사용할 때는 React 18.2 이상 또는 React 19가 필요합니다.
+
+## 1분 만에 적용하기
+
+React 또는 Next.js를 사용한다면 텍스트 대신 `WrapText`를 렌더링하세요.
+
+```tsx
+import { WrapText } from '@oddmash/kowrap/react';
+
+const Heading = () => (
+  <WrapText as="h1" style={{ maxWidth: 360 }}>
+    자연스러운 한국어 줄바꿈을 경험하세요.
+  </WrapText>
+);
+```
+
+별도의 화면 크기 이벤트를 등록할 필요는 없습니다. 요소의 실제 폭과 글꼴을 측정하고, 폭이나 글꼴이 바뀌면 다시 계산합니다.
 
 ## 어떤 진입점을 사용하나요?
 
@@ -35,20 +53,6 @@ Node.js 20 이상과 `Intl.Segmenter`를 지원하는 현대 브라우저를 대
 - 브라우저 제목에 바로 적용하려면 일반 HTML에서는 `mountKowrap`, React와 Next.js에서는 `WrapText`를 사용하세요. 컴포넌트나 어댑터가 요소의 실제 폭과 글꼴을 읽습니다.
 - 직접 만든 렌더러에서 줄 목록이 필요하면 브라우저에서는 `observeKowrap`을 쓰세요. DOM 요소 없이 계산하거나 다른 곳에서 폭을 제공한다면 `wrap`을 사용하세요.
 - 서버와 브라우저 첫 화면을 일치시켜야 한다면 [SSR과 하이드레이션](ssr.md)의 초기 렌더링 예제를 참고하세요. 브라우저에서 측정이 끝나면 최종 줄 위치가 정해집니다.
-
-## React 첫 예제
-
-```tsx
-import { WrapText } from '@oddmash/kowrap/react';
-
-const Heading = () => (
-  <WrapText as="h1" style={{ maxWidth: 360 }}>
-    자연스러운 한국어 줄바꿈을 경험하세요.
-  </WrapText>
-);
-```
-
-컴포넌트는 요소의 콘텐츠 폭과 계산된 글꼴을 읽고, 폭이나 폰트가 달라지면 줄바꿈을 다시 계산합니다. 텍스트 요소는 실제로 측정 가능한 폭을 가져야 합니다.
 
 ## JavaScript 첫 예제
 

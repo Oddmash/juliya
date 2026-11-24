@@ -39,7 +39,7 @@ export const HeaderSearch = ({ items }: { items: SearchItem[] }) => {
 				<span>문서 검색</span><kbd>⌘ K</kbd>
 			</Button>
 		</DialogTrigger>
-		<DialogContent className="search-dialog" theme="dark" onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); trigger.current?.focus(); }}>
+		<DialogContent className="search-dialog" theme="light" onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); trigger.current?.focus(); }}>
 			<div className="search-dialog-heading"><DialogTitle>문서 검색</DialogTitle><DialogClose asChild><Button variant="ghost" size="sm" aria-label="검색 닫기">닫기</Button></DialogClose></div>
 			<DialogDescription className="sr-only">제목이나 문서 내용을 검색합니다.</DialogDescription>
 			<Input ref={input} id="docs-search" type="search" placeholder="API, SSR, React" aria-label="문서 검색어" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => {

@@ -34,9 +34,7 @@ jobs:
       RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.32.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -49,9 +47,9 @@ jobs:
         run: node scripts/check-published.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
-      - run: pnpm --dir test/next-app install --no-frozen-lockfile
+      - run: pnpm --dir test/next-app install --frozen-lockfile
       - run: pnpm test:hydration
-      - run: pnpm --dir test/framework-app install --no-frozen-lockfile
+      - run: pnpm --dir test/framework-app install --frozen-lockfile
         if: hashFiles('test/framework-app/package.json') != ''
       - run: pnpm test:frameworks
         if: hashFiles('test/framework-app/package.json') != ''

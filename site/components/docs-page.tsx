@@ -21,6 +21,7 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 			<DocsNavigation items={items} current={guide.slug} />
 			<DocsToc key={guide.slug} headings={guide.headings} />
 			<article className="docs-content">
+				<p className="docs-breadcrumb"><Link href="/docs/">문서</Link><span aria-hidden="true">/</span><span>{guide.group}</span></p>
 				<div
 					id="doc-content"
 					dangerouslySetInnerHTML={{ __html: guide.html }}

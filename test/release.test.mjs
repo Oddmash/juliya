@@ -27,12 +27,28 @@ test("registry lookup detects existing versions and fails closed on invalid resp
   await assert.rejects(isPublished("@oddmash/kowrap", version, response(200, {})));
 });
 
-test("release installs the same browser engines as the full integration workflow", () => {
-  const browsersIn = (workflow) => {
-    const contents = readFileSync(new URL(`../.github/workflows/${workflow}`, import.meta.url), "utf8");
-    const install = contents.match(/^\s*- run: pnpm --dir test\/next-app exec playwright install --with-deps (.+)$/m);
-    assert.ok(install, `${workflow} must install the integration browsers`);
-    return install[1].trim().split(/\s+/).sort();
-  };
-  assert.deepEqual(browsersIn("publish.yml"), browsersIn("ci.yml"));
+test("CI and release verify every integration browser", () => {
+  const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+  const browsers = ["chromium", "firefox", "webkit"];
+  const integration = read("test/next-app/browser.mjs").match(/for \(const engine of \[([^\]]+)\]\)/);
+  assert.ok(integration, "Integration must exercise each browser engine");
+  assert.deepEqual(integration[1].split(",").map((name) => name.trim()).sort(), browsers);
+
+  const publish = read(".github/workflows/publish.yml");
+  const install = publish.match(/^\s*- run: pnpm --dir test\/next-app exec playwright install --with-deps (.+)$/m);
+  assert.ok(install, "Publish must install the integration browsers");
+  assert.deepEqual(install[1].trim().split(/\s+/).sort(), browsers);
+  assert.match(publish, /^\s*- run: pnpm test:browser$/m);
+
+  const ci = read(".github/workflows/ci.yml");
+  const [core, site] = ci.split(/^  site:\s*$/m);
+  assert.ok(site, "CI must include the site browser job");
+  const imageVersion = (job) => job.match(/^\s*image: mcr\.microsoft\.com\/playwright:v([\d.]+)-noble@sha256:[a-f0-9]{64}$/m)?.[1];
+  assert.equal(imageVersion(core), JSON.parse(read("test/next-app/package.json")).devDependencies.playwright);
+  assert.equal(imageVersion(site), JSON.parse(read("site/package.json")).devDependencies.playwright);
+  assert.match(core, /^\s*- run: pnpm test:browser$/m);
+  const matrix = site.match(/^\s*browser: \[([^\]]+)\]$/m);
+  assert.ok(matrix, "CI must test each site browser");
+  assert.deepEqual(matrix[1].split(",").map((name) => name.trim()).sort(), browsers);
+  assert.match(site, /run: pnpm --dir site test:browser "\$\{\{ matrix\.browser \}\}"/);
 });
