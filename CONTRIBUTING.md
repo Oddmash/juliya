@@ -1,4 +1,4 @@
-# kowrap 개발 및 기여 안내
+# 줄이야 (Juliya) 개발 및 기여 안내
 
 제품 소개는 [README](README.md), 라이브러리 사용법은 [사용 문서](docs/guide/start.md)를 참고하세요. 공통 기여 절차는 [Oddmash 기여 안내](https://github.com/Oddmash/.github/blob/main/CONTRIBUTING.md)에 있으며 모듈 책임과 의존성 방향은 [아키텍처](docs/ARCHITECTURE.md)에 정리되어 있습니다.
 
@@ -79,6 +79,8 @@ Next.js의 정적 export 결과는 `site/out/`에 생성됩니다. npm 패키지
 GitHub 저장소의 Settings > Pages > Build and deployment에서 Source를 GitHub Actions로 선택합니다. `pages.yml`은 main의 관련 변경사항 또는 수동 실행에서 정적 사이트를 빌드하고 검증한 뒤 GitHub Pages에 배포합니다. 배포 URL은 https://oddmash.github.io/kowrap/ 입니다.
 
 ## npm 릴리스
+
+기존 `@oddmash/kowrap` 패키지는 계속 호환됩니다. 새 브랜드 패키지 후보는 `pnpm pack:juliya`로 같은 빌드와 공개 진입점을 담은 `@oddmash/juliya` tarball을 생성합니다. 새 패키지의 최초 발행과 Trusted Publisher 설정은 소유자가 검증한 뒤 진행합니다.
 
 최초 패키지 등록 이후에는 `package.json` 버전과 동일한 `vX.Y.Z` 태그로 GitHub Release를 발행합니다. 안정 버전 릴리스 발행 시 `Publish npm package` 워크플로가 자동 실행됩니다. main에서 수동으로 버전을 입력해 publish를 끈 상태로 검증할 수도 있습니다. 기존 npm 버전은 다시 발행하지 않으며 테스트를 통과한 tarball만 배포합니다.
 
