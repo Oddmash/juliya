@@ -344,18 +344,25 @@ try {
 	if (engine.name() === "chromium") await inlineDocs.screenshot({ path: "test-results/renewal/guide-mobile.png", fullPage: true, animations: "disabled" });
 	const inlineProse = inlineDocs.locator("#doc-content > p[data-kowrap-prose]").first();
 	await inlineProse.locator("br[data-kowrap-break]").first().waitFor({ state: "attached" });
-	const [kowrapHeight, cssHeight] = await inlineProse.evaluate(async (paragraph) => {
+	const [kowrapHeight, cssHeight, sameTypography] = await inlineProse.evaluate(async (paragraph) => {
 		await document.fonts.ready;
 		const native = paragraph.cloneNode(true);
 		native.querySelectorAll("br[data-kowrap-break]").forEach((br) => br.remove());
 		native.style.position = "absolute";
 		native.style.visibility = "hidden";
 		native.style.width = `${paragraph.getBoundingClientRect().width}px`;
+		const typography = getComputedStyle(paragraph);
+		native.style.font = typography.font;
+		native.style.letterSpacing = typography.letterSpacing;
+		native.style.wordSpacing = typography.wordSpacing;
+		native.style.lineHeight = typography.lineHeight;
 		paragraph.after(native);
 		const heights = [paragraph.getBoundingClientRect().height, native.getBoundingClientRect().height];
+		const sameTypography = getComputedStyle(native).fontSize === typography.fontSize && getComputedStyle(native).lineHeight === typography.lineHeight;
 		native.remove();
-		return heights;
+		return [...heights, sameTypography];
 	});
+	assert.equal(sameTypography, true, "native comparison uses the same typography");
 	assert.ok(kowrapHeight <= cssHeight + 1, "the first measurement does not introduce an extra line");
 	const paths = ["", ...guides.filter((entry) => entry.isDirectory()).map((entry) => entry.name + "/")];
 	for (const path of paths) {
