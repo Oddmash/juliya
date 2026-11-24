@@ -4,6 +4,7 @@ import type { Boundary, LineCandidate, ParagraphOptions } from "./types.js";
 const cjk = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 const opening = /[（［｛〈《「『【〔〖〘〚“‘(\[{]$/u;
 const closing = /^[、。，．！？；：）］｝〉》」』】〕〗〙〛”’、.,!?;:%)\]}ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー々]/u;
+const glue = /[\u00a0\u202f\u2060]/u;
 
 const cjkBoundaries = (text: string, options: ParagraphOptions): Boundary[] => {
   const units = graphemesOf(text);
@@ -13,7 +14,7 @@ const cjkBoundaries = (text: string, options: ParagraphOptions): Boundary[] => {
     const left = units[i - 1]!.segment;
     const right = units[i]!.segment;
     const offset = units[i]!.index;
-    if (opening.test(left) || closing.test(right) || isBreakableSpace(right)) continue;
+    if (opening.test(left) || closing.test(right) || glue.test(left) || glue.test(right) || isBreakableSpace(right)) continue;
     if (isBreakableSpace(left) || cjk.test(left) || cjk.test(right) || words.has(offset)) {
       points.push({ offset, emergency: !words.has(offset) && !isBreakableSpace(left) });
     }
