@@ -7,6 +7,12 @@ export const languageFromPath = (pathname: string): SiteLocale => {
 	const first = pathname.split("/")[1];
 	return languages.find(locale => locale === first) ?? "ko";
 };
+export const copyLabels = {
+	ko: { copy: "복사", success: "복사 완료", failure: "복사 실패", dismiss: "알림 닫기", hint: "텍스트를 직접 선택해 복사해 주세요." },
+	en: { copy: "Copy", success: "Copied", failure: "Copy failed", dismiss: "Dismiss notice", hint: "Select the text and copy it manually." },
+	ja: { copy: "コピー", success: "コピー完了", failure: "コピー失敗", dismiss: "通知を閉じる", hint: "テキストを直接選択してコピーしてください。" },
+	zh: { copy: "复制", success: "已复制", failure: "复制失败", dismiss: "关闭通知", hint: "请选择文本并手动复制。" },
+};
 
 export const landingCopy = {
 	ko: {
