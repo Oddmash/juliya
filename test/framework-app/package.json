@@ -2,6 +2,7 @@
   "name": "kowrap-framework-integration",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "test": "node --conditions=browser --test *.test.mjs"
   },
