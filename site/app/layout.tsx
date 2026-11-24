@@ -68,9 +68,6 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 					</Link>
 					<nav className="nav-links" aria-label="주 메뉴">
 						<HeaderSearch items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
-						<Link href="/#playground" className="desktop-link">
-							체험하기
-						</Link>
 						<Link href="/docs/">문서</Link>
 						<a
 							href="https://github.com/Oddmash/kowrap"

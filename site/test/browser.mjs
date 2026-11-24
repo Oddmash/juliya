@@ -103,12 +103,19 @@ const verifySpecimen = async (page, motion) => {
 		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
 		await page.waitForFunction(width => document.querySelector(".specimen-panels").dataset.measuredWidth && document.querySelector(".specimen-panels").dataset.measuredWidth !== width, firstWidth);
 		await compare();
+		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.exiting === "true");
+		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "2");
+		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "3");
+		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "0");
+		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true", "the sequence wraps back to its first scene");
 	} else {
 		assert.equal(await panels.getAttribute("data-example"), first);
 		assert.equal(await page.locator(".specimen-text").first().evaluate(element => element.getAnimations().length), 0);
 		assert.equal(await page.locator(".specimen-motion").count(), 0);
 		assert.equal(await page.locator(".specimen-word-visual").first().evaluate(element => getComputedStyle(element).animationName), "none");
 	}
+	assert.equal(await page.locator(".specimen-examples").getByRole("button").count(), 4);
+	assert.equal(await page.locator(".specimen-examples").getByRole("button", { name: "콘텐츠" }).count(), 1);
 	const selection = page.locator(".specimen").getByRole("button", { name: "서비스 제목" });
 	await selection.press("Enter");
 	assert.equal(await selection.getAttribute("aria-pressed"), "true");
@@ -167,6 +174,8 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	assert.equal(await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "체험하기", exact: true }).count(), 0);
+	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.getBoundingClientRect().height >= innerHeight - 80), "desktop hero fills the first view");
 	await verifyLandingGeometry(page);
 	assert.equal(await page.locator(".use-case").count(), 3);
 	assert.ok(await page.locator(".use-case").evaluateAll(cases => cases.every(item => {
@@ -414,6 +423,12 @@ try {
 	}));
 	assert.ok(await reduced.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), "the narrow landing fits when fonts fail");
 	const guides = await readdir(resolve(root, "docs"), { withFileTypes: true });
+	const coreReference = await openPage(desktop);
+	await coreReference.goto(`${origin}/docs/core/`);
+	assert.equal(await coreReference.locator(".doc-requirement.is-required").count(), 2);
+	assert.ok(await coreReference.locator(".doc-requirement").filter({ hasText: "선택" }).count() >= 4);
+	assert.match(await coreReference.locator("tr").filter({ hasText: "measure" }).first().innerText(), /필수/);
+	await coreReference.close();
 	const api = await openPage(desktop);
 	await api.emulateMedia({ reducedMotion: "reduce" });
 	await api.goto(`${origin}/docs/api/#dom`);
