@@ -1,6 +1,8 @@
 export type Measure = (text: string) => number;
+export type WrapLocale = "ko" | "en" | "ja" | "zh" | "zh-Hans";
 
 export interface WrapOptions {
+  locale?: WrapLocale;
   width: number;
   measure: Measure;
   measureRange?: (start: number, end: number) => number;
@@ -24,6 +26,7 @@ export interface TextSegment {
 }
 
 export interface ParagraphOptions {
+  locale?: WrapLocale;
   width: number;
   measure: Measure;
   measureRange?: (start: number, end: number) => number;
