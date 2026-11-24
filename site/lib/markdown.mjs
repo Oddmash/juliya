@@ -53,8 +53,8 @@ const inline = (value, basePath) => {
 	return output + escapeHtml(value.slice(cursor));
 };
 
-const tableCell = (value, basePath) => value === "필수" || value === "선택"
-	? `<span class="doc-requirement${value === "필수" ? " is-required" : ""}">${value}</span>`
+const tableCell = (value, basePath) => value === "필수" || value === "조건부 필수" || value === "선택"
+	? `<span class="doc-requirement${value === "선택" ? "" : " is-required"}">${value}</span>`
 	: inline(value, basePath);
 
 const heading = /^\s*(#{1,6})\s+(.+)$/;

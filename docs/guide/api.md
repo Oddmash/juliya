@@ -36,20 +36,14 @@ interface WrappedLine {
 
 ```ts
 import { createCanvasMeasure, observeKowrap, mountKowrap } from '@oddmash/kowrap/dom';
-import type { CanvasMeasureOptions, KowrapOptions, KowrapController, KowrapLayout } from '@oddmash/kowrap/dom';
+import type { CanvasMeasureOptions, KowrapOptions, MountKowrapOptions, KowrapController, KowrapLayout } from '@oddmash/kowrap/dom';
 ```
 
-| API | 출력 |
-| --- | --- |
-| `createCanvasMeasure(options, ownerDocument?)` | Measure 함수 |
-| `observeKowrap(element, options, onLayout)` | KowrapController |
-| `mountKowrap(element, options)` | KowrapController |
-
-| API | 필수 입력 | 선택 입력 |
-| --- | --- | --- |
-| `createCanvasMeasure` | `options.font` | `ownerDocument`, 간격 및 커닝 |
-| `observeKowrap` | `element`, `options.text`, `onLayout` | 전략, 강제 경계 등 |
-| `mountKowrap` | `element`, `options.text` 또는 `options.inline: true` | 전략, 강제 경계 등 |
+| API | 필수 입력 | 선택 입력 | 출력 |
+| --- | --- | --- | --- |
+| `createCanvasMeasure(options, ownerDocument?)` | `options.font` | `ownerDocument`, 간격 및 커닝 | Measure 함수 |
+| `observeKowrap(element, options, onLayout)` | `element`, `options.text`, `onLayout` | 전략, 강제 경계 등 | KowrapController |
+| `mountKowrap(element, options)` | `element`, `options.text` 또는 `options.inline: true` | 전략, 강제 경계 등 | KowrapController |
 
 문자열 모드의 `text`는 필수이며 인라인 모드에서는 `inline: true`를 전달하고 `text`를 전달하지 않습니다. `KowrapLayout`에는 `lines`, `measured`가 포함됩니다. [DOM 옵션 표](dom.md#옵션)를 확인하세요.
 
@@ -61,7 +55,7 @@ import type { CanvasMeasureOptions, KowrapOptions, KowrapController, KowrapLayou
 
 ```ts
 interface KowrapController {
-  update: (options: KowrapOptions) => void;
+  update: (options: MountKowrapOptions) => void;
   refresh: () => void;
   destroy: () => void;
 }
@@ -69,17 +63,11 @@ interface KowrapController {
 
 ## React
 
-| API | 경로 | 용도 |
-| --- | --- | --- |
-| `WrapText` | `/react` | 측정과 렌더링을 함께 처리 |
-| `useKowrap` | `/react` | 직접 렌더링과 강제 경계 상태 제어 |
-| `SentenceText` | `/react/server` | 측정 없는 문장 단위 CSS 렌더링 |
-
-| API | 필수 입력 | 선택 입력 |
-| --- | --- | --- |
-| `WrapText` | `children` | `as`, 전략, 강제 경계, 스타일 등 |
-| `useKowrap` | `text` | 전략, 강제 경계, 콜백 등 |
-| `SentenceText` | `children` (string) | `as`, `locale`, `forcedBreaks` |
+| API | 경로 | 필수 입력 | 선택 입력 | 역할 |
+| --- | --- | --- | --- | --- |
+| `WrapText` | `/react` | `children` | `as`, 전략, 강제 경계, 스타일 등 | 측정 및 렌더링 |
+| `useKowrap` | `/react` | `text` | 전략, 강제 경계, 콜백 등 | 직접 렌더링과 상태 제어 |
+| `SentenceText` | `/react/server` | `children` (string) | `as`, `locale`, `forcedBreaks` | 문장 단위 CSS 렌더링 |
 
 `WrapTextProps`, `UseKowrapOptions`, `SentenceTextProps` 타입을 각각 해당 진입점에서 가져올 수 있습니다. [React 옵션 표](react.md#wraptext)를 확인하세요.
 

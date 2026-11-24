@@ -105,6 +105,7 @@ const verifySpecimen = async (page, motion) => {
 		await compare();
 		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.exiting === "true");
 		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "2");
+		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "3");
 		await page.waitForFunction(() => document.querySelector(".specimen-panels").dataset.example === "0");
 		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true", "the sequence wraps back to its first scene");
 	} else {
@@ -113,6 +114,8 @@ const verifySpecimen = async (page, motion) => {
 		assert.equal(await page.locator(".specimen-motion").count(), 0);
 		assert.equal(await page.locator(".specimen-word-visual").first().evaluate(element => getComputedStyle(element).animationName), "none");
 	}
+	assert.equal(await page.locator(".specimen-examples").getByRole("button").count(), 4);
+	assert.equal(await page.locator(".specimen-examples").getByRole("button", { name: "콘텐츠" }).count(), 1);
 	const selection = page.locator(".specimen").getByRole("button", { name: "서비스 제목" });
 	await selection.press("Enter");
 	assert.equal(await selection.getAttribute("aria-pressed"), "true");

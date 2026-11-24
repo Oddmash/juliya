@@ -7,6 +7,7 @@ import { specimenText } from "../lib/specimen";
 
 const examples = [
 	{ label: "서비스 제목", text: specimenText, width: "10.8em" },
+	{ label: "콘텐츠", text: "오늘의 발견을 함께 나누는 작은 이야기", width: "11.6em" },
 	{ label: "제품 소개", text: "새로운 기능을 지금 만나보세요.", width: "8.8em" },
 	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요", width: "10.8em" },
 ];
@@ -111,8 +112,9 @@ export const LandingSpecimen = () => {
 
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" data-rotating={rotating ? "true" : "false"} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
-			<div className="specimen-examples" aria-label="비교할 예제">
-				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
+			<div className="specimen-examples" role="group" aria-label="비교할 예제" aria-describedby="specimen-selection-help">
+				<span id="specimen-selection-help" className="sr-only">예제를 선택하면 자동 전환이 멈춥니다.</span>
+				{examples.map((example, i) => <button key={example.label} type="button" title="예제를 선택하고 자동 전환 멈추기" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
 			</div>
 			<div className="specimen-panels" data-example={index} data-exiting={exiting ? "true" : "false"} data-measured-width={measuredWidth ?? ""} ref={panels} style={specimenStyle}>
 				<div className="specimen-panel specimen-native">

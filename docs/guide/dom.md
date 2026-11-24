@@ -62,8 +62,8 @@ const controller = mountKowrap(document.getElementById('rich')!, { inline: true 
 
 | 옵션 | 필수 여부 | 기본값 | 설명 |
 | --- | --- | --- | --- |
-| `text` | 필수 | 없음 | 문자열 모드에서만 필수이며 인라인 모드에는 전달하지 않음 |
-| `inline` | 선택 | `false` | 인라인 모드에서는 반드시 `true` |
+| `text` | 조건부 필수 | 없음 | 문자열 모드에서 필수, 인라인 모드에는 전달하지 않음 |
+| `inline` | 조건부 필수 | `false` | 인라인 모드에서 반드시 `true` |
 | `strategy` | 선택 | `balanced` | 줄바꿈 전략 |
 | `breakLongWords` | 선택 | `true` | 긴 어절 분리 |
 | `forcedBreaks` | 선택 | 없음 | 강제 경계 |
