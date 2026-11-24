@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@oddmash/ui/tabs";
 import { CopyButton } from "./copy-button";
 import { specimenText } from "../lib/specimen";
+import { landingCopy, languagePath, engineLocale } from "../lib/locales";
+import type { SiteLocale } from "../lib/locales";
 
 const examples = [
 	{
@@ -50,9 +52,17 @@ const examples = [
 	},
 ];
 
-export const FrameworkExamples = () => {
+export const FrameworkExamples = ({ locale = "ko" }: { locale?: SiteLocale }) => {
 	const [active, setActive] = useState("React");
-	const selected = examples.find(example => example.tab === active) ?? examples[0];
+	const samples = { ko: specimenText, en: "Make every line easier to read.", ja: "文章をもっと読みやすく。", zh: "让每一行更容易阅读。" };
+	const localized = locale === "ko" ? examples : examples.map(example => ({
+		...example,
+		label: example.tab,
+		code: example.tab === "HTML"
+			? `import { mountKowrap } from '@oddmash/kowrap/dom';\n\nconst title = document.getElementById('title');\nmountKowrap(title, { text: title.textContent, locale: '${engineLocale(locale)}' });`
+			: example.code.replaceAll(specimenText, samples[locale]).replace('<WrapText as="h1">', `<WrapText as="h1" locale="${engineLocale(locale)}">`).replace("{ text }", `{ text, locale: '${engineLocale(locale)}' }`).replace("{{ text }}", `{{ text, locale: '${engineLocale(locale)}' }}`).replace("  width: 280,", `  locale: '${engineLocale(locale)}',\n  width: 280,`),
+	}));
+	const selected = localized.find(example => example.tab === active) ?? localized[0];
 	return (
 		<Tabs value={active} onValueChange={setActive} className="code-window">
 			<div className="code-toolbar">
@@ -61,9 +71,9 @@ export const FrameworkExamples = () => {
 			</TabsList>
 			<CopyButton key={selected.tab} className="copy-code" value={selected.code} icon />
 			</div>
-			{examples.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
+			{localized.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
 				<div className="code-body"><pre><code>{example.code}</code></pre></div>
-				<div className="code-foot"><span>{example.label}</span><Link href={`/docs/${example.doc}/`}>사용 문서</Link></div>
+				<div className="code-foot"><span>{example.label}</span><Link href={locale === "ko" ? `/docs/${example.doc}/` : `${languagePath(locale)}/docs/`}>{locale === "ko" ? "사용 문서" : landingCopy[locale].docs}</Link></div>
 			</TabsContent>)}
 		</Tabs>
 	);
