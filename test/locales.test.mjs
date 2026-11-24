@@ -51,3 +51,17 @@ test("locale profiles keep graphemes and explicit breaks", () => {
     assert.ok(lines.every(line => !line.text.endsWith("\u200d")));
   }
 });
+
+test("English avoids ending a line on an article when the same number of lines fits", () => {
+  const lines = en.wrap("Read the new guide now", { width: 9, measure });
+  assert.deepEqual(lines.map(line => line.text.trim()), ["Read", "the new", "guide now"]);
+});
+
+test("CJK profiles preserve mixed Latin text and non-breaking spaces", () => {
+  for (const api of [ja, zh]) {
+    const text = "ReactのUIとTypeScript\u00a0APIを読む。";
+    const lines = api.wrap(text, { width: 16, measure, breakLongWords: false });
+    assert.equal(lines.map(line => line.text).join(""), text);
+    assert.ok(lines.some(line => line.text.includes("TypeScript\u00a0API")));
+  }
+});
