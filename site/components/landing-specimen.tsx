@@ -12,28 +12,19 @@ const examples = [
 	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요", width: "10.8em" },
 ];
 
-type Difference = { index: number; from: number; to: number; startX: number; startY: number; endX: number; endY: number };
-
-const boxes = (element: HTMLElement) => Array.from(element.querySelectorAll<HTMLElement>("[data-word]"), word => word.getBoundingClientRect());
+const wordsIn = (element: HTMLElement) => Array.from(element.querySelectorAll<HTMLElement>("[data-word]"));
 
 export const LandingSpecimen = () => {
 	const section = useRef<HTMLElement>(null);
-	const panels = useRef<HTMLDivElement>(null);
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
 	const [index, setIndex] = useState(0);
-	const [exiting, setExiting] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [reduced, setReduced] = useState(true);
-	const [selected, setSelected] = useState(false);
-	const [hovered, setHovered] = useState(false);
-	const [focused, setFocused] = useState(false);
-	const [difference, setDifference] = useState<Difference | null>(null);
-	const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
+	const [paused, setPaused] = useState(false);
+	const [phase, setPhase] = useState<"css" | "kowrap">("kowrap");
 	const example = examples[index];
-	const words = example.text.split(" ");
-	const specimenStyle = { "--specimen-width": example.width } as CSSProperties;
-	const rotating = visible && !reduced && !selected && !hovered && !focused;
+	const rotating = visible && !reduced && !paused;
 
 	useEffect(() => {
 		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -47,94 +38,93 @@ export const LandingSpecimen = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!rotating) {
-			setExiting(false);
-			return;
-		}
-		let advance: number | undefined;
-		const timer = window.setTimeout(() => {
-			setExiting(true);
-			advance = window.setTimeout(() => {
-				setMeasuredWidth(null);
-				setDifference(null);
-				setIndex(value => (value + 1) % examples.length);
-				setExiting(false);
-			}, 180);
-		}, 4620);
-		return () => {
-			window.clearTimeout(timer);
-			if (advance !== undefined) window.clearTimeout(advance);
-		};
-	}, [rotating, index]);
-
-	useEffect(() => {
 		const native = before.current;
 		const applied = after.current;
-		const panel = panels.current;
-		if (!native || !applied || !panel) return;
+		if (!native || !applied || !rotating) {
+			setPhase("kowrap");
+			return;
+		}
+		let animations: Animation[] = [];
 		let frame = 0;
+
+		let settle: number | undefined;
+		let played = false;
+		let measuredWidth = 0;
 		const measure = () => {
 			const target = applied.querySelector("p");
 			if (!target) return;
-			const old = boxes(native);
-			const next = boxes(target);
+			const old = wordsIn(native);
+			const next = wordsIn(target);
 			if (!old.length || old.length !== next.length) return;
-			const line = (items: DOMRect[], element: HTMLElement, i: number) => 1 + Math.round((items[i].top - items[0].top) / parseFloat(getComputedStyle(element).lineHeight));
-			const moved = next.findIndex((_, i) => line(old, native, i) !== line(next, target, i));
-			const bounds = panel.getBoundingClientRect();
-			const result = moved < 0 ? null : {
-				index: moved,
-				from: line(old, native, moved),
-				to: line(next, target, moved),
-				startX: Math.round(old[moved].left + old[moved].width / 2 - bounds.left),
-				startY: Math.round(old[moved].bottom - bounds.top + 5),
-				endX: Math.round(next[moved].left + next[moved].width / 2 - bounds.left),
-				endY: Math.round(next[moved].bottom - bounds.top + 5),
-			};
-			setMeasuredWidth(Math.round(native.getBoundingClientRect().width));
-			setDifference(previous => JSON.stringify(previous) === JSON.stringify(result) ? previous : result);
+			if (played) return;
+			if (!target.querySelector("br[data-kowrap-break]") || document.fonts?.status === "loading") return;
+			played = true;
+			measuredWidth = native.getBoundingClientRect().width;
+			const moved = next.some((word, i) => Math.abs(word.getBoundingClientRect().top - old[i].getBoundingClientRect().top) > 1);
+			if (!moved) { setPhase("kowrap"); return; }
+			setPhase("css");
+			animations = next.flatMap((word, i) => {
+				const source = old[i].getBoundingClientRect();
+				const destination = word.getBoundingClientRect();
+				const visual = word.firstElementChild;
+				if (!(visual instanceof HTMLElement) || typeof visual.animate !== "function") return [];
+				const from = `translate(${source.left - destination.left}px, ${source.top - destination.top}px)`;
+				return [visual.animate([
+					{ transform: from, offset: 0 },
+					{ transform: from, offset: .47, easing: "cubic-bezier(.22, 1, .36, 1)" },
+					{ transform: "translate(0, 0)", offset: 1 },
+				], { duration: 1850, fill: "both" })];
+			});
+			settle = window.setTimeout(() => setPhase("kowrap"), 870);
 		};
 		const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
-		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
+		const finish = () => {
+			animations.forEach(animation => animation.cancel());
+			setPhase("kowrap");
+			played = true;
+		};
+		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(() => {
+			if (played && Math.abs(native.getBoundingClientRect().width - measuredWidth) > 1) finish();
+			else schedule();
+		});
 		resize?.observe(native);
-		resize?.observe(applied);
 		const mutation = new MutationObserver(schedule);
 		mutation.observe(applied, { childList: true, subtree: true });
 		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
 		schedule();
-		return () => { resize?.disconnect(); mutation.disconnect(); window.removeEventListener("resize", schedule); document.fonts?.removeEventListener("loadingdone", schedule); cancelAnimationFrame(frame); };
-	}, [index]);
+		const advance = window.setTimeout(() => setIndex(value => (value + 1) % examples.length), 5200);
+		return () => {
+			resize?.disconnect();
+			mutation.disconnect();
+			window.removeEventListener("resize", schedule);
+			document.fonts?.removeEventListener("loadingdone", schedule);
+			cancelAnimationFrame(frame);
+			window.clearTimeout(advance);
+			window.clearTimeout(settle);
+			animations.forEach(animation => animation.cancel());
+		};
+	}, [index, rotating]);
 
-	const sample = () => words.map((word, i) => (
-		<Fragment key={i}>{i > 0 && " "}<span data-word={i} data-moved={difference?.index === i ? "" : undefined}><span className="specimen-word-visual" style={{ "--word-order": i } as CSSProperties}>{word}</span></span></Fragment>
+	const sample = () => example.text.split(" ").map((word, i) => (
+		<Fragment key={i}>{i > 0 && " "}<span data-word={i}><span className="specimen-word-visual">{word}</span></span></Fragment>
 	));
 
 	return (
-		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" data-rotating={rotating ? "true" : "false"} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
-			<div className="specimen-examples" role="group" aria-label="비교할 예제" aria-describedby="specimen-selection-help">
-				<span id="specimen-selection-help" className="sr-only">예제를 선택하면 자동 전환이 멈춥니다.</span>
-				{examples.map((example, i) => <button key={example.label} type="button" title="예제를 선택하고 자동 전환 멈추기" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
-			</div>
-			<div className="specimen-panels" data-example={index} data-exiting={exiting ? "true" : "false"} data-measured-width={measuredWidth ?? ""} ref={panels} style={specimenStyle}>
-				<div className="specimen-panel specimen-native">
-					<div className="specimen-label"><span>기본 CSS</span><code>keep-all</code></div>
-					<div className="specimen-stage"><div className="specimen-ruler" aria-hidden="true"><span /></div><p key={index} className="specimen-text" ref={before}>{sample()}</p></div>
+		<section ref={section} className="specimen" id="playground" aria-label="자동 줄바꿈 시연" data-rotating={rotating}>
+			<div className="specimen-panels" data-example={index} data-phase={phase} style={{ "--specimen-width": example.width } as CSSProperties}>
+				<div className="specimen-label">
+					<span>{example.label}</span>
+					<span className="specimen-mode"><span aria-hidden="true" />{phase === "css" ? "기본 CSS" : "Kowrap 적용"}</span>
 				</div>
-				<div className="specimen-panel specimen-applied">
-					<div className="specimen-label"><span>Kowrap</span><span>의미 기반 줄바꿈</span></div>
-					<div className="specimen-stage" ref={after}><div className="specimen-ruler" aria-hidden="true"><span /></div><WrapText key={index} as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample()}</WrapText></div>
+				<div className="specimen-stage">
+					<div className="specimen-ruler" aria-hidden="true"><span /></div>
+					<div className="specimen-layout">
+						<p key={`css-${index}`} ref={before} className="specimen-text specimen-native" aria-hidden="true">{sample()}</p>
+						<div ref={after} className="specimen-applied"><WrapText key={index} as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample()}</WrapText></div>
+					</div>
 				</div>
-				{difference && !reduced && visible && (
-					<span key={`${index}:${difference.index}:${difference.from}:${difference.to}`} className="specimen-motion" aria-hidden="true"
-						style={{
-							"--motion-x": `${difference.startX}px`,
-							"--motion-y": `${difference.startY}px`,
-							"--motion-dx": `${difference.endX - difference.startX}px`,
-							"--motion-dy": `${difference.endY - difference.startY}px`,
-						} as CSSProperties}
-					/>
-				)}
+				<div className="specimen-footer"><span>같은 문장, 더 자연스러운 줄바꿈.</span>{!reduced && <button type="button" className="specimen-pause" aria-label={paused ? "시연 재생" : "시연 일시정지"} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>}</div>
 			</div>
 		</section>
 	);
