@@ -34,7 +34,7 @@ const CopyToastItem = ({ notice, onDismiss }: { notice: CopyNotice; onDismiss: (
 	};
 
 	return (
-		<Toast ref={region} className="copy-toast-item" open={open} title={notice.result} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기"
+		<Toast ref={region} className="copy-toast-item" data-copy-notice={notice.id} open={open} title={notice.result} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기"
 			onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
 			onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
 			{notice.result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : "클립보드에 복사했어요."}
@@ -49,7 +49,13 @@ export const CopyToastProvider = ({ children }: { children: ReactNode }) => {
 	const notify = useCallback((result: CopyResult) => {
 		const source = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		const notice = { id: ++nextId.current, result, source };
-		setNotices(items => [...items, notice].slice(-MAX_COPY_NOTICES));
+		const focusedId = source?.closest<HTMLElement>("[data-copy-notice]")?.dataset.copyNotice;
+		setNotices(items => {
+			const next = [...items, notice];
+			if (next.length <= MAX_COPY_NOTICES) return next;
+			const evicted = next.find(item => String(item.id) !== focusedId);
+			return next.filter(item => item.id !== evicted?.id);
+		});
 	}, []);
 	return (
 		<CopyToastContext.Provider value={notify}>

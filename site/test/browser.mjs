@@ -299,6 +299,14 @@ try {
 		}
 	});
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
+	const oldestNotice = docs.locator("[data-copy-notice]").first();
+	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
+	const previousNewest = Number(await docs.locator("[data-copy-notice]").last().getAttribute("data-copy-notice"));
+	const oldestDismiss = oldestNotice.getByRole("button", { name: "알림 닫기" });
+	await oldestDismiss.focus();
+	await docCopy.evaluate(button => button.click());
+	await docs.waitForFunction(previous => document.querySelectorAll(".copy-toast-region .om-toast").length === 4 && [...document.querySelectorAll("[data-copy-notice]")].some(notice => Number(notice.dataset.copyNotice) > previous), previousNewest);
+	assert.equal(await docs.locator(`[data-copy-notice="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "overflow preserves the focused toast");
 	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw Error("unavailable"); } } }));
 	await docCopy.click();
 	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").getByText("복사 실패", { exact: true }).waitFor();
