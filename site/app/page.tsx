@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Fragment } from "react";
 import localFont from "next/font/local";
 import { WrapText } from "@oddmash/kowrap/react";
 import { CopyButton } from "../components/copy-button";
@@ -26,33 +25,6 @@ const mono = localFont({
 });
 
 const installCommand = "npm install @oddmash/kowrap";
-
-const useCases = [
-	{ type: "article", label: "오늘의 이야기", context: "콘텐츠 제목", text: "오늘의 발견을 함께 나누는 작은 이야기", description: "의미가 이어지는 표현을 함께 읽을 수 있도록 배치합니다." },
-	{ type: "mobile", label: "업데이트", context: "모바일 알림", text: "새로운 기능을 지금 만나보세요.", description: "좁은 카드에서도 수식어와 이어지는 표현을 함께 읽을 수 있도록 배치합니다." },
-	{ type: "mixed", label: "개발 가이드", context: "개발 문서", text: "Next.js와 TypeScript로 만든 화면을 자연스럽게 구성하세요.", description: "영문 기술 용어와 한국어 표현을 같은 화면에서 자연스럽게 배치합니다." },
-] as const;
-
-const caseWords = (text: string) => text.split(" ").map((word, i) => <Fragment key={i}>{i > 0 && " "}<span data-case-word={i}>{word}</span></Fragment>);
-
-const UseCase = ({ item }: { item: typeof useCases[number] }) => (
-	<article className={`use-case use-case-${item.type}`}>
-		<div className="case-copy">
-			<h3>{item.context}</h3>
-			<p>{item.description}</p>
-		</div>
-		<div className="case-comparison">
-			<div className="case-preview case-native">
-				<span className="case-preview-label">기본 CSS</span>
-				<div className="case-sample"><span className="case-label">{item.label}</span><p className="case-text">{caseWords(item.text)}</p></div>
-			</div>
-			<div className="case-preview case-applied">
-				<span className="case-preview-label">Kowrap</span>
-				<div className="case-sample"><span className="case-label">{item.label}</span><WrapText as="p" className="case-text">{caseWords(item.text)}</WrapText></div>
-			</div>
-		</div>
-	</article>
-);
 
 const Page = () => (
 	<main id="main" className={`container landing ${display.variable} ${mono.variable}`}>
@@ -89,10 +61,23 @@ const Page = () => (
 		</div>
 		<section className="landing-use-cases" aria-labelledby="use-cases-title">
 			<div className="landing-section-heading">
-				<h2 id="use-cases-title">실제 UI에서 달라지는 줄바꿈</h2>
-				<Link className="text-link" href="/comparison/">활용 사례와 성능 비교</Link>
+				<h2 id="use-cases-title">문장의 의미를 끊지 않습니다.</h2>
+				<p>화면의 크기는 달라져도 읽는 흐름은 그대로 유지하세요.</p>
 			</div>
-			<div className="use-case-grid">{useCases.map(item => <UseCase key={item.type} item={item} />)}</div>
+			<div className="landing-reading-grid">
+				<article className="reading-sample">
+					<div className="reading-meta"><span>읽기 좋은 콘텐츠</span><span>01 / Editorial</span></div>
+					<WrapText as="h3">오늘의 작은 발견이 내일의 새로운 시선이 됩니다.</WrapText>
+					<WrapText as="p">문장의 어절과 의미 단위를 고려해 제목뿐 아니라 강조와 <strong>링크가 포함된 문장</strong>도 자연스럽게 배치합니다.</WrapText>
+					<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법 →</Link>
+				</article>
+				<div className="reading-principles">
+					<article><span className="reading-index">01</span><div><h3>의미 단위로 분리</h3><p>이어지는 표현을 함께 읽을 수 있는 줄바꿈 후보를 찾습니다.</p></div></article>
+					<article><span className="reading-index">02</span><div><h3>실제 화면 폭에 맞춤</h3><p>글꼴과 컨테이너 너비를 바탕으로 줄을 배치합니다.</p></div></article>
+					<article><span className="reading-index">03</span><div><h3>기존 마크업 그대로</h3><p>강조, 링크와 중첩 요소를 유지하며 화면 크기 변화에도 대응합니다.</p></div></article>
+					<Link className="text-link" href="/comparison/">실제 비교 결과와 성능 살펴보기 →</Link>
+				</div>
+			</div>
 		</section>
 	</main>
 );
