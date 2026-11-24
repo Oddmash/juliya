@@ -1,5 +1,7 @@
 # API 레퍼런스
 
+줄이야(Juliya)는 기존 `@oddmash/kowrap` API를 유지합니다. 코어의 `locale` 옵션은 `ko`, `en`, `ja`, `zh`, `zh-Hans`를 지원하며, `/ko`, `/en`, `/ja`, `/zh` 진입점으로도 선택할 수 있습니다. React의 `WrapText`와 `useKowrap`, 그리고 DOM·Vue·Svelte 옵션에도 `locale`을 전달할 수 있습니다.
+
 kowrap은 필요한 환경의 진입점만 불러올 수 있도록 분리되어 있습니다. 아래는 공개 API를 한곳에서 확인할 수 있는 참조 목록입니다.
 
 ## 코어
