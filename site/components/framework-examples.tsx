@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@oddmash/ui/tabs";
 import { CopyButton } from "./copy-button";
 import { specimenText } from "../lib/specimen";
@@ -50,13 +51,18 @@ const examples = [
 ];
 
 export const FrameworkExamples = () => {
+	const [active, setActive] = useState("React");
+	const selected = examples.find(example => example.tab === active) ?? examples[0];
 	return (
-		<Tabs defaultValue="React" className="code-window">
+		<Tabs value={active} onValueChange={setActive} className="code-window">
+			<div className="code-toolbar">
 			<TabsList className="code-tabs" aria-label="환경별 예제">
 				{examples.map(({ tab }) => <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>)}
 			</TabsList>
+			<CopyButton key={selected.tab} className="copy-code" value={selected.code} />
+			</div>
 			{examples.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
-				<div className="code-body"><CopyButton className="copy-code" value={example.code} /><pre><code>{example.code}</code></pre></div>
+				<div className="code-body"><pre><code>{example.code}</code></pre></div>
 				<div className="code-foot"><span>{example.label}</span><Link href={`/docs/${example.doc}/`}>사용 문서</Link></div>
 			</TabsContent>)}
 		</Tabs>

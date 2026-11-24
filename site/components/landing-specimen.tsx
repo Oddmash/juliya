@@ -33,6 +33,7 @@ export const LandingSpecimen = () => {
 	const example = examples[index];
 	const words = example.text.split(" ");
 	const specimenStyle = { "--specimen-width": example.width } as CSSProperties;
+	const rotating = visible && !reduced && !selected && !hovered && !focused && index < examples.length - 1;
 
 	useEffect(() => {
 		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -46,7 +47,7 @@ export const LandingSpecimen = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!visible || reduced || selected || hovered || focused || index === examples.length - 1) return;
+		if (!rotating) return;
 		const timer = window.setTimeout(() => {
 			setReady(false);
 			setMeasuredWidth(null);
@@ -54,7 +55,7 @@ export const LandingSpecimen = () => {
 			setIndex(value => value + 1);
 		}, 4800);
 		return () => window.clearTimeout(timer);
-	}, [visible, reduced, selected, hovered, focused, index]);
+	}, [rotating, index]);
 
 	useEffect(() => {
 		const native = before.current;
@@ -97,11 +98,11 @@ export const LandingSpecimen = () => {
 	}, [index]);
 
 	const sample = () => words.map((word, i) => (
-		<Fragment key={i}>{i > 0 && " "}<span data-word={i} data-moved={difference?.index === i ? "" : undefined}>{word}</span></Fragment>
+		<Fragment key={i}>{i > 0 && " "}<span data-word={i} data-moved={difference?.index === i ? "" : undefined}><span className="specimen-word-visual" style={{ "--word-order": i } as CSSProperties}>{word}</span></span></Fragment>
 	));
 
 	return (
-		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
+		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" data-rotating={rotating ? "true" : "false"} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
 			<div className="specimen-examples" aria-label="비교할 예제">
 				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setReady(false); setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
 			</div>
@@ -127,7 +128,7 @@ export const LandingSpecimen = () => {
 			</div>
 			<div className="specimen-footer">
 				<p className="specimen-status" aria-live={selected ? "polite" : "off"}>
-					<span className="specimen-step"><span aria-hidden="true" />{String(index + 1).padStart(2, "0")} / {String(examples.length).padStart(2, "0")}</span>
+					<span className="specimen-step"><span aria-hidden="true" />{String(index + 1).padStart(2, "0")} / {String(examples.length).padStart(2, "0")}</span><span className="specimen-progress" aria-hidden="true"><span key={index} /></span>
 					{difference ? <><strong>‘{words[difference.index]}’</strong><span> {difference.from}번째 줄에서 {difference.to}번째 줄로 이동</span></> : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}
 				</p>
 				<span className="specimen-width" data-measured-width={measuredWidth ?? ""}>{measuredWidth === null ? "폭 측정 중" : `실제 비교 폭 ${measuredWidth}px`}</span>

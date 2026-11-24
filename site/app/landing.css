@@ -4,13 +4,13 @@
 	--landing-space: clamp(72px, 10vw, 144px);
 }
 body:has(> .landing) { background: var(--paper); }
-.landing-intro { padding-block-start: clamp(36px, 4vw, 56px); }
+.landing-intro { padding-block-start: clamp(28px, 3.4vw, 44px); }
 .hero-copy {
 	display: grid;
 	grid-template-columns: minmax(0, 1.4fr) minmax(0, .9fr);
 	align-items: end;
 	gap: 20px 48px;
-	margin-block-end: clamp(24px, 4vw, 42px);
+	margin-block-end: clamp(22px, 3vw, 32px);
 }
 .landing-kicker {
 	display: flex;
@@ -22,7 +22,7 @@ body:has(> .landing) { background: var(--paper); }
 .landing-kicker > span { width: 18px; height: 1px; background: var(--action); }
 .hero-copy > .landing-kicker { grid-column: 1 / -1; }
 .hero-copy h1 {
-	font-size: clamp(42px, 5.8vw, 78px);
+	font-size: clamp(42px, 5.2vw, 70px);
 	font-weight: 650;
 	line-height: 1.18;
 	letter-spacing: -.052em;
@@ -94,9 +94,7 @@ body:has(> .landing) { background: var(--paper); }
 }
 .specimen-applied [data-moved] {
 	color: var(--action);
-	text-decoration: underline;
-	text-decoration-thickness: .065em;
-	text-underline-offset: .16em;
+	text-decoration: none;
 }
 .specimen-ruler { width: 100%; height: 12px; position: relative; }
 .specimen-ruler > span {
@@ -237,8 +235,12 @@ body:has(> .landing) { background: var(--paper); }
 .landing-install .code-window { min-width: 0; }
 .landing-install .code-tabs { overflow-x: auto; }
 @media (prefers-reduced-motion: no-preference) {
-	.hero-copy { animation: landing-arrive 420ms cubic-bezier(.22, 1, .36, 1) both; }
-	.specimen-panels { animation: landing-arrive 520ms cubic-bezier(.22, 1, .36, 1) 70ms both; }
+	.hero-copy > * { animation: landing-arrive 440ms cubic-bezier(.22, 1, .36, 1) both; }
+	.hero-copy > h1 { animation-delay: 45ms; }
+	.hero-description { animation-delay: 110ms; }
+	.hero-actions { animation-delay: 165ms; }
+	.specimen-examples { animation: landing-arrive 380ms cubic-bezier(.22, 1, .36, 1) 190ms both; }
+	.specimen-panels { animation: landing-arrive 460ms cubic-bezier(.22, 1, .36, 1) 230ms both; }
 	@keyframes landing-arrive { from { opacity: .8; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 }
 @media (max-width: 760px) {
@@ -293,17 +295,22 @@ body:has(> .landing) { background: var(--paper); }
 	.landing-intro .hero-copy h1 { max-inline-size: none; }
 }
 
-.landing-intro { padding-block-start: clamp(40px, 5vw, 72px); }
+
 .hero-copy h1 { font-family: var(--landing-display), var(--sans); font-weight: 650; }
 .specimen-stage {
-	min-height: clamp(190px, 22vw, 260px);
+	min-height: clamp(184px, 18.5vw, 228px);
 }
 .specimen-panels:not([data-example="0"]) .specimen-stage { font-family: var(--sans); }
 .specimen-applied .specimen-label > span:first-child { color: var(--action); font-weight: 700; }
 .specimen-native .specimen-text { color: var(--muted); }
 @media (prefers-reduced-motion: no-preference) {
-	.specimen-text { animation: specimen-enter 240ms ease-out both; }
-	@keyframes specimen-enter { from { opacity: .35; } to { opacity: 1; } }
+	.specimen-word-visual { animation: specimen-word-enter 340ms cubic-bezier(.22, 1, .36, 1) both; animation-delay: calc(var(--word-order, 0) * 28ms); }
+	.specimen-applied .specimen-word-visual { animation-delay: calc(64ms + var(--word-order, 0) * 28ms); }
+	@keyframes specimen-word-enter { from { opacity: .34; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+	.specimen[data-rotating="true"] .specimen-progress > span { animation: specimen-dwell 4800ms linear both; }
+	@keyframes specimen-dwell { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+	.specimen-applied [data-moved]::after { animation: specimen-underline 460ms ease-out 480ms both; }
+	@keyframes specimen-underline { from { transform: scaleX(0); opacity: .5; } to { transform: scaleX(1); opacity: 1; } }
 }
 @media (max-width: 760px) {
 	.specimen-stage { min-height: 168px; font-size: clamp(22px, 5.8vw, 33px); gap: 12px; }
@@ -323,3 +330,9 @@ body:has(> .landing) { background: var(--paper); }
 	.landing-intro .hero-copy h1 { max-inline-size: none; }
 	.landing .comparison-card .preview-stage { min-height: 136px; }
 }
+
+.specimen-word-visual { display: inline-block; }
+.specimen-progress { display: inline-block; width: 56px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-inline-end: 9px; }
+.specimen-progress > span { display: block; width: 100%; height: 100%; background: var(--action); transform-origin: left; transform: scaleX(0); }
+.specimen[data-rotating="false"] .specimen-progress { display: none; }
+.specimen-applied [data-moved]::after { content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 2px; background: var(--action); transform-origin: left; pointer-events: none; }
