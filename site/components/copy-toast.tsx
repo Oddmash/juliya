@@ -5,29 +5,58 @@ import type { ReactNode } from "react";
 import { Toast } from "@oddmash/ui/toast";
 
 type CopyResult = "복사 완료" | "복사 실패";
+type CopyNotice = { id: number; result: CopyResult; source: HTMLElement | null };
+const MAX_COPY_NOTICES = 4;
 const CopyToastContext = createContext<(result: CopyResult) => void>(() => {});
 
 export const useCopyToast = () => useContext(CopyToastContext);
 
+const CopyToastItem = ({ notice, onDismiss }: { notice: CopyNotice; onDismiss: (id: number) => void }) => {
+	const region = useRef<HTMLDivElement>(null);
+	const [open, setOpen] = useState(false);
+	const [hovered, setHovered] = useState(false);
+	const [focused, setFocused] = useState(false);
+
+	useEffect(() => {
+		const frame = requestAnimationFrame(() => setOpen(true));
+		return () => cancelAnimationFrame(frame);
+	}, []);
+	useEffect(() => {
+		if (!open || hovered || focused) return;
+		const timer = setTimeout(() => onDismiss(notice.id), notice.result === "복사 실패" ? 5500 : 2800);
+		return () => clearTimeout(timer);
+	}, [open, hovered, focused, notice.id, notice.result, onDismiss]);
+
+	const dismiss = () => {
+		const restore = region.current?.contains(document.activeElement) && notice.source?.isConnected;
+		onDismiss(notice.id);
+		if (restore) notice.source?.focus({ preventScroll: true });
+	};
+
+	return (
+		<Toast ref={region} className="copy-toast-item" open={open} title={notice.result} tone={notice.result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기"
+			onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+			onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
+			{notice.result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : "클립보드에 복사했어요."}
+		</Toast>
+	);
+};
+
 export const CopyToastProvider = ({ children }: { children: ReactNode }) => {
-	const [result, setResult] = useState<CopyResult | null>(null);
-	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-	const dismiss = useCallback(() => {
-		clearTimeout(timer.current);
-		setResult(null);
+	const [notices, setNotices] = useState<CopyNotice[]>([]);
+	const nextId = useRef(0);
+	const dismiss = useCallback((id: number) => setNotices(items => items.filter(item => item.id !== id)), []);
+	const notify = useCallback((result: CopyResult) => {
+		const source = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		const notice = { id: ++nextId.current, result, source };
+		setNotices(items => [...items, notice].slice(-MAX_COPY_NOTICES));
 	}, []);
-	const notify = useCallback((next: CopyResult) => {
-		clearTimeout(timer.current);
-		setResult(next);
-		timer.current = setTimeout(() => setResult(null), next === "복사 실패" ? 5500 : 2800);
-	}, []);
-	useEffect(() => () => clearTimeout(timer.current), []);
 	return (
 		<CopyToastContext.Provider value={notify}>
 			{children}
-			<Toast className="copy-toast-region" open={result !== null} title={result ?? ""} tone={result === "복사 실패" ? "danger" : "neutral"} onDismiss={dismiss} dismissLabel="알림 닫기">
-				{result === "복사 실패" ? "텍스트를 직접 선택해 복사해 주세요." : "클립보드에 복사했어요."}
-			</Toast>
+			<div className="copy-toast-region">
+				{notices.map(notice => <CopyToastItem key={notice.id} notice={notice} onDismiss={dismiss} />)}
+			</div>
 		</CopyToastContext.Provider>
 	);
 };

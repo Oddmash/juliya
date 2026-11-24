@@ -289,12 +289,23 @@ try {
 	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "yarn add @oddmash/kowrap");
 	await docCopy.click();
 	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/kowrap");
-	assert.equal(await docs.locator(".copy-toast-region .om-toast").count(), 1);
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length >= 2);
+	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4, "rapid copy events display a bounded stack");
+	await docs.evaluate(async () => {
+		const button = document.querySelector("[data-package-tabs] [data-copy-target]");
+		for (let i = 0; i < 5; i++) {
+			button.click();
+			await new Promise(resolve => setTimeout(resolve, 35));
+		}
+	});
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
 	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw Error("unavailable"); } } }));
 	await docCopy.click();
 	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").getByText("복사 실패", { exact: true }).waitFor();
 	assert.equal(await docCopy.textContent(), "복사 실패");
-	await docs.locator(".copy-toast-region").getByRole("button", { name: "알림 닫기" }).click();
+	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4);
+	await docs.locator(".copy-toast-region .om-toast").filter({ has: docs.getByRole("alert") }).getByRole("button", { name: "알림 닫기" }).click();
+	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").waitFor({ state: "hidden" });
 	await docs.keyboard.press("Control+k");
 	await docs.getByRole("dialog").waitFor();
 	await docs.waitForFunction(() => document.activeElement?.id === "docs-search");
