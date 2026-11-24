@@ -7,6 +7,20 @@ export const escapeHtml = (value) =>
 			],
 	);
 
+const highlightCode = (value, language) => {
+	if (!/^(?:js|jsx|ts|tsx|javascript|typescript|html|vue|svelte|bash|sh|css)$/.test(language)) return escapeHtml(value);
+	const tokens = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\/\/[^\n]*|\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->)|\b(import|export|from|const|let|function|return|async|await|new|if|else|true|false|null|undefined|type|interface)\b|\b(\d+(?:\.\d+)?)\b/g;
+	let result = "";
+	let cursor = 0;
+	for (const match of value.matchAll(tokens)) {
+		result += escapeHtml(value.slice(cursor, match.index));
+		const kind = match[1] ? "string" : match[2] ? "comment" : match[3] ? "keyword" : "number";
+		result += `<span class="syntax-${kind}">${escapeHtml(match[0])}</span>`;
+		cursor = match.index + match[0].length;
+	}
+	return result + escapeHtml(value.slice(cursor));
+};
+
 const safeLink = (href, basePath) => {
 	if (/^https?:\/\//i.test(href) || href.startsWith("#")) return href;
 	const match = href.match(/^(?:\.\/)?([a-z0-9-]+)\.md(#[\p{L}\p{N}_-]+)?$/u);
@@ -97,7 +111,7 @@ export const renderMarkdown = (markdown, basePath = "") => {
 			if (index < lines.length) index++;
 			const id = `code-${++codeIndex}`;
 			blocks.push(
-				`<div class="doc-code"><div class="doc-code-head"><span>${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button><span class="sr-only" role="status" aria-live="polite" data-copy-status="${id}"></span></div><pre><code id="${id}">${escapeHtml(content.join("\n"))}</code></pre></div>`,
+				`<div class="doc-code"><div class="doc-code-head"><span>${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button><span class="sr-only" role="status" aria-live="polite" data-copy-status="${id}"></span></div><pre><code id="${id}">${highlightCode(content.join("\n"), code[1])}</code></pre></div>`,
 			);
 			continue;
 		}

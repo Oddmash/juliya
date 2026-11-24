@@ -1,29 +1,52 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { WrapText } from "@oddmash/kowrap/react";
-import { Button } from "@oddmash/ui/button";
 import { specimenText } from "../lib/specimen";
 
-const words = specimenText.split(" ");
-const wordBoxes = (layer: HTMLElement) =>
-	Array.from(layer.querySelectorAll<HTMLElement>("[data-word]"), (word) => word.getBoundingClientRect());
+const examples = [
+	{ label: "서비스 제목", text: specimenText },
+	{ label: "콘텐츠", text: "좋은 글은 읽기 편한 화면에서 시작됩니다" },
+	{ label: "제품 소개", text: "복잡한 일상에서 필요한 것을 더 쉽게 찾으세요" },
+	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요" },
+];
 
-type Difference = { index: number; from: number; to: number; dx: number; dy: number; offsets: { dx: number; dy: number }[] };
+const boxes = (element: HTMLElement) => Array.from(element.querySelectorAll<HTMLElement>("[data-word]"), word => word.getBoundingClientRect());
 
 export const LandingSpecimen = () => {
+	const section = useRef<HTMLElement>(null);
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
-	const marker = useRef<HTMLSpanElement>(null);
-	const animation = useRef<Animation | null>(null);
-	const wordAnimations = useRef<Animation[]>([]);
-	const differenceRef = useRef<Difference | null>(null);
-	const specimen = useRef<HTMLElement>(null);
-	const [playing, setPlaying] = useState(true);
+	const [index, setIndex] = useState(0);
 	const [visible, setVisible] = useState(false);
-	const [reduced, setReduced] = useState(false);
-	const [difference, setDifference] = useState<Difference | null>(null);
+	const [reduced, setReduced] = useState(true);
+	const [selected, setSelected] = useState(false);
+	const [hovered, setHovered] = useState(false);
+	const [focused, setFocused] = useState(false);
+	const [difference, setDifference] = useState<{ index: number; from: number; to: number } | null>(null);
 	const [ready, setReady] = useState(false);
+	const words = examples[index].text.split(" ");
+
+	useEffect(() => {
+		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const sync = () => setReduced(preference.matches);
+		sync();
+		preference.addEventListener("change", sync);
+		const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting)) : undefined;
+		if (section.current && observer) observer.observe(section.current);
+		else setVisible(true);
+		return () => { preference.removeEventListener("change", sync); observer?.disconnect(); };
+	}, []);
+
+	useEffect(() => {
+		if (!visible || reduced || selected || hovered || focused || index === examples.length - 1) return;
+		const timer = window.setTimeout(() => {
+			setReady(false);
+			setDifference(null);
+			setIndex(value => value + 1);
+		}, 4800);
+		return () => window.clearTimeout(timer);
+	}, [visible, reduced, selected, hovered, focused, index]);
 
 	useEffect(() => {
 		const native = before.current;
@@ -33,119 +56,47 @@ export const LandingSpecimen = () => {
 		const measure = () => {
 			const target = applied.querySelector("p");
 			if (!target) return;
-			const old = wordBoxes(native);
-			const next = wordBoxes(target);
-			if (old.length !== words.length || next.length !== words.length) return;
-			const fromLineHeight = parseFloat(getComputedStyle(native).lineHeight);
-			const toLineHeight = parseFloat(getComputedStyle(target).lineHeight);
-			const fromLine = (index: number) => 1 + Math.round((old[index].top - old[0].top) / fromLineHeight);
-			const toLine = (index: number) => 1 + Math.round((next[index].top - next[0].top) / toLineHeight);
-			const index = next.findIndex((_, i) => fromLine(i) !== toLine(i));
-			const result = index < 0 ? null : {
-				index, from: fromLine(index), to: toLine(index),
-				dx: old[index].left - old[0].left - (next[index].left - next[0].left),
-				dy: old[index].top - old[0].top - (next[index].top - next[0].top),
-				offsets: next.map((box, i) => ({ dx: old[i].left - old[0].left - (box.left - next[0].left), dy: old[i].top - old[0].top - (box.top - next[0].top) })),
-			};
-			if (JSON.stringify(differenceRef.current) !== JSON.stringify(result)) {
-				animation.current?.cancel();
-				wordAnimations.current.forEach(item => item.cancel());
-			}
-			differenceRef.current = result;
-			setDifference((previous) => JSON.stringify(previous) === JSON.stringify(result) ? previous : result);
+			const old = boxes(native);
+			const next = boxes(target);
+			if (!old.length || old.length !== next.length) return;
+			const line = (items: DOMRect[], element: HTMLElement, i: number) => 1 + Math.round((items[i].top - items[0].top) / parseFloat(getComputedStyle(element).lineHeight));
+			const moved = next.findIndex((_, i) => line(old, native, i) !== line(next, target, i));
+			const result = moved < 0 ? null : { index: moved, from: line(old, native, moved), to: line(next, target, moved) };
+			setDifference(previous => JSON.stringify(previous) === JSON.stringify(result) ? previous : result);
 			setReady(true);
 		};
-		const schedule = () => {
-			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(measure);
-		};
-		const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
-		observer?.observe(native);
-		observer?.observe(applied);
+		const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
+		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
+		resize?.observe(native);
+		resize?.observe(applied);
 		const mutation = new MutationObserver(schedule);
 		mutation.observe(applied, { childList: true, subtree: true });
 		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
-		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const cancel = () => { animation.current?.cancel(); wordAnimations.current.forEach(item => item.cancel()); };
-		preference.addEventListener("change", cancel);
 		schedule();
-		return () => {
-			observer?.disconnect();
-			mutation.disconnect();
-			window.removeEventListener("resize", schedule);
-			document.fonts?.removeEventListener("loadingdone", schedule);
-			preference.removeEventListener("change", cancel);
-			cancelAnimationFrame(frame);
-			cancel();
-		};
-	}, []);
+		return () => { resize?.disconnect(); mutation.disconnect(); window.removeEventListener("resize", schedule); document.fonts?.removeEventListener("loadingdone", schedule); cancelAnimationFrame(frame); };
+	}, [index]);
 
-	const replay = useCallback(() => {
-		const measured = differenceRef.current;
-		const cue = marker.current;
-		if (!measured || !cue) return;
-		animation.current?.cancel();
-		wordAnimations.current.forEach(item => item.cancel());
-		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !cue.animate) return;
-		const timing = { duration: 1450, easing: "cubic-bezier(.25, .75, .25, 1)" };
-		animation.current = cue.animate([{ opacity: .85 }, { opacity: .85, offset: .25 }, { opacity: 1 }], timing);
-		wordAnimations.current = Array.from(after.current?.querySelectorAll<HTMLElement>("[data-motion-word]") ?? []).map((word, i) => {
-			const { dx, dy } = measured.offsets[i];
-			const transform = `translate(${dx}px, ${dy}px)`;
-			return word.animate([{ transform, opacity: .85 }, { transform, opacity: 1, offset: .25 }, { transform: "translate(0, 0)", opacity: 1 }], timing);
-		});
-	}, []);
-
-	useEffect(() => {
-		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReduced(preference.matches);
-		sync();
-		preference.addEventListener("change", sync);
-		const element = specimen.current;
-		const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting)) : undefined;
-		if (element && observer) observer.observe(element);
-		else setVisible(true);
-		return () => { preference.removeEventListener("change", sync); observer?.disconnect(); };
-	}, []);
-
-	useEffect(() => {
-		if (!difference || !playing || !visible || reduced) return;
-		const first = window.setTimeout(replay, 650);
-		const loop = window.setInterval(replay, 4400);
-		return () => {
-			window.clearTimeout(first);
-			window.clearInterval(loop);
-			animation.current?.cancel();
-			wordAnimations.current.forEach(item => item.cancel());
-		};
-	}, [difference, playing, visible, reduced, replay]);
-
-	const sample = (applied: boolean) => words.map((word, index) => (
-		<Fragment key={index}>
-			{index > 0 && " "}
-			<span data-word={index} data-moved={difference?.index === index ? "" : undefined}>
-				<span data-motion-word="">{word}{applied && difference?.index === index && <span className="specimen-cue" ref={marker} aria-hidden="true" />}</span>
-			</span>
-		</Fragment>
+	const sample = () => words.map((word, i) => (
+		<Fragment key={i}>{i > 0 && " "}<span data-word={i} data-moved={difference?.index === i ? "" : undefined}>{word}</span></Fragment>
 	));
 
 	return (
-		<section ref={specimen} className="specimen" id="playground" aria-label="줄바꿈 비교">
-			<div className="specimen-panels">
+		<section ref={section} className="specimen" id="playground" aria-label="줄바꿈 비교" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
+			<div className="specimen-examples" aria-label="비교할 예제">
+				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setReady(false); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
+			</div>
+			<div className="specimen-panels" data-example={index}>
 				<div className="specimen-panel specimen-native">
 					<div className="specimen-label"><span>기본 CSS</span><code>keep-all</code></div>
-					<div className="specimen-stage"><p className="specimen-text" ref={before}>{sample(false)}</p></div>
+					<div className="specimen-stage"><p key={index} className="specimen-text" ref={before}>{sample()}</p></div>
 				</div>
 				<div className="specimen-panel specimen-applied">
-					<div className="specimen-label"><span>Kowrap</span><span>의미 기반</span></div>
-					<div className="specimen-stage" ref={after}><WrapText as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample(true)}</WrapText></div>
+					<div className="specimen-label"><span>Kowrap</span><span>의미 기반 줄바꿈</span></div>
+					<div className="specimen-stage" ref={after}><WrapText key={index} as="p" className="specimen-text" style={{ textWrap: "wrap" }}>{sample()}</WrapText></div>
 				</div>
 			</div>
-			<div className="specimen-controls">
-				<p className="specimen-status" role="status">{difference ? `‘${words[difference.index]}’ 위치: ${difference.from}번째 줄 → ${difference.to}번째 줄` : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}</p>
-				<Button type="button" size="sm" variant="ghost" className="specimen-replay" aria-pressed={playing && !reduced} disabled={!difference || reduced} onClick={() => setPlaying(value => !value)}><span aria-hidden="true">{playing && !reduced ? "Ⅱ" : "▷"}</span> {reduced ? "자동 재생 (모션 감소)" : "자동 재생"}</Button>
-			</div>
+			<p className="specimen-status" aria-live={selected ? "polite" : "off"}>{difference ? `‘${words[difference.index]}’ 위치: ${difference.from}번째 줄 → ${difference.to}번째 줄` : ready ? "이 너비에서는 두 방식의 줄바꿈이 같습니다." : "동일한 조건에서 줄바꿈 결과를 비교합니다."}</p>
 		</section>
 	);
 };

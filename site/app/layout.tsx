@@ -39,6 +39,10 @@ const theme = {
 	"--action": tokens.color.action,
 	"--action-hover": tokens.color.actionHover,
 	"--action-text": tokens.color.actionText,
+	"--accent-tint": tokens.color.accentTint,
+	"--syntax-keyword": tokens.color.syntaxKeyword,
+	"--syntax-string": tokens.color.syntaxString,
+	"--syntax-number": tokens.color.syntaxNumber,
 	"--focus": tokens.color.focus,
 	"--danger": tokens.color.danger,
 	"--sans": tokens.font.sans,
@@ -49,7 +53,7 @@ const theme = {
 } as CSSProperties;
 
 const RootLayout = ({ children }: { children: ReactNode }) => (
-	<html lang="ko" data-om-theme="dark" style={theme}>
+	<html lang="ko" data-om-theme="light" style={theme}>
 		<body>
 			<a className="skip-link" href="#main">
 				본문 바로가기

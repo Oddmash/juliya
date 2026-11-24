@@ -11,15 +11,16 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	const html = read("index.html");
 	assert.match(html, /id="native-preview"/);
 	assert.match(html, /id="kowrap-preview"/);
-	assert.match(html, /id="inline-preview"/);
+	assert.doesNotMatch(html, /id="inline-preview"/);
+	assert.match(html, /class="text-link inline-guide-link"/);
 	assert.match(html, /<div id="editor"/);
 	assert.match(html, /id="demo-width"/);
 	assert.match(html, /id="demo-text"/);
 	assert.doesNotMatch(html, /Oddmash에서 만든 한국어 줄바꿈 라이브러리/);
-	assert.match(html, /--paper:#0d0e10/);
-	assert.match(html, /--ink:#f0f1f2/);
+	assert.match(html, /--paper:#faf9f6/);
+	assert.match(html, /--ink:#232822/);
 	assert.match(html, /내 문장으로 비교하기/);
-	assert.match(html, /data-om-theme="dark"/);
+	assert.match(html, /data-om-theme="light"/);
 	assert.match(html, /aria-keyshortcuts="Meta\+K Control\+K"/);
 	assert.doesNotMatch(html, /id="hero-title"[^>]*>[^<]*<br/);
 	assert.match(html, /적용 전 \(CSS keep-all\)/);
@@ -67,4 +68,6 @@ test("Markdown escapes raw HTML and disallowed URLs and generates headings and c
 	assert.doesNotMatch(result.html, /href="javascript:/);
 	assert.match(result.html, /&lt;tag&gt;/);
 	assert.match(result.html, /data-copy-target="code-1"/);
+	assert.match(result.html, /class="syntax-keyword">const<\/span>/);
+	assert.match(result.html, /class="syntax-string">&#39;&lt;tag&gt;&#39;<\/span>/);
 });
