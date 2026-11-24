@@ -1,14 +1,29 @@
-# kowrap
+# 줄이야 (Juliya)
 
-한국어를 읽는 흐름에 맞춰 자연스럽게 줄바꿈하는 라이브러리입니다.
+한국어, 영어, 일본어, 중국어 간체의 줄바꿈 경계와 실제 화면 폭을 함께 고려하는 라이브러리입니다. 기존 Kowrap의 공개 API와 한국어 기본 동작을 유지합니다.
 
-실제 글자 폭과 한국어 어절 및 문장 경계를 고려하여 제목과 문장의 줄바꿈을 최적화합니다.
+한국어 어절, 영어 수식 관계, 일본어·중국어의 연속 텍스트와 문장부호를 고려합니다. 언어별 규칙은 휴리스틱이며 모든 문장의 의미를 완벽하게 분석한다는 보장은 없습니다.
 
 [체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
 
-랜딩 첫 화면에서 기본 CSS와 Kowrap의 줄바꿈 결과를 같은 글꼴과 화면 폭으로 나란히 확인할 수 있으며, 실제 어절의 이동을 반복 시연합니다. 시연은 일시 정지하거나 재생할 수 있습니다.
+랜딩에서는 같은 글꼴과 폭에서 실제 줄바꿈 위치의 변화를 시연합니다. 한국어, 영어, 일본어, 중국어 예제를 제공하며 시연을 일시 정지할 수 있습니다.
 
-[![Kowrap 공개 랜딩에서 줄바꿈을 비교하고 문장을 편집하는 화면](docs/assets/kowrap-live.jpg)](https://oddmash.github.io/kowrap/#playground)
+## 언어 선택
+
+신규 언어 진입점이 포함된 버전에서는 하나의 패키지에서 원하는 언어를 선택합니다.
+
+```ts
+import { wrap } from '@oddmash/kowrap/ja';
+
+const lines = wrap('読みやすい文章を、もっと自然に。', {
+  width: 10,
+  measure: text => [...text].length,
+});
+```
+
+지원 경로는 `/ko`, `/en`, `/ja`, `/zh`입니다. 기존 루트의 `wrap(text, { width, measure })`는 한국어를 유지하며, `locale` 옵션으로 명시적으로 변경할 수 있습니다. React, DOM, Vue, Svelte의 기존 진입점은 유지합니다.
+
+새 브랜드 패키지 `@oddmash/juliya`는 동일한 구현과 언어별 진입점으로 발행할 예정입니다. 기존 패키지는 삭제하거나 덮어쓰지 않습니다.
 
 ## HTML에서 바로 실행하기
 
