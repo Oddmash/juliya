@@ -1,12 +1,13 @@
 import Link from "next/link";
 import localFont from "next/font/local";
-import { WrapText } from "@oddmash/kowrap/react";
+import { JuliyaText } from "@oddmash/kowrap/react";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { LandingSpecimen } from "../components/landing-specimen";
 import { Playground } from "../components/playground";
 import "./landing.css";
 
+const installCommand = "pnpm add @oddmash/kowrap";
 const display = localFont({
 	src: "./fonts/kowrap-display.woff2",
 	variable: "--landing-display",
@@ -15,35 +16,25 @@ const display = localFont({
 	adjustFontFallback: false,
 });
 
-const mono = localFont({
-	src: "./fonts/geist-mono-ascii.woff2",
-	variable: "--landing-mono",
-	weight: "100 900",
-	display: "swap",
-	preload: false,
-	adjustFontFallback: false,
-});
-
-const installCommand = "npm install @oddmash/kowrap";
-
 const Page = () => (
-	<main id="main" className={`container landing ${display.variable} ${mono.variable}`}>
+	<main id="main" className={`container landing ${display.variable}`}>
 		<header className="landing-intro">
+			<LandingSpecimen initialLocale="ko" />
 			<div className="hero-copy">
-				<p className="landing-kicker"><span aria-hidden="true" /> 한국어 줄바꿈 라이브러리</p>
-				<WrapText as="h1" id="hero-title">한국어를 읽는 흐름에 맞춰.</WrapText>
-				<p className="hero-description">한국어 문장의 의미 단위를 지켜 더 자연스럽게 줄을 바꿉니다. React, Vue, Svelte와 일반 HTML에서 사용할 수 있습니다.</p>
+				<h1 id="hero-title">줄이야<span className="sr-only"> 다국어 줄바꿈 라이브러리</span></h1>
+				<p className="hero-description">언어별 줄바꿈 경계와 화면 폭을 고려해 읽는 흐름을 지킵니다.</p>
 				<div className="hero-actions">
-					<a className="button button-primary" href="#editor">내 문장으로 체험하기 <span aria-hidden="true">↘</span></a>
-					<Link className="hero-docs" href="/docs/">문서 보기 <span aria-hidden="true">↗</span></Link>
+					<Link className="button button-primary" href="/docs/">시작하기</Link>
+					<a className="button hero-secondary" href="#editor">내 문장으로 체험하기</a>
 				</div>
 			</div>
-			<LandingSpecimen />
+			<a className="hero-scroll" href="#install" aria-label="설치 방법 보기"><span aria-hidden="true" /></a>
 		</header>
 		<section id="install" className="landing-install" aria-labelledby="install-title">
-			<div>
-				<h2 id="install-title">바로 시작하기</h2>
-				<p>패키지를 설치하고 사용하는 환경에 맞는 코드를 복사하세요.</p>
+			<div className="section-copy">
+				<p className="section-label">시작하기</p>
+				<h2 id="install-title">한 줄의 설치.<br />기존 코드 그대로.</h2>
+				<JuliyaText as="p">프레임워크에 맞는 API를 선택하고 텍스트에 적용하세요. 일반 문자열뿐 아니라 강조와 링크도 유지됩니다.</JuliyaText>
 				<div className="install-command">
 					<span className="command-prefix" aria-hidden="true">$</span>
 					<code>{installCommand}</code>
@@ -52,32 +43,26 @@ const Page = () => (
 			</div>
 			<FrameworkExamples />
 		</section>
-		<div id="editor" className="landing-editor" tabIndex={-1}>
+		<section id="editor" className="landing-editor" aria-labelledby="playground-title" tabIndex={-1}>
 			<div className="landing-section-heading">
-				<h2 id="playground-title">내 문장으로 비교하기</h2>
+				<p className="section-label">Playground</p>
+				<h2 id="playground-title">내 문장으로 확인하기</h2>
+				<p>텍스트, 폭, 글자 크기를 바꾸면 두 방식의 실제 줄바꿈이 바로 반영됩니다.</p>
 			</div>
 			<Playground />
-			<Link className="text-link inline-guide-link" href="/docs/inline/">강조, 링크가 포함된 문장에 적용하는 방법 →</Link>
-		</div>
-		<section className="landing-use-cases" aria-labelledby="use-cases-title">
-			<div className="landing-section-heading">
-				<h2 id="use-cases-title">문장의 의미를 끊지 않습니다.</h2>
-				<p>화면의 크기는 달라져도 읽는 흐름은 그대로 유지하세요.</p>
+			<Link className="text-link inline-guide-link" href="/docs/inline/">강조와 링크가 포함된 문장에 적용하기</Link>
+		</section>
+		<section className="landing-capabilities" aria-labelledby="capabilities-title">
+			<h2 id="capabilities-title">쓰던 방식 그대로.</h2>
+			<div className="capability-grid">
+				<article><code>&lt;strong&gt; &lt;a&gt;</code><h3>기존 마크업 유지</h3><p>강조, 링크와 중첩 요소를 그대로 보존합니다.</p><Link href="/docs/inline/">인라인 마크업</Link></article>
+				<article><code>width: 320px</code><h3>반응형 화면</h3><p>실제 글꼴과 컨테이너 크기에 따라 줄바꿈을 다시 계산합니다.</p><Link href="/docs/dom/">브라우저 API</Link></article>
+				<article><code>SSR + CSR</code><h3>서버 렌더링</h3><p>초기 마크업을 유지하면서 브라우저에서 정확하게 측정합니다.</p><Link href="/docs/ssr/">SSR 가이드</Link></article>
 			</div>
-			<div className="landing-reading-grid">
-				<article className="reading-sample">
-					<div className="reading-meta"><span>읽기 좋은 콘텐츠</span><span>01 / Editorial</span></div>
-					<WrapText as="h3">오늘의 작은 발견이 내일의 새로운 시선이 됩니다.</WrapText>
-					<WrapText as="p">문장의 어절과 의미 단위를 고려해 제목뿐 아니라 강조와 <strong>링크가 포함된 문장</strong>도 자연스럽게 배치합니다.</WrapText>
-					<Link className="text-link" href="/docs/inline/">인라인 마크업 사용법 →</Link>
-				</article>
-				<div className="reading-principles">
-					<article><span className="reading-index">01</span><div><h3>의미 단위로 분리</h3><p>이어지는 표현을 함께 읽을 수 있는 줄바꿈 후보를 찾습니다.</p></div></article>
-					<article><span className="reading-index">02</span><div><h3>실제 화면 폭에 맞춤</h3><p>글꼴과 컨테이너 너비를 바탕으로 줄을 배치합니다.</p></div></article>
-					<article><span className="reading-index">03</span><div><h3>기존 마크업 그대로</h3><p>강조, 링크와 중첩 요소를 유지하며 화면 크기 변화에도 대응합니다.</p></div></article>
-					<Link className="text-link" href="/comparison/">실제 비교 결과와 성능 살펴보기 →</Link>
-				</div>
-			</div>
+		</section>
+		<section className="landing-end">
+			<h2>읽기 좋은 다국어 문장을 만들어 보세요.</h2>
+			<Link className="button button-primary" href="/docs/">문서 읽기</Link>
 		</section>
 	</main>
 );

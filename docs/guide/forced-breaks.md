@@ -5,9 +5,9 @@
 ## 원문에 개행이 있는 경우
 
 ```tsx
-<WrapText as="h1">
+<JuliyaText as="h1">
   {'첫 번째 제목\n두 번째 제목'}
-</WrapText>
+</JuliyaText>
 ```
 
 원문의 개행은 모든 환경에서 그대로 존중합니다. CRLF, LF 등의 명시적 개행은 결과의 `breakAfter`에 저장됩니다.
@@ -60,9 +60,9 @@ const initial = splitLines(text, [text.indexOf('한국어')]);
 ```tsx
 'use client';
 
-import { useKowrap } from '@oddmash/kowrap/react';
+import { useJuliya } from '@oddmash/kowrap/react';
 
-const { ref, lines, forcedBreaks, setForcedBreaks, clearForcedBreaks } = useKowrap({
+const { ref, lines, forcedBreaks, setForcedBreaks, clearForcedBreaks } = useJuliya({
   text,
   initialForcedBreaks: [text.indexOf('줄바꿈')],
 });

@@ -1,4 +1,4 @@
-import type { LineCandidate } from "./types.js";
+import type { LineCandidate, WrapLocale } from "./types.js";
 
 const sentenceEnd = /[.!?。！？…][”’"')\]]*$/u;
 const clauseEnd = /[,;:，、；：]$/u;
@@ -29,17 +29,19 @@ const protectedPair = (fragment: string, nextWord: string) => {
   return Object.hasOwn(compounds, left) && compounds[left]!.some((head) => nextWord.startsWith(head));
 };
 
-const boundaryCost = ({ fragment, emergency }: LineCandidate, nextWord: string) => {
+const englishModifier = /(?:^|\s)(?:a|an|the|this|that|these|those|every|each|some|my|your|our|their|its|to|of|for|with|from|in|on|at|as)$/iu;
+const boundaryCost = ({ fragment, emergency }: LineCandidate, nextWord: string, locale: WrapLocale = "ko") => {
   if (emergency) return 0.75;
   if (sentenceEnd.test(fragment)) return 0;
   if (clauseEnd.test(fragment)) return 0.02;
-  if (protectedPair(fragment, nextWord)) return 0.65;
-  if (boundModifier.test(fragment)) return 0.45;
+  if (locale === "ko" && protectedPair(fragment, nextWord)) return 0.65;
+  if (locale === "ko" && boundModifier.test(fragment)) return 0.45;
+  if (locale === "en" && englishModifier.test(fragment)) return 0.45;
   return 0.06;
 };
 
-export const lineCost = (candidate: LineCandidate, availableWidth: number, isLast: boolean, nextWord = "") => {
+export const lineCost = (candidate: LineCandidate, availableWidth: number, isLast: boolean, nextWord = "", locale: WrapLocale = "ko") => {
   const slack = (availableWidth - Math.min(candidate.width, availableWidth)) / availableWidth;
   const overflow = Math.max(0, candidate.width - availableWidth) / availableWidth;
-  return slack ** 2 + overflow ** 2 * 4 + (isLast ? 0 : boundaryCost(candidate, nextWord));
+  return slack ** 2 + overflow ** 2 * 4 + (isLast ? 0 : boundaryCost(candidate, nextWord, locale));
 };

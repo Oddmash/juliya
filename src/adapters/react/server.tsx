@@ -20,3 +20,6 @@ export const SentenceText = ({ children, as: Tag = "span", locale = "ko", forced
     </Fragment>)}
   </Tag>;
 };
+
+export type JuliyaSentenceTextProps = SentenceTextProps;
+export const JuliyaSentenceText = SentenceText;

@@ -4,7 +4,8 @@ import { createElement, act, Fragment } from "react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot } from "react-dom/client";
 import { JSDOM } from "jsdom";
-import { WrapText, useKowrap } from "@oddmash/kowrap/react";
+import { wrap } from "@oddmash/kowrap";
+import { JuliyaProvider, JuliyaText, useJuliya, WrapText, useKowrap } from "@oddmash/kowrap/react";
 
 test("hydrates original SSR text and recalculates on a resize", async () => {
   const text = "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험합니다.";
@@ -82,6 +83,61 @@ test("public React hook sets and clears manual break positions", async () => {
     await act(async () => layout.setForcedBreaks([4]));
     assert.equal(target.querySelectorAll("br").length, 1);
     assert.equal(target.textContent, text);
+    assert.deepEqual(errors, []);
+  } finally {
+    if (root) await act(async () => root.unmount());
+    globalThis.window = oldWindow;
+    globalThis.document = oldDocument;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = oldActEnvironment;
+    window.close();
+  }
+});
+
+test("Juliya hydrates locale context and recalculates on provider changes", async () => {
+  const text = "日本語と韓国語の自然な改行";
+  const measure = (value) => [...value].length * 10;
+  const expected = (locale) => wrap(text, { locale, measure, width: 60 }).map((line) => line.text);
+  assert.notDeepEqual(expected("ja"), expected("ko"));
+  let layout;
+  const Example = () => {
+    layout = useJuliya({ text });
+    return createElement("p", { ref: layout.ref, lang: layout.locale, id: "custom" }, text);
+  };
+  const element = (locale) => createElement(JuliyaProvider, { locale },
+    createElement(JuliyaText, { as: "p", id: "title" }, text),
+    createElement(JuliyaText, { as: "p", id: "override", locale: "ja" }, text),
+    createElement(Example),
+  );
+  const dom = new JSDOM(`<div id="root">${renderToString(element("ja"))}</div>`);
+  const { window } = dom;
+  const oldWindow = globalThis.window;
+  const oldDocument = globalThis.document;
+  const oldActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+  globalThis.window = window;
+  globalThis.document = window.document;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  Object.defineProperty(window.HTMLElement.prototype, "clientWidth", { get: () => 61 });
+  window.HTMLCanvasElement.prototype.getContext = () => ({ font: "", measureText: (value) => ({ width: measure(value) }) });
+  const errors = [];
+  let root;
+  try {
+    await act(async () => { root = hydrateRoot(window.document.getElementById("root"), element("ja"), { onRecoverableError: (error) => errors.push(error.message) }); });
+    const title = window.document.getElementById("title");
+    const custom = window.document.getElementById("custom");
+    const override = window.document.getElementById("override");
+    const linesOf = (node) => node.innerHTML.replaceAll("<!-- -->", "").split(/<br\s*\/?\s*>/);
+    assert.equal(title.lang, "ja");
+    assert.equal(custom.lang, "ja");
+    assert.deepEqual(linesOf(title), expected("ja"));
+    assert.deepEqual(layout.lines.map((line) => line.text), expected("ja"));
+    await act(async () => { root.render(element("ko")); });
+    assert.equal(title.lang, "ko");
+    assert.equal(custom.lang, "ko");
+    assert.equal(override.lang, "ja");
+    assert.deepEqual(linesOf(title), expected("ko"));
+    assert.deepEqual(linesOf(override), expected("ja"));
+    assert.deepEqual(layout.lines.map((line) => line.text), expected("ko"));
+    assert.equal(title.textContent, text);
     assert.deepEqual(errors, []);
   } finally {
     if (root) await act(async () => root.unmount());

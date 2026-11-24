@@ -1,11 +1,15 @@
 {
   "name": "@oddmash/kowrap",
   "version": "0.3.4",
-  "description": "Korean-aware text wrapping for JavaScript, HTML and frontend frameworks",
+  "description": "Locale-aware text wrapping for Korean, English, Japanese and Simplified Chinese",
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./ko": { "types": "./dist/core/locales/ko.d.ts", "import": "./dist/core/locales/ko.js" },
+    "./en": { "types": "./dist/core/locales/en.d.ts", "import": "./dist/core/locales/en.js" },
+    "./ja": { "types": "./dist/core/locales/ja.d.ts", "import": "./dist/core/locales/ja.js" },
+    "./zh": { "types": "./dist/core/locales/zh.d.ts", "import": "./dist/core/locales/zh.js" },
     "./browser": { "types": "./dist/dom/index.d.ts", "import": "./dist/dom/index.js" },
     "./dom": { "types": "./dist/dom/index.d.ts", "import": "./dist/dom/index.js" },
     "./react": { "types": "./dist/adapters/react/index.d.ts", "import": "./dist/adapters/react/index.js" },
@@ -29,6 +33,7 @@
     "test:frameworks": "pnpm run build && pnpm --dir test/framework-app test",
     "test:browser": "pnpm run test:next && pnpm --dir test/next-app run test:browser",
     "test:package": "pnpm run build && node --test test/package.mjs",
+    "pack:juliya": "pnpm run build && node scripts/pack-juliya.mjs",
     "build:site": "pnpm run build && pnpm --dir site run build",
     "test:site": "pnpm run build:site && node --test test/site.mjs",
     "prepack": "pnpm run build"
