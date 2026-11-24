@@ -1,29 +1,29 @@
 # SSR과 하이드레이션
 
-서버는 방문자의 실제 화면 폭과 사용 가능한 글꼴을 알 수 없습니다. kowrap은 서버에서도 의미 있는 원문을 렌더링하고, 브라우저 측정이 가능해진 뒤 자동 줄바꿈을 적용합니다.
+서버는 방문자의 실제 화면 폭과 사용 가능한 글꼴을 알 수 없습니다. 줄이야는 서버에서도 의미 있는 원문을 렌더링하고, 브라우저 측정이 가능해진 뒤 자동 줄바꿈을 적용합니다. 새 패키지 `@oddmash/juliya`는 발행 예정이며, 아래 API는 신규 버전의 `@oddmash/kowrap`에서도 제공됩니다.
 
 ## React와 Next.js
 
-`WrapText`의 초기 SSR과 첫 클라이언트 렌더링은 동일한 데이터를 사용합니다. 클라이언트 효과가 시작되면 DOM 폭을 재고 줄바꿈을 다시 계산합니다. 초기 CSS 줄바꿈과 최종 줄 위치가 달라질 수 있습니다.
+`JuliyaText`의 초기 SSR과 첫 클라이언트 렌더링은 동일한 데이터를 사용합니다. 클라이언트 효과가 시작되면 DOM 폭을 재고 줄바꿈을 다시 계산합니다. 초기 CSS 줄바꿈과 최종 줄 위치가 달라질 수 있습니다.
 
 ```tsx
-import { WrapText } from '@oddmash/kowrap/react';
+import { JuliyaText } from '@oddmash/juliya/react';
 
-<WrapText as="h1" style={{ maxWidth: 400 }}>
+<JuliyaText as="h1" style={{ maxWidth: 400 }}>
   서버에서도 원문을 먼저 보여줍니다.
-</WrapText>
+</JuliyaText>
 ```
 
 ## Server Component 전용 API
 
-`SentenceText`는 브라우저 측정 대신 문장 단위 CSS 줄바꿈을 사용합니다. 클라이언트 훅이나 Canvas가 필요하지 않습니다.
+`JuliyaSentenceText`는 브라우저 측정 대신 문장 단위 CSS 줄바꿈을 사용합니다. 클라이언트 훅이나 Canvas가 필요하지 않습니다. 기존 `SentenceText`는 동일한 컴포넌트의 별칭입니다.
 
 ```tsx
-import { SentenceText } from '@oddmash/kowrap/react/server';
+import { JuliyaSentenceText } from '@oddmash/juliya/react/server';
 
-<SentenceText as="p">
+<JuliyaSentenceText as="p">
   첫 번째 문장입니다. 두 번째 문장입니다.
-</SentenceText>
+</JuliyaSentenceText>
 ```
 
 문장 구간은 CSS inline-block으로 묶이므로 문장 사이가 우선 줄 경계가 됩니다. 문장이 한 줄보다 길면 그 안에서 자연스러운 CSS 줄바꿈이 가능하도록 합니다. 다음 옵션을 사용할 수 있습니다.
@@ -35,12 +35,14 @@ import { SentenceText } from '@oddmash/kowrap/react/server';
 | `locale` | 선택 | `ko` | 문장 분리 언어 |
 | `forcedBreaks` | 선택 | 없음 | 강제 경계 |
 
+서버 전용 진입점은 클라이언트 `JuliyaProvider` 컨텍스트를 사용하지 않습니다. 서버의 라우팅 및 i18n 설정에서 구한 언어를 `locale`에 직접 전달하세요. Provider를 사용한 초기 SSR에서는 서버와 클라이언트에 같은 언어를 전달해야 합니다.
+
 ## 강제 개행과 초기 화면
 
 ```tsx
-<WrapText as="h1" forcedBreaks={[5]}>
+<JuliyaText as="h1" forcedBreaks={[5]}>
   한국어를 읽는 흐름대로.
-</WrapText>
+</JuliyaText>
 ```
 
 강제 개행은 화면 폭과 무관하게 결정할 수 있으므로 서버 초기 화면에도 적용됩니다. 원문과 인덱스를 서버 및 클라이언트에서 동일하게 전달해야 합니다.

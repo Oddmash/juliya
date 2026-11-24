@@ -1,6 +1,6 @@
 import Link from "next/link";
 import localFont from "next/font/local";
-import { WrapText } from "@oddmash/kowrap/react";
+import { JuliyaText } from "@oddmash/kowrap/react";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { LandingSpecimen } from "../components/landing-specimen";
@@ -19,7 +19,7 @@ const display = localFont({
 const Page = () => (
 	<main id="main" className={`container landing ${display.variable}`}>
 		<header className="landing-intro">
-			<LandingSpecimen />
+			<LandingSpecimen initialLocale="ko" />
 			<div className="hero-copy">
 				<h1 id="hero-title">줄이야<span className="sr-only"> 다국어 줄바꿈 라이브러리</span></h1>
 				<p className="hero-description">언어별 줄바꿈 경계와 화면 폭을 고려해 읽는 흐름을 지킵니다.</p>
@@ -34,7 +34,7 @@ const Page = () => (
 			<div className="section-copy">
 				<p className="section-label">시작하기</p>
 				<h2 id="install-title">한 줄의 설치.<br />기존 코드 그대로.</h2>
-				<WrapText as="p">프레임워크에 맞는 API를 선택하고 텍스트에 적용하세요. 일반 문자열뿐 아니라 강조와 링크도 유지됩니다.</WrapText>
+				<JuliyaText as="p">프레임워크에 맞는 API를 선택하고 텍스트에 적용하세요. 일반 문자열뿐 아니라 강조와 링크도 유지됩니다.</JuliyaText>
 				<div className="install-command">
 					<span className="command-prefix" aria-hidden="true">$</span>
 					<code>{installCommand}</code>
@@ -61,7 +61,7 @@ const Page = () => (
 			</div>
 		</section>
 		<section className="landing-end">
-			<h2>읽기 좋은 한국어를 만들어 보세요.</h2>
+			<h2>읽기 좋은 다국어 문장을 만들어 보세요.</h2>
 			<Link className="button button-primary" href="/docs/">문서 읽기</Link>
 		</section>
 	</main>

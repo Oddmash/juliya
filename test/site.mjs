@@ -28,7 +28,10 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /Juliya/);
 	assert.ok(html.includes(`${basePath}/_next/`));
 	assert.ok(html.includes(`${basePath}/docs/`));
+	assert.ok(html.includes(`https://github.com/Oddmash/${basePath.split("/").filter(Boolean).at(-1) ?? "kowrap"}`));
 	assert.ok(html.includes("@oddmash/kowrap/react"));
+	assert.ok(html.includes("JuliyaProvider"));
+	assert.ok(html.includes("JuliyaText"));
 	assert.ok(existsSync(new URL(".nojekyll", output)));
 });
 

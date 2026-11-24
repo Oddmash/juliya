@@ -69,30 +69,47 @@ const verifySpecimen = async (page, motion) => {
 	await compare();
 	if (motion) {
 		await panels.scrollIntoViewIfNeeded();
-		await page.waitForFunction(() => {
-			const words = [...document.querySelectorAll(".specimen-applied .specimen-word-visual")];
-			return words.some(word => word.getAnimations().some(animation => animation.playState === "running"));
-		});
-		assert.ok(await panels.evaluate(panel => {
-			const source = [...panel.querySelectorAll(".specimen-native [data-word]")];
-			const target = [...panel.querySelectorAll(".specimen-applied [data-word]")];
-			return target.some((word, index) => {
-				const animation = word.firstElementChild.getAnimations()[0];
-				if (!animation) return false;
-				const from = new DOMMatrixReadOnly(animation.effect.getKeyframes()[0].transform);
-				const a = source[index].getBoundingClientRect();
-				const b = word.getBoundingClientRect();
-				return Math.abs(from.m41 - (a.left - b.left)) <= 1 && Math.abs(from.m42 - (a.top - b.top)) <= 1 && Math.abs(from.m42) > 1;
-			});
-		}), "word motion derives from the actual CSS and Kowrap layouts");
-		for (const index of ["1", "2", "3", "0"]) {
-			await page.waitForFunction(value => document.querySelector(".specimen-panels").dataset.example === value, index);
-			await compare();
-		}
+		const first = await panels.getAttribute("data-example");
+		const firstText = await page.locator(".specimen-applied .specimen-text").textContent();
+		const firstLayout = await page.locator(".specimen-applied .specimen-text").evaluate(sample => ({
+			width: sample.getBoundingClientRect().width,
+			rows: [...sample.querySelectorAll("[data-word]")].map(word => Math.round(word.getBoundingClientRect().top - sample.getBoundingClientRect().top)),
+		}));
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.waitForFunction(({ index, width, rows }) => {
+			const panel = document.querySelector(".specimen-panels");
+			const sample = panel.querySelector(".specimen-applied .specimen-text");
+			const bounds = sample.getBoundingClientRect();
+			const moved = [...sample.querySelectorAll("[data-word]")].some((word, i) => Math.abs(word.getBoundingClientRect().top - bounds.top - rows[i]) > 8);
+			const animating = [...sample.querySelectorAll(".specimen-word-visual")].some(word => word.getAnimations().some(animation => animation.playState === "running" && animation.effect?.getKeyframes().some(frame => frame.transform && frame.transform !== "none")));
+			return panel.dataset.example === index && panel.dataset.widthStep === "1" && bounds.width < width - 8 && moved && animating;
+		}, { index: first, ...firstLayout });
+		assert.equal(await page.locator(".specimen-applied .specimen-text").textContent(), firstText, "the same text reflows during actual width changes");
+		await page.waitForFunction(index => {
+			const panel = document.querySelector(".specimen-panels");
+			return panel.dataset.example === index && panel.dataset.widthStep === "1" && panel.dataset.phase === "kowrap";
+		}, first);
+		const narrow = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
+		await page.waitForFunction(({ index, narrow }) => {
+			const panel = document.querySelector(".specimen-panels");
+			return panel.dataset.example === index && panel.dataset.widthStep === "2" && panel.querySelector(".specimen-applied .specimen-text").getBoundingClientRect().width > narrow + 8;
+		}, { index: first, narrow });
+		await page.waitForFunction(index => {
+			const panel = document.querySelector(".specimen-panels");
+			if (panel.dataset.example !== index || panel.dataset.phase !== "leaving") return false;
+			return panel.getAnimations({ subtree: true }).some(animation => animation.playState === "running" && animation.effect?.getKeyframes().some(frame => frame.opacity !== undefined));
+		}, first);
+		await page.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, first);
+		assert.notEqual(await page.locator(".specimen-applied .specimen-text").textContent(), firstText, "a different example replaces the first");
+		assert.equal(await panels.getAttribute("lang"), "ko");
+		await compare();
 		await page.getByRole("button", { name: "시연 일시정지" }).press("Enter");
+		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "false");
 		const current = await panels.getAttribute("data-example");
-		await page.waitForTimeout(5400);
+		const pausedWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
+		await page.waitForTimeout(8000);
 		assert.equal(await panels.getAttribute("data-example"), current);
+		assert.equal(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width), pausedWidth);
 		assert.equal(await panels.getAttribute("data-phase"), "kowrap");
 		await page.getByRole("button", { name: "시연 재생" }).press("Enter");
 		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true");
@@ -144,6 +161,25 @@ try {
 		await localized.goto(`${origin}/${language}/`);
 		await localized.getByRole("button", { name: label, exact: true }).waitFor();
 		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		const verifyLanguage = async () => {
+			assert.equal(await localized.locator(".specimen-panels").getAttribute("lang"), language === "zh" ? "zh-Hans" : language);
+			const sample = await localized.locator(".specimen-applied .specimen-text").textContent();
+			assert.match(sample, { en: /[A-Za-z]/u, ja: /\p{Script=Hiragana}/u, zh: /\p{Script=Han}/u }[language]);
+			assert.doesNotMatch(sample, /\p{Script=Hangul}/u);
+			if (language === "en") assert.doesNotMatch(sample, /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u);
+			if (language === "zh") assert.doesNotMatch(sample, /[\p{Script=Hiragana}\p{Script=Katakana}]/u);
+			return sample;
+		};
+		const sample = await verifyLanguage();
+		const snippet = await localized.getByRole("tabpanel").locator("pre code").textContent();
+		assert.match(snippet, new RegExp(`<JuliyaProvider locale="${language === "zh" ? "zh-Hans" : language}">`));
+		assert.match(snippet, /<JuliyaText as="h1">/);
+		assert.doesNotMatch(snippet, /<JuliyaText[^>]*locale=/);
+		const initialExample = await localized.locator(".specimen-panels").getAttribute("data-example");
+		await localized.emulateMedia({ reducedMotion: "no-preference" });
+		await localized.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, initialExample);
+		assert.notEqual(await verifyLanguage(), sample, "rotating examples stay in the selected language");
+		await localized.emulateMedia({ reducedMotion: "reduce" });
 		await localized.waitForLoadState("networkidle");
 		await localized.goto(`${origin}/${language}/docs/core/`);
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/kowrap/${language}`));
@@ -151,12 +187,13 @@ try {
 		await localized.close();
 	}
 	const page = await openPage(desktop);
-	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto(`${origin}/`);
 	assert.ok(await page.getByRole("button", { name: "문서 검색" }).isVisible());
 	assert.equal(await page.locator(".specimen-mode").count(), 0);
 	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
 	assert.equal(await page.locator("#hero-title").textContent(), "줄이야 다국어 줄바꿈 라이브러리");
+	assert.equal(await page.locator(".specimen-panels").getAttribute("lang"), "ko");
 	assert.equal(await page.locator(".landing-kicker").count(), 0);
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.querySelector(".specimen").compareDocumentPosition(hero.querySelector(".hero-copy")) & Node.DOCUMENT_POSITION_FOLLOWING), "the reflow demonstration precedes the wordmark and calls to action");
 	assert.ok(await page.locator(".specimen-native.specimen-text").evaluate(async (title) => {
@@ -166,6 +203,10 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	const reactSnippet = await page.getByRole("tabpanel").locator("pre code").textContent();
+	assert.match(reactSnippet, /<JuliyaProvider locale="ko">/);
+	assert.match(reactSnippet, /<JuliyaText as="h1">/);
+	assert.doesNotMatch(reactSnippet, /<JuliyaText[^>]*locale=/);
 	assert.equal(await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "체험하기", exact: true }).count(), 0);
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.getBoundingClientRect().height >= innerHeight - 80), "desktop hero fills the first view");
 	await verifyLandingGeometry(page);

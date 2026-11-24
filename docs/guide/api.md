@@ -1,8 +1,8 @@
 # API 레퍼런스
 
-줄이야(Juliya)는 기존 `@oddmash/kowrap` API를 유지합니다. 코어의 `locale` 옵션은 `ko`, `en`, `ja`, `zh`, `zh-Hans`를 지원하며, `/ko`, `/en`, `/ja`, `/zh` 진입점으로도 선택할 수 있습니다. React의 `WrapText`와 `useKowrap`, 그리고 DOM·Vue·Svelte 옵션에도 `locale`을 전달할 수 있습니다.
+줄이야(Juliya)는 기존 `@oddmash/kowrap` API를 유지합니다. 코어의 `locale` 옵션은 `ko`, `en`, `ja`, `zh`, `zh-Hans`를 지원하며, `/ko`, `/en`, `/ja`, `/zh` 진입점으로도 선택할 수 있습니다. React의 `JuliyaProvider`로 공통 언어를 설정할 수 있고, `JuliyaText`, `useJuliya` 및 DOM·Vue·Svelte 옵션에는 개별 `locale`을 전달할 수 있습니다.
 
-kowrap은 필요한 환경의 진입점만 불러올 수 있도록 분리되어 있습니다. 아래는 공개 API를 한곳에서 확인할 수 있는 참조 목록입니다.
+줄이야는 필요한 환경의 진입점만 불러올 수 있도록 분리되어 있습니다. 신규 버전의 기존 패키지와 발행 예정인 새 패키지 `@oddmash/juliya` 모두 아래 공개 API를 제공합니다.
 
 ## 코어
 
@@ -67,13 +67,18 @@ interface KowrapController {
 
 | API | 경로 | 필수 입력 | 선택 입력 | 역할 |
 | --- | --- | --- | --- | --- |
-| `WrapText` | `/react` | `children` | `as`, 전략, 강제 경계, 스타일 등 | 측정 및 렌더링 |
-| `useKowrap` | `/react` | `text` | 전략, 강제 경계, 콜백 등 | 직접 렌더링과 상태 제어 |
-| `SentenceText` | `/react/server` | `children` (string) | `as`, `locale`, `forcedBreaks` | 문장 단위 CSS 렌더링 |
+| `JuliyaText` | `/react` | `children` | `locale`, `as`, 전략, 강제 경계, 스타일 등 | 측정 및 렌더링 |
+| `useJuliya` | `/react` | `text` | `locale`, 전략, 강제 경계, 콜백 등 | 직접 렌더링과 상태 제어 |
+| `JuliyaProvider` | `/react` | `children` | `locale` | 하위 컴포넌트와 훅에 언어 전달 |
+| `JuliyaSentenceText` | `/react/server` | `children` (string) | `as`, `locale`, `forcedBreaks` | 문장 단위 CSS 렌더링 |
 
-`WrapTextProps`, `UseKowrapOptions`, `SentenceTextProps` 타입을 각각 해당 진입점에서 가져올 수 있습니다. [React 옵션 표](react.md#wraptext)를 확인하세요.
+`JuliyaTextProps`, `UseJuliyaOptions`, `JuliyaProviderProps`, `JuliyaSentenceTextProps` 타입을 각각 해당 진입점에서 가져올 수 있습니다. [React 옵션 표](react.md#juliyatext)를 확인하세요.
 
-`useKowrap`는 `ref`, `lines`, `measured`, `forcedBreaks`, `setForcedBreaks`, `clearForcedBreaks`를 반환합니다.
+`useJuliya`는 `ref`, `lines`, `measured`, `forcedBreaks`, 결정된 `locale`, `setForcedBreaks`, `clearForcedBreaks`를 반환합니다. `locale`을 직접 생략하면 가장 가까운 `JuliyaProvider`의 언어를 사용하고, Provider가 없으면 `ko`로 동작합니다. 서버 전용 `JuliyaSentenceText`는 Provider를 읽지 않습니다.
+
+기존 `WrapText`, `useKowrap`, `SentenceText`와 `WrapTextProps`, `UseKowrapOptions`, `SentenceTextProps`는 동일한 API 및 타입의 별칭으로 유지됩니다.
+
+Provider와 컨텍스트를 사용하는 컴포넌트 및 훅은 모두 동일한 패키지명에서 import하세요. 두 npm 패키지를 함께 설치하면 Provider 컨텍스트가 서로 공유되지 않습니다.
 
 ## Vue와 Svelte
 

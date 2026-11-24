@@ -1,17 +1,20 @@
-# kowrap 아키텍처
+# 줄이야(Juliya) 아키텍처
 
-kowrap은 원문과 폭 측정 함수를 받아 줄 경계를 고르는 프레임워크 독립 엔진이다. React와 브라우저는 엔진의 소비자이며 엔진에 역방향 의존성을 추가하지 않는다.
+줄이야는 원문과 폭 측정 함수를 받아 줄 경계를 고르는 프레임워크 독립 엔진이다. React와 브라우저는 엔진의 소비자이며 엔진에 역방향 의존성을 추가하지 않는다.
 
 ## 공개 진입점
 
 | 경로 | 공개 책임 |
 | --- | --- |
 | `@oddmash/kowrap` | `wrap`, `splitLines`, `segmentSentences`, 코어 타입 |
+| `@oddmash/kowrap/ko`, `/en`, `/ja`, `/zh` | 언어별 코어 진입점 |
 | `@oddmash/kowrap/dom`, `@oddmash/kowrap/browser` | `createCanvasMeasure`, `observeKowrap`, `mountKowrap` |
-| `@oddmash/kowrap/react` | `WrapText`, `useKowrap`, React 클라이언트 컴포넌트 |
-| `@oddmash/kowrap/react/server` | `SentenceText`, 클라이언트 실행 없는 서버 컴포넌트 |
+| `@oddmash/kowrap/react` | `JuliyaText`, `useJuliya`, `JuliyaProvider`, 기존 `WrapText`, `useKowrap` 별칭 |
+| `@oddmash/kowrap/react/server` | `JuliyaSentenceText`, 기존 `SentenceText` 별칭, 클라이언트 실행 없는 서버 컴포넌트 |
 | `@oddmash/kowrap/vue` | Vue 3 디렉티브 |
 | `@oddmash/kowrap/svelte` | Svelte 액션 |
+
+발행 예정인 `@oddmash/juliya`는 기존 패키지와 같은 진입점과 동일한 구현을 제공한다.
 
 ## 내부 모듈
 
@@ -51,7 +54,10 @@ examples/
 
 ```mermaid
 flowchart TD
-    Client[WrapText] --> Hook[useWrapLayout]
+    Provider[JuliyaProvider] --> Client[JuliyaText]
+    Provider --> Custom[useJuliya]
+    Client --> Hook[useWrapLayout]
+    Custom --> Hook
     Hook --> Observer[Line data observation]
     Vue --> Render[DOM renderer]
     Svelte --> Render
@@ -64,7 +70,7 @@ flowchart TD
     Plan --> Bounds[Break candidates]
     Plan --> Score[Language scoring]
     Bounds --> Seg[Segmentation]
-    Server[SentenceText] --> Seg
+    Server[JuliyaSentenceText] --> Seg
 ```
 
 ## 엔진 데이터 흐름
@@ -79,6 +85,8 @@ flowchart TD
 ## React 및 SSR 경계
 
 React 클라이언트 컴포넌트는 렌더링만 담당하고 `useWrapLayout`이 SSR 이후 측정 및 상태 업데이트를 담당한다. `observeElementLayout`은 해당 DOM 요소의 문서와 창을 기준으로 크기 및 폰트 변경을 구독한다. 글꼴 속성이 동일한 리사이즈에서는 Canvas 측정기를 재사용하며, 폰트 로딩 완료 시 다시 만든다.
+
+React 컨텍스트는 코어 및 DOM 계층에 의존성을 추가하지 않는다. 언어는 명시적 옵션, 가장 가까운 Provider, 한국어 기본값 순으로 결정하며 기존 React 별칭도 동일한 구현을 사용한다. 서버 전용 컴포넌트는 클라이언트 컨텍스트를 읽지 않고 자체 `locale`을 사용한다.
 
 서버 컴포넌트는 문장 분리만 사용하며 Hook 또는 브라우저 모듈을 참조하지 않는다. 초기 클라이언트 렌더링은 SSR과 동일한 원문을 사용한다.
 

@@ -5,12 +5,12 @@
 ## React와 Next.js
 
 ```tsx
-import { WrapText } from '@oddmash/kowrap/react';
+import { JuliyaText } from '@oddmash/kowrap/react';
 
-<WrapText as="p">
+<JuliyaText as="p">
   읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과{' '}
   <a href="/docs/">문서</a>를 만나보세요.
-</WrapText>
+</JuliyaText>
 ```
 
 ## 일반 HTML

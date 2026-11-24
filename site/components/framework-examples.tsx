@@ -13,7 +13,7 @@ const examples = [
 		tab: "React",
 		label: "React / Next.js",
 		doc: "react",
-		code: `import { WrapText } from '@oddmash/kowrap/react';\n\n<WrapText as="h1">\n  ${specimenText}\n</WrapText>`,
+		code: `import { JuliyaProvider, JuliyaText } from '@oddmash/kowrap/react';\n\n<JuliyaProvider locale="ko">\n  <JuliyaText as="h1">\n    ${specimenText}\n  </JuliyaText>\n</JuliyaProvider>`,
 	},
 	{
 		tab: "Vue",
@@ -60,7 +60,7 @@ export const FrameworkExamples = ({ locale = "ko" }: { locale?: SiteLocale }) =>
 		label: example.tab,
 		code: example.tab === "HTML"
 			? `import { mountKowrap } from '@oddmash/kowrap/dom';\n\nconst title = document.getElementById('title');\nmountKowrap(title, { text: title.textContent, locale: '${engineLocale(locale)}' });`
-			: example.code.replaceAll(specimenText, samples[locale]).replace('<WrapText as="h1">', `<WrapText as="h1" locale="${engineLocale(locale)}">`).replace("{ text }", `{ text, locale: '${engineLocale(locale)}' }`).replace("{{ text }}", `{{ text, locale: '${engineLocale(locale)}' }}`).replace("  width: 280,", `  locale: '${engineLocale(locale)}',\n  width: 280,`),
+			: example.code.replaceAll(specimenText, samples[locale]).replace('<JuliyaProvider locale="ko">', `<JuliyaProvider locale="${engineLocale(locale)}">`).replace("{ text }", `{ text, locale: '${engineLocale(locale)}' }`).replace("{{ text }}", `{{ text, locale: '${engineLocale(locale)}' }}`).replace("  width: 280,", `  locale: '${engineLocale(locale)}',\n  width: 280,`),
 	}));
 	const selected = localized.find(example => example.tab === active) ?? localized[0];
 	return (

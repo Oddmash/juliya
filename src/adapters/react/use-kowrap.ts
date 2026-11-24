@@ -4,6 +4,7 @@ import { manualLines } from "../../core/segmentation.js";
 import type { KowrapOptions } from "../../dom/types.js";
 import type { TextTag } from "./types.js";
 import { useWrapLayout } from "./use-wrap-layout.js";
+import { useJuliyaLocale } from "./juliya-provider.js";
 
 export interface UseKowrapOptions extends KowrapOptions {
   initialForcedBreaks?: readonly number[];
@@ -13,10 +14,13 @@ export interface UseKowrapOptions extends KowrapOptions {
   tag?: TextTag;
 }
 
-export const useKowrap = ({
-  text, locale, strategy = "balanced", breakLongWords = true, forcedBreaks: controlledBreaks,
+export type UseJuliyaOptions = UseKowrapOptions;
+
+export const useJuliya = ({
+  text, locale: explicitLocale, strategy = "balanced", breakLongWords = true, forcedBreaks: controlledBreaks,
   initialForcedBreaks = [], onForcedBreaksChange, style, className, tag = "span",
-}: UseKowrapOptions) => {
+}: UseJuliyaOptions) => {
+  const locale = useJuliyaLocale(explicitLocale);
   const [internal, setInternal] = useState({ text, breaks: initialForcedBreaks });
   const forcedBreaks = controlledBreaks ?? (internal.text === text ? internal.breaks : []);
   const layout = useWrapLayout({ text, locale, strategy, breakLongWords, forcedBreaks, style, className, tag });
@@ -26,5 +30,7 @@ export const useKowrap = ({
     onForcedBreaksChange?.(breaks);
   }, [text, controlledBreaks, onForcedBreaksChange]);
   const clearForcedBreaks = useCallback(() => setForcedBreaks([]), [setForcedBreaks]);
-  return { ...layout, forcedBreaks, setForcedBreaks, clearForcedBreaks };
+  return { ...layout, locale: locale ?? "ko", forcedBreaks, setForcedBreaks, clearForcedBreaks };
 };
+
+export const useKowrap = useJuliya;

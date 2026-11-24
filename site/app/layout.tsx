@@ -6,6 +6,7 @@ import tokens from "../theme/tokens.json";
 import { SiteNavigation } from "../components/site-navigation";
 import { CopyToastProvider } from "../components/copy-toast";
 import { getGuides, guideHref } from "../lib/guides";
+import { repositoryUrl } from "../lib/project";
 import "@oddmash/ui/styles.css";
 import "./globals.css";
 
@@ -78,7 +79,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 				<div>
 					<a href="https://github.com/Oddmash">Oddmash</a>
 					<a href="https://www.npmjs.com/package/@oddmash/kowrap">npm</a>
-					<a href="https://github.com/Oddmash/kowrap">GitHub</a>
+					<a href={repositoryUrl}>GitHub</a>
 				</div>
 			</footer>
 			</CopyToastProvider>

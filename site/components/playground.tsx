@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { splitLines } from "@oddmash/kowrap";
 import type { WrapLocale } from "@oddmash/kowrap";
-import { WrapText } from "@oddmash/kowrap/react";
+import { JuliyaText } from "@oddmash/kowrap/react";
 import { Button } from "@oddmash/ui/button";
 import { Card } from "@oddmash/ui/card";
 import { Textarea } from "@oddmash/ui/textarea";
@@ -24,7 +24,7 @@ const koreanPresets = [
 	{
 		label: "혼합 문장",
 		value:
-			"React와 TypeScript로 만든 서비스에 kowrap을 적용해 한국어 UI의 읽기 경험을 개선하세요.",
+			"React와 TypeScript로 만든 서비스에 줄이야를 적용해 한국어 UI의 읽기 경험을 개선하세요.",
 	},
 ];
 const languageSamples = {
@@ -173,7 +173,7 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 	const styleCode = `const style = {\n  width: ${width}, maxWidth: "100%", fontSize: ${font},\n  fontWeight: 650, lineHeight: 1.55,\n  letterSpacing: "-.037em",\n};`;
 	const textCode = `const text = ${JSON.stringify(text)};`;
 	const withoutCode = `${textCode}\n${styleCode}\n\n<p style={{ ...style, whiteSpace: "pre-wrap",\n  wordBreak: "keep-all", overflowWrap: "anywhere" }}>\n  {text}\n</p>`;
-	const withCode = `import { WrapText } from "@oddmash/kowrap/react";\n\n${textCode}\n${styleCode}\n\n<WrapText as="p" locale="${locale}" style={style}${breaks.length ? ` forcedBreaks={${JSON.stringify(breaks)}}` : ""}>\n  {text}\n</WrapText>`;
+	const withCode = `import { JuliyaText } from "@oddmash/kowrap/react";\n\n${textCode}\n${styleCode}\n\n<JuliyaText as="p" locale="${locale}" style={style}${breaks.length ? ` forcedBreaks={${JSON.stringify(breaks)}}` : ""}>\n  {text}\n</JuliyaText>`;
 
 	return (
 		<section
@@ -313,7 +313,7 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 						</div>
 						<div className="preview-stage" ref={kowrapRef}>
 							<div className="preview-ruler" aria-hidden="true"><span /></div>
-							<WrapText
+							<JuliyaText
 								as="p"
 								id="kowrap-preview"
 								locale={locale as WrapLocale}
@@ -323,7 +323,7 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 								forcedBreaks={breaks}
 							>
 								{text}
-							</WrapText>
+							</JuliyaText>
 						</div>
 						<PreviewCode code={withCode} label={copy.appliedCode} />
 					</Card>

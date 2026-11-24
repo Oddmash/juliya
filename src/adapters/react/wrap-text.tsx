@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode, ReactElement } from "react";
 import type { WrapOptions } from "../../core/types.js";
 import type { TextProps } from "./types.js";
 import { useWrapLayout } from "./use-wrap-layout.js";
+import { useJuliyaLocale } from "./juliya-provider.js";
 import { breakOffsets, inlineBreakAttribute, observeInline } from "../../dom/inline.js";
 import { manualLines } from "../../core/segmentation.js";
 
@@ -82,4 +83,13 @@ const InlineText = ({ children, as: Tag = "span", locale, strategy = "balanced",
   return <Tag {...props} lang={props.lang ?? locale} className={className} style={{ ...baseStyle, overflowWrap: breakLongWords ? "anywhere" : "normal", ...style }} ref={(element) => { ref.current = element; }}>{renderInline(children, offsets)}</Tag>;
 };
 
-export const WrapText = (props: WrapTextProps) => typeof props.children === "string" ? <PlainText {...props} children={props.children} /> : <InlineText {...props} />;
+export type JuliyaTextProps = WrapTextProps;
+
+export const JuliyaText = (props: JuliyaTextProps) => {
+  const locale = useJuliyaLocale(props.locale);
+  return typeof props.children === "string"
+    ? <PlainText {...props} locale={locale} children={props.children} />
+    : <InlineText {...props} locale={locale} />;
+};
+
+export const WrapText = JuliyaText;
