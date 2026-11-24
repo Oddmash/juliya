@@ -86,6 +86,11 @@ const verifySpecimen = async (page, motion) => {
 			const firstRows = Object.fromEntries([...sample.querySelectorAll("[data-word]")].map(word => [word.dataset.word, word.getBoundingClientRect().top - firstBounds.top]));
 			const firstBreaks = breaksOf();
 			const firstIndex = panel.dataset.example;
+			const hero = panel.closest(".landing-intro");
+			const copy = hero.querySelector(".hero-copy");
+			const install = document.querySelector("#install");
+			const layout = () => [copy.offsetLeft, copy.offsetTop, copy.offsetWidth, copy.offsetHeight, hero.offsetHeight, install.offsetTop];
+			const initialLayout = layout();
 			const observation = window.specimenObservation = {
 				firstWidth: firstBounds.width,
 				firstRows,
@@ -97,9 +102,11 @@ const verifySpecimen = async (page, motion) => {
 				textPreserved: true,
 				partialOpacity: false,
 				maxRulerDifference: 0,
+				maxLayoutShift: 0,
 				done: false,
 			};
 			const observe = () => {
+				observation.maxLayoutShift = Math.max(observation.maxLayoutShift, ...layout().map((value, i) => Math.abs(value - initialLayout[i])));
 				if (panel.dataset.example !== firstIndex) {
 					observation.done = true;
 					return;
@@ -152,6 +159,7 @@ const verifySpecimen = async (page, motion) => {
 			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
 			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
 			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
+			assert.ok(observation.maxLayoutShift <= 1, "text reflow does not shift the brand, calls to action or following section");
 		} catch (error) {
 			console.error("Specimen motion observation:", JSON.stringify(await page.evaluate(() => window.specimenObservation)));
 			throw error;
@@ -177,6 +185,11 @@ const verifySpecimen = async (page, motion) => {
 	}
 };
 const verifyLandingGeometry = async (page) => {
+	assert.ok(await page.locator(".landing-intro").evaluate(hero => {
+		const copy = hero.querySelector(".hero-copy").getBoundingClientRect();
+		const specimen = hero.querySelector(".specimen").getBoundingClientRect();
+		return innerWidth > 900 ? copy.right <= specimen.left + 1 : copy.bottom <= specimen.top + 1;
+	}), "brand copy is left of the demo on desktop and above it on smaller screens");
 	assert.equal(await page.locator(".specimen-examples, .specimen-progress, .landing-proof-note").count(), 0);
 	assert.ok(await page.locator(".code-toolbar").evaluate(toolbar => {
 		const list = toolbar.querySelector(".code-tabs");
@@ -204,13 +217,16 @@ try {
 		return page;
 	};
 	const desktop = { width: 1280, height: 900 };
-	const comparison = await openPage(desktop);
+	const comparison = await openPage({ width: 1280, height: 1400 });
 	await comparison.goto(`${origin}/comparison/`);
-	await comparison.getByText("브라우저 벤치마크 열기", { exact: true }).click();
-	await comparison.getByRole('button', { name: '비교 실행' }).click();
-	await comparison.getByText('측정 완료', { exact: true }).waitFor();
-	assert.equal(await comparison.getByRole('row').count(), 3);
-	assert.equal(await comparison.getByRole('rowheader', { name: 'Juliya' }).count(), 1);
+	assert.equal(await comparison.locator(".example-case").count(), 3);
+	assert.equal(await comparison.locator(".example-notification").getAttribute("lang"), "ja");
+	assert.equal(await comparison.locator(".example-developer").getAttribute("lang"), "en");
+	assert.equal(await comparison.locator(".benchmark-details").count(), 0);
+	assert.ok(await comparison.locator(".footer").evaluate(footer => Math.abs(footer.getBoundingClientRect().bottom - innerHeight) <= 1), "footer is anchored to the viewport on a short page");
+	await comparison.setViewportSize({ width: 320, height: 812 });
+	assert.ok(await comparison.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+	assert.ok(await comparison.locator(".footer").evaluate(footer => footer.getBoundingClientRect().top >= document.querySelector("#main").getBoundingClientRect().bottom - 1), "footer stays after long mobile content");
 	await comparison.close();
 	for (const [language, label] of [["en", "Search docs"], ["ja", "検索"], ["zh", "搜索文档"]]) {
 		const localized = await openPage(desktop);
@@ -218,6 +234,7 @@ try {
 		await localized.goto(`${origin}/${language}/`);
 		await localized.getByRole("button", { name: label, exact: true }).waitFor();
 		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		await verifyLandingGeometry(localized);
 		const verifyLanguage = async () => {
 			assert.equal(await localized.locator(".specimen-panels").getAttribute("lang"), language === "zh" ? "zh-Hans" : language);
 			const sample = await localized.locator(".specimen-applied .specimen-text").textContent();
@@ -252,7 +269,7 @@ try {
 	assert.equal(await page.locator("#hero-title").textContent(), "줄이야 다국어 줄바꿈 라이브러리");
 	assert.equal(await page.locator(".specimen-panels").getAttribute("lang"), "ko");
 	assert.equal(await page.locator(".landing-kicker").count(), 0);
-	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.querySelector(".specimen").compareDocumentPosition(hero.querySelector(".hero-copy")) & Node.DOCUMENT_POSITION_FOLLOWING), "the reflow demonstration precedes the wordmark and calls to action");
+	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.querySelector(".hero-copy").compareDocumentPosition(hero.querySelector(".specimen")) & Node.DOCUMENT_POSITION_FOLLOWING), "brand and calls to action precede the live example");
 	assert.ok(await page.locator(".specimen-native.specimen-text").evaluate(async (title) => {
 		await document.fonts.ready;
 		const family = getComputedStyle(title).fontFamily.split(",")[0];
