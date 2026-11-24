@@ -7,7 +7,6 @@ import { specimenText } from "../lib/specimen";
 
 const examples = [
 	{ label: "서비스 제목", text: specimenText, width: "10.8em" },
-	{ label: "콘텐츠", text: "좋은 글은 보기 편한 화면에서 시작됩니다.", width: "8.4em" },
 	{ label: "제품 소개", text: "새로운 기능을 지금 만나보세요.", width: "8.8em" },
 	{ label: "개발 도구", text: "React와 TypeScript로 더 나은 화면을 만드세요", width: "10.8em" },
 ];
@@ -22,6 +21,7 @@ export const LandingSpecimen = () => {
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
 	const [index, setIndex] = useState(0);
+	const [exiting, setExiting] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [reduced, setReduced] = useState(true);
 	const [selected, setSelected] = useState(false);
@@ -32,7 +32,7 @@ export const LandingSpecimen = () => {
 	const example = examples[index];
 	const words = example.text.split(" ");
 	const specimenStyle = { "--specimen-width": example.width } as CSSProperties;
-	const rotating = visible && !reduced && !selected && !hovered && !focused && index < examples.length - 1;
+	const rotating = visible && !reduced && !selected && !hovered && !focused;
 
 	useEffect(() => {
 		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -46,13 +46,24 @@ export const LandingSpecimen = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!rotating) return;
+		if (!rotating) {
+			setExiting(false);
+			return;
+		}
+		let advance: number | undefined;
 		const timer = window.setTimeout(() => {
-			setMeasuredWidth(null);
-			setDifference(null);
-			setIndex(value => value + 1);
-		}, 4800);
-		return () => window.clearTimeout(timer);
+			setExiting(true);
+			advance = window.setTimeout(() => {
+				setMeasuredWidth(null);
+				setDifference(null);
+				setIndex(value => (value + 1) % examples.length);
+				setExiting(false);
+			}, 180);
+		}, 4620);
+		return () => {
+			window.clearTimeout(timer);
+			if (advance !== undefined) window.clearTimeout(advance);
+		};
 	}, [rotating, index]);
 
 	useEffect(() => {
@@ -103,7 +114,7 @@ export const LandingSpecimen = () => {
 			<div className="specimen-examples" aria-label="비교할 예제">
 				{examples.map((example, i) => <button key={example.label} type="button" aria-pressed={index === i} onClick={() => { setSelected(true); if (i !== index) { setMeasuredWidth(null); setDifference(null); setIndex(i); } }}>{example.label}</button>)}
 			</div>
-			<div className="specimen-panels" data-example={index} data-measured-width={measuredWidth ?? ""} ref={panels} style={specimenStyle}>
+			<div className="specimen-panels" data-example={index} data-exiting={exiting ? "true" : "false"} data-measured-width={measuredWidth ?? ""} ref={panels} style={specimenStyle}>
 				<div className="specimen-panel specimen-native">
 					<div className="specimen-label"><span>기본 CSS</span><code>keep-all</code></div>
 					<div className="specimen-stage"><div className="specimen-ruler" aria-hidden="true"><span /></div><p key={index} className="specimen-text" ref={before}>{sample()}</p></div>

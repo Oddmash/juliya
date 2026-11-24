@@ -11,11 +11,13 @@ import type { Measure, WrapOptions, WrappedLine, TextSegment } from '@oddmash/ko
 
 화면 폭에 맞춰 줄을 계산하려면 `wrap`, 원문의 개행과 지정한 위치만 반영하려면 `splitLines`, 문장 단위가 필요하면 `segmentSentences`를 사용합니다. `wrap`을 선택했을 때만 폭과 측정 함수를 제공해야 합니다.
 
-| API | 입력 | 출력 |
-| --- | --- | --- |
-| `wrap` | text, WrapOptions | WrappedLine 배열 |
-| `splitLines` | text, forcedBreaks (선택) | WrappedLine 배열 |
-| `segmentSentences` | text, locale (선택) | TextSegment 배열 |
+| API | 필수 입력 | 선택 입력 | 출력 |
+| --- | --- | --- | --- |
+| `wrap` | `text`, `options.width`, `options.measure` | 전략, 강제 경계 등 | WrappedLine 배열 |
+| `splitLines` | `text` | `forcedBreaks` | WrappedLine 배열 |
+| `segmentSentences` | `text` | `locale` | TextSegment 배열 |
+
+[코어 옵션의 필수 여부와 기본값](core.md#wrap)을 확인하세요.
 
 ```ts
 type Measure = (text: string) => number;
@@ -43,7 +45,13 @@ import type { CanvasMeasureOptions, KowrapOptions, KowrapController, KowrapLayou
 | `observeKowrap(element, options, onLayout)` | KowrapController |
 | `mountKowrap(element, options)` | KowrapController |
 
-`KowrapOptions`에는 필수 `text`와 선택적 `strategy`, `breakLongWords`, `forcedBreaks`가 포함됩니다. `KowrapLayout`에는 `lines`, `measured`가 포함됩니다.
+| API | 필수 입력 | 선택 입력 |
+| --- | --- | --- |
+| `createCanvasMeasure` | `options.font` | `ownerDocument`, 간격 및 커닝 |
+| `observeKowrap` | `element`, `options.text`, `onLayout` | 전략, 강제 경계 등 |
+| `mountKowrap` | `element`, `options.text` 또는 `options.inline: true` | 전략, 강제 경계 등 |
+
+문자열 모드의 `text`는 필수이며 인라인 모드에서는 `inline: true`를 전달하고 `text`를 전달하지 않습니다. `KowrapLayout`에는 `lines`, `measured`가 포함됩니다. [DOM 옵션 표](dom.md#옵션)를 확인하세요.
 
 ### mountKowrap과 observeKowrap
 
@@ -67,7 +75,13 @@ interface KowrapController {
 | `useKowrap` | `/react` | 직접 렌더링과 강제 경계 상태 제어 |
 | `SentenceText` | `/react/server` | 측정 없는 문장 단위 CSS 렌더링 |
 
-`WrapTextProps`, `UseKowrapOptions`, `SentenceTextProps` 타입을 각각 해당 진입점에서 가져올 수 있습니다.
+| API | 필수 입력 | 선택 입력 |
+| --- | --- | --- |
+| `WrapText` | `children` | `as`, 전략, 강제 경계, 스타일 등 |
+| `useKowrap` | `text` | 전략, 강제 경계, 콜백 등 |
+| `SentenceText` | `children` (string) | `as`, `locale`, `forcedBreaks` |
+
+`WrapTextProps`, `UseKowrapOptions`, `SentenceTextProps` 타입을 각각 해당 진입점에서 가져올 수 있습니다. [React 옵션 표](react.md#wraptext)를 확인하세요.
 
 `useKowrap`는 `ref`, `lines`, `measured`, `forcedBreaks`, `setForcedBreaks`, `clearForcedBreaks`를 반환합니다.
 
@@ -78,4 +92,4 @@ import { kowrapDirective } from '@oddmash/kowrap/vue';
 import { kowrap } from '@oddmash/kowrap/svelte';
 ```
 
-두 어댑터 모두 `KowrapOptions`를 받아 공통 DOM 컨트롤러와 연결합니다. Vue에서는 디렉티브 생명주기, Svelte에서는 액션의 update와 destroy를 사용합니다.
+두 어댑터 모두 `MountKowrapOptions`를 받아 공통 DOM 컨트롤러와 연결합니다. Vue에서는 디렉티브 생명주기, Svelte에서는 액션의 update와 destroy를 사용합니다.
