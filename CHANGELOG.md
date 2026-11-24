@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.3.3](docs/releases/v0.3.3.md)
+
+- Prefer keeping common Korean counting expressions together when a layout with the same line count fits.
+- Preserve original text, width constraints, greedy behavior, and the public API.
+- Add regression cases from real Boundra documentation and constrained-width layouts.
+
 ## [0.3.2](docs/releases/v0.3.2.md)
 
 - Improve balanced wrapping around common Korean modifiers, nouns, and mixed-language technical phrases such as `CSS import`.

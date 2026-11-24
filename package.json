@@ -1,6 +1,6 @@
 {
   "name": "@oddmash/kowrap",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Korean-aware text wrapping for JavaScript, HTML and frontend frameworks",
   "type": "module",
   "packageManager": "pnpm@11.25.0",

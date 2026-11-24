@@ -35,6 +35,32 @@ test("keeps demonstratives with the word they modify when feasible", () => {
   assert.ok(!lines.slice(0, -1).some((line) => line.text.trimEnd().endsWith("모든")));
 });
 
+test("keeps Korean numerals with inflected counters when the same line count fits", () => {
+  for (const [text, pair] of [
+    ["2. 도메인 두 개로 시작하기", "두 개로"],
+    ["2. 도메인 3 개로 시작하기", "3 개로"],
+    ["3. 설정 세 가지를 살펴보기", "세 가지를"],
+    ["2. 사용자 두 명이 참여하기", "두 명이"],
+    ["2. 설정 한 단계씩 진행하기", "한 단계씩"],
+  ]) {
+    const width = 10;
+    const lines = run(text, width, { measure: proportionalMeasure });
+    assert.equal(reconstruct(lines), text);
+    assert.equal(lines.length, 2);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes(pair)), `${pair}: ${lines.map(line => line.text).join(" | ")}`);
+  }
+});
+
+test("counting expressions can still split when the available width requires it", () => {
+  const text = "두 개로 시작하기";
+  for (const width of [1, 2, 3]) {
+    const lines = run(text, width);
+    assert.equal(reconstruct(lines), text);
+    assert.ok(lines.every(line => line.width <= width));
+  }
+});
+
 test("keeps a Korean adjective with its noun without adding a line", () => {
   const text = "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험할 수 있습니다.";
   const width = 23;
