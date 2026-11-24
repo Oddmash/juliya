@@ -204,12 +204,19 @@ h3 {
 .nav-links a:hover {
 	color: var(--action);
 }
-.language-select, #demo-locale { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); min-height: 34px; max-width: 130px; padding: 5px 8px; }
+.nav-links > .om-select-dropdown { flex: 0 0 auto; min-inline-size: 110px; z-index: 10; }
+.nav .language-select, #demo-locale { min-height: 44px; }
 .nav .language-select { font-size: 13px; }
+.nav-links > .om-select-dropdown > [role="listbox"] {
+	inset-inline-start: auto;
+	inset-inline-end: 0;
+	min-inline-size: 128px;
+}
+.playground-header > .om-select-dropdown { min-inline-size: 120px; }
 @media (max-width: 560px) {
 	.nav-links { gap: 6px; }
 	.header-search-trigger span { display: none !important; }
-	.nav .language-select { max-width: 82px; padding-inline: 4px; }
+	.nav-links > .om-select-dropdown { min-inline-size: 90px; }
 }
 .eyebrow {
 	font: 600 12px / 1.5 var(--sans);
