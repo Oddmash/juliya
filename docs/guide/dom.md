@@ -44,6 +44,16 @@ const controller = mountKowrap(element, {
 
 문자열 모드는 요소의 자식 DOM을 관리합니다. 기존 인라인 요소를 유지하려면 `inline: true`를 사용합니다. 요소에는 측정 가능한 블록 폭이 있어야 합니다.
 
+## 언어 선택
+
+신규 다국어 지원 버전에서는 `locale`을 지정합니다. 생략하면 기존과 같이 한국어 규칙을 사용합니다.
+
+```ts
+controller.update({ text: '文章を自然に読みやすく。', locale: 'ja' });
+```
+
+지원 언어는 `ko`, `en`, `ja`, `zh` 또는 `zh-Hans`(중국어 간체)입니다. 인라인 모드에서도 `locale`을 전달할 수 있습니다.
+
 ## 인라인 마크업
 
 ```html
@@ -64,6 +74,7 @@ const controller = mountKowrap(document.getElementById('rich')!, { inline: true 
 | --- | --- | --- | --- |
 | `text` | 조건부 필수 | 없음 | 문자열 모드에서 필수, 인라인 모드에는 전달하지 않음 |
 | `inline` | 조건부 필수 | `false` | 인라인 모드에서 반드시 `true` |
+| `locale` | 선택 | `ko` | 언어별 줄바꿈 규칙 |
 | `strategy` | 선택 | `balanced` | 줄바꿈 전략 |
 | `breakLongWords` | 선택 | `true` | 긴 어절 분리 |
 | `forcedBreaks` | 선택 | 없음 | 강제 경계 |

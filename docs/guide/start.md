@@ -49,6 +49,17 @@ const Heading = () => (
 
 일반 HTML에서는 [CDN 예제](dom.md)처럼 `<script type="module">` 안에서 모듈 URL을 가져오면 npm 설치 없이 시작할 수 있습니다. 기존 `/browser` 진입점은 `/dom`과 동일하게 동작합니다.
 
+### 패키지 이름 전환
+
+새 패키지가 발행되면 기존 이름과 신규 이름의 동일 버전은 같은 API를 제공합니다. 기존 이름을 계속 사용할 수도 있습니다.
+
+| 기존 이름 | 신규 이름 (발행 예정) |
+| --- | --- |
+| `@oddmash/kowrap` | `@oddmash/juliya` |
+| `@oddmash/kowrap/ko`, `/en`, `/ja`, `/zh` | `@oddmash/juliya/ko`, `/en`, `/ja`, `/zh` |
+| `@oddmash/kowrap/react`, `/react/server` | `@oddmash/juliya/react`, `/react/server` |
+| `@oddmash/kowrap/dom`, `/browser`, `/vue`, `/svelte` | `@oddmash/juliya/dom`, `/browser`, `/vue`, `/svelte` |
+
 ### 어떤 방식으로 적용할까요?
 
 - 브라우저 제목에 바로 적용하려면 일반 HTML에서는 `mountKowrap`, React와 Next.js에서는 `JuliyaText`를 사용하세요. 컴포넌트나 어댑터가 요소의 실제 폭과 글꼴을 읽습니다.

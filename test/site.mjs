@@ -38,6 +38,11 @@ test("Next export includes actual native and kowrap examples and synchronized co
 test("translated landing and reference routes are exported", () => {
 	for (const language of ["en", "ja", "zh"]) {
 		assert.match(read(`${language}/index.html`), /Juliya/);
+		const start = read(`${language}/docs/index.html`);
+		assert.ok(start.includes("pnpm add @oddmash/kowrap"));
+		assert.ok(start.includes(`${basePath}/${language}/docs/`));
+		assert.ok(start.includes(`${basePath}/${language}/docs/core/`));
+		assert.match(start, /aria-current="page"/);
 		assert.ok(read(`${language}/docs/core/index.html`).includes(`@oddmash/kowrap/${language}`));
 		for (const slug of ["forced-breaks", "inline", "dom", "react", "vue", "svelte", "ssr", "api", "troubleshooting"]) {
 			assert.ok(existsSync(new URL(`${language}/docs/${slug}/index.html`, output)));
