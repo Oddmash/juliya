@@ -1,11 +1,11 @@
 import type { WrapOptions, WrappedLine } from "../core/types.js";
 
-export interface KowrapOptions extends Pick<WrapOptions, "strategy" | "breakLongWords" | "forcedBreaks"> {
+export interface KowrapOptions extends Pick<WrapOptions, "strategy" | "breakLongWords" | "forcedBreaks" | "locale"> {
   text: string;
   inline?: false;
 }
 
-export interface InlineKowrapOptions extends Pick<WrapOptions, "strategy" | "breakLongWords" | "forcedBreaks"> {
+export interface InlineKowrapOptions extends Pick<WrapOptions, "strategy" | "breakLongWords" | "forcedBreaks" | "locale"> {
   inline: true;
   text?: never;
 }

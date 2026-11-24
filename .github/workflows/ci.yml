@@ -102,11 +102,11 @@ jobs:
       - run: pnpm --dir site install --frozen-lockfile
       - run: pnpm test:site
         env:
-          NEXT_PUBLIC_BASE_PATH: /kowrap
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
       - name: Verify landing page and documentation
         env:
           HOME: /root
-          NEXT_PUBLIC_BASE_PATH: /kowrap
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
         run: pnpm --dir site test:browser "${{ matrix.browser }}"
 
       - uses: actions/upload-artifact@v4

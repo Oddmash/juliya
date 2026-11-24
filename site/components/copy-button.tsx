@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@oddmash/ui/button";
+import { usePathname } from "next/navigation";
+import { copyLabels, languageFromPath } from "../lib/locales";
 import { useCopyToast } from "./copy-toast";
 
 export const copyText = async (value: string) => {
@@ -34,6 +36,8 @@ export const CopyButton = ({
 	icon?: boolean;
 }) => {
 	const [state, setState] = useState("복사");
+	const labels = copyLabels[languageFromPath(usePathname() ?? "/")];
+	const label = state === "복사 완료" ? labels.success : state === "복사 실패" ? labels.failure : labels.copy;
 	const notifyCopy = useCopyToast();
 	const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const request = useRef(0);
@@ -58,8 +62,8 @@ export const CopyButton = ({
 			type="button"
 			className={`${className ?? ""} copy-feedback`}
 			onClick={copy}
-			aria-label={state}
-			title={state}
+			aria-label={label}
+			title={label}
 		>
 			{icon && (
 				<svg
@@ -74,7 +78,7 @@ export const CopyButton = ({
 					{state === "복사 완료" ? <path d="m5 12 4 4 10-10" /> : <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>}
 				</svg>
 			)}
-			<span>{state}</span>
+			<span>{label}</span>
 		</Button>
 		</>
 	);

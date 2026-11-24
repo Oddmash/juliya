@@ -37,10 +37,18 @@ app.mount('#app');
 
 | 모드 | 필수 입력 | 선택 입력 |
 | --- | --- | --- |
-| 문자열 | `text` | `strategy`, `breakLongWords`, `forcedBreaks` |
-| 인라인 | `inline: true` | `strategy`, `breakLongWords`, `forcedBreaks` |
+| 문자열 | `text` | `locale`, `strategy`, `breakLongWords`, `forcedBreaks` |
+| 인라인 | `inline: true` | `locale`, `strategy`, `breakLongWords`, `forcedBreaks` |
 
 인라인 모드에서는 `text`를 전달하지 않습니다. 자세한 타입과 기본값은 [DOM 옵션](dom.md#옵션)을 확인하세요.
+
+## 언어 선택
+
+신규 다국어 지원 버전에서는 Vue의 반응형 언어 상태를 `locale`로 전달하세요. 생략하면 한국어입니다.
+
+```vue
+<p v-kowrap="{ text: '読みやすい文章。', locale: 'ja' }"></p>
+```
 
 ## 인라인 마크업
 

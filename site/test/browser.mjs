@@ -69,30 +69,104 @@ const verifySpecimen = async (page, motion) => {
 	await compare();
 	if (motion) {
 		await panels.scrollIntoViewIfNeeded();
-		await page.waitForFunction(() => {
-			const words = [...document.querySelectorAll(".specimen-applied .specimen-word-visual")];
-			return words.some(word => word.getAnimations().some(animation => animation.playState === "running"));
-		});
-		assert.ok(await panels.evaluate(panel => {
-			const source = [...panel.querySelectorAll(".specimen-native [data-word]")];
-			const target = [...panel.querySelectorAll(".specimen-applied [data-word]")];
-			return target.some((word, index) => {
-				const animation = word.firstElementChild.getAnimations()[0];
-				if (!animation) return false;
-				const from = new DOMMatrixReadOnly(animation.effect.getKeyframes()[0].transform);
-				const a = source[index].getBoundingClientRect();
-				const b = word.getBoundingClientRect();
-				return Math.abs(from.m41 - (a.left - b.left)) <= 1 && Math.abs(from.m42 - (a.top - b.top)) <= 1 && Math.abs(from.m42) > 1;
-			});
-		}), "word motion derives from the actual CSS and Kowrap layouts");
-		for (const index of ["1", "2", "3", "0"]) {
-			await page.waitForFunction(value => document.querySelector(".specimen-panels").dataset.example === value, index);
-			await compare();
+		const first = await panels.getAttribute("data-example");
+		const firstText = await page.locator(".specimen-applied .specimen-text").textContent();
+		await panels.evaluate((panel, expectedText) => {
+			const sample = panel.querySelector(".specimen-applied .specimen-text");
+			const breaksOf = () => {
+				let offset = 0;
+				const breaks = [];
+				for (const node of sample.childNodes) {
+					if (node instanceof HTMLBRElement) breaks.push(offset);
+					else offset += node.textContent.length;
+				}
+				return breaks.join(",");
+			};
+			const firstBounds = sample.getBoundingClientRect();
+			const firstRows = Object.fromEntries([...sample.querySelectorAll("[data-word]")].map(word => [word.dataset.word, word.getBoundingClientRect().top - firstBounds.top]));
+			const firstBreaks = breaksOf();
+			const firstIndex = panel.dataset.example;
+			const observation = window.specimenObservation = {
+				firstWidth: firstBounds.width,
+				firstRows,
+				firstBreaks,
+				viewport: [innerWidth, innerHeight],
+				steps: {},
+				phases: [],
+				rotating: false,
+				textPreserved: true,
+				partialOpacity: false,
+				maxRulerDifference: 0,
+				done: false,
+			};
+			const observe = () => {
+				if (panel.dataset.example !== firstIndex) {
+					observation.done = true;
+					return;
+				}
+				const phase = panel.dataset.phase;
+				const step = panel.dataset.widthStep;
+				observation.rotating ||= panel.closest(".specimen").dataset.rotating === "true";
+				const phaseKey = `${step}:${phase}`;
+				if (!observation.phases.includes(phaseKey)) observation.phases.push(phaseKey);
+				const bounds = sample.getBoundingClientRect();
+				const summary = observation.steps[step] ??= { min: bounds.width, max: bounds.width, rowChanges: false, breakChanges: false, verticalMotion: false, rows: {}, breaks: [], widths: [], frames: 0 };
+				summary.min = Math.min(summary.min, bounds.width);
+				summary.max = Math.max(summary.max, bounds.width);
+				summary.frames++;
+				const roundedWidth = Math.round(bounds.width);
+				if (!summary.widths.includes(roundedWidth)) summary.widths.push(roundedWidth);
+				const breaks = breaksOf();
+				summary.breakChanges ||= breaks !== firstBreaks;
+				if (!summary.breaks.includes(breaks)) summary.breaks.push(breaks);
+				observation.textPreserved &&= sample.textContent === expectedText;
+				for (const word of sample.querySelectorAll("[data-word]")) {
+					const key = word.dataset.word;
+					const row = word.getBoundingClientRect().top - bounds.top;
+					summary.rows[key] = Math.round(row);
+					if (key in firstRows && Math.abs(row - firstRows[key]) > 8) summary.rowChanges = true;
+					const transform = getComputedStyle(word.firstElementChild).transform;
+					if (transform !== "none" && Math.abs(new DOMMatrixReadOnly(transform).m42) > 2) summary.verticalMotion = true;
+				}
+				const rulerWidth = panel.querySelector(".specimen-ruler > span").getBoundingClientRect().width;
+				observation.maxRulerDifference = Math.max(observation.maxRulerDifference, Math.abs(bounds.width - rulerWidth));
+				const opacity = Number(getComputedStyle(panel.querySelector(".specimen-applied")).opacity);
+				if (phase === "leaving" && opacity > .02 && opacity < .98) observation.partialOpacity = true;
+				requestAnimationFrame(observe);
+			};
+			requestAnimationFrame(observe);
+		}, firstText);
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		try {
+			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 15000 });
+			const observation = await page.evaluate(() => window.specimenObservation);
+			const { firstWidth, steps, partialOpacity, textPreserved } = observation;
+			assert.ok(observation.rotating, "the specimen entered its rotating state");
+			assert.ok(steps[1] && steps[2], "both width stages were displayed");
+			assert.ok(steps[1].min < firstWidth - 8, "the actual text container shrank");
+			assert.ok(steps[2].max > steps[1].min + 8, "the actual text container expanded again");
+			assert.ok(steps[1].widths.length > 2 && steps[2].widths.length > 2, "both width changes passed through intermediate rendered sizes");
+			assert.ok(steps[1].rowChanges || steps[2].rowChanges, "the same text moved between actual rendered rows during the width cycle");
+			assert.ok(steps[1].breakChanges || steps[2].breakChanges, "the wrapping engine recomputed line-break boundaries at the new width");
+			assert.ok(steps[1].verticalMotion || steps[2].verticalMotion, "the moving words had a measured in-progress vertical transform during the width cycle");
+			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
+			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
+			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
+		} catch (error) {
+			console.error("Specimen motion observation:", JSON.stringify(await page.evaluate(() => window.specimenObservation)));
+			throw error;
 		}
+		assert.notEqual(await panels.getAttribute("data-example"), first);
+		assert.notEqual(await page.locator(".specimen-applied .specimen-text").textContent(), firstText, "a different example replaces the first");
+		assert.equal(await panels.getAttribute("lang"), "ko");
+		await compare();
 		await page.getByRole("button", { name: "시연 일시정지" }).press("Enter");
+		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "false");
 		const current = await panels.getAttribute("data-example");
-		await page.waitForTimeout(5400);
+		const pausedWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
+		await page.waitForTimeout(8000);
 		assert.equal(await panels.getAttribute("data-example"), current);
+		assert.ok(Math.abs(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width) - pausedWidth) <= 1, "paused width remains unchanged (allowing subpixel rounding)");
 		assert.equal(await panels.getAttribute("data-phase"), "kowrap");
 		await page.getByRole("button", { name: "시연 재생" }).press("Enter");
 		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true");
@@ -132,16 +206,53 @@ try {
 	const desktop = { width: 1280, height: 900 };
 	const comparison = await openPage(desktop);
 	await comparison.goto(`${origin}/comparison/`);
+	await comparison.getByText("브라우저 벤치마크 열기", { exact: true }).click();
 	await comparison.getByRole('button', { name: '비교 실행' }).click();
 	await comparison.getByText('측정 완료', { exact: true }).waitFor();
 	assert.equal(await comparison.getByRole('row').count(), 3);
-	assert.equal(await comparison.getByRole('rowheader', { name: 'Kowrap' }).count(), 1);
+	assert.equal(await comparison.getByRole('rowheader', { name: 'Juliya' }).count(), 1);
 	await comparison.close();
+	for (const [language, label] of [["en", "Search docs"], ["ja", "検索"], ["zh", "搜索文档"]]) {
+		const localized = await openPage(desktop);
+		await localized.emulateMedia({ reducedMotion: "reduce" });
+		await localized.goto(`${origin}/${language}/`);
+		await localized.getByRole("button", { name: label, exact: true }).waitFor();
+		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		const verifyLanguage = async () => {
+			assert.equal(await localized.locator(".specimen-panels").getAttribute("lang"), language === "zh" ? "zh-Hans" : language);
+			const sample = await localized.locator(".specimen-applied .specimen-text").textContent();
+			assert.match(sample, { en: /[A-Za-z]/u, ja: /\p{Script=Hiragana}/u, zh: /\p{Script=Han}/u }[language]);
+			assert.doesNotMatch(sample, /\p{Script=Hangul}/u);
+			if (language === "en") assert.doesNotMatch(sample, /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u);
+			if (language === "zh") assert.doesNotMatch(sample, /[\p{Script=Hiragana}\p{Script=Katakana}]/u);
+			return sample;
+		};
+		const sample = await verifyLanguage();
+		const snippet = await localized.getByRole("tabpanel").locator("pre code").textContent();
+		assert.match(snippet, new RegExp(`<JuliyaProvider locale="${language === "zh" ? "zh-Hans" : language}">`));
+		assert.match(snippet, /<JuliyaText as="h1">/);
+		assert.doesNotMatch(snippet, /<JuliyaText[^>]*locale=/);
+		const initialExample = await localized.locator(".specimen-panels").getAttribute("data-example");
+		await localized.emulateMedia({ reducedMotion: "no-preference" });
+		await localized.waitForFunction(index => document.querySelector(".specimen-panels").dataset.example !== index, initialExample);
+		assert.notEqual(await verifyLanguage(), sample, "rotating examples stay in the selected language");
+		await localized.emulateMedia({ reducedMotion: "reduce" });
+		await localized.waitForLoadState("networkidle");
+		await localized.goto(`${origin}/${language}/docs/core/`);
+		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/kowrap/${language}`));
+		await localized.waitForLoadState("networkidle");
+		await localized.close();
+	}
 	const page = await openPage(desktop);
-	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto(`${origin}/`);
-	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "light");
-	assert.equal(await page.locator("#hero-title").textContent(), "한국어를 읽는 흐름에 맞춰.");
+	assert.ok(await page.getByRole("button", { name: "문서 검색" }).isVisible());
+	assert.equal(await page.locator(".specimen-mode").count(), 0);
+	assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "dark");
+	assert.equal(await page.locator("#hero-title").textContent(), "줄이야 다국어 줄바꿈 라이브러리");
+	assert.equal(await page.locator(".specimen-panels").getAttribute("lang"), "ko");
+	assert.equal(await page.locator(".landing-kicker").count(), 0);
+	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.querySelector(".specimen").compareDocumentPosition(hero.querySelector(".hero-copy")) & Node.DOCUMENT_POSITION_FOLLOWING), "the reflow demonstration precedes the wordmark and calls to action");
 	assert.ok(await page.locator(".specimen-native.specimen-text").evaluate(async (title) => {
 		await document.fonts.ready;
 		const family = getComputedStyle(title).fontFamily.split(",")[0];
@@ -149,13 +260,16 @@ try {
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
 	await verifySpecimen(page, true);
+	const reactSnippet = await page.getByRole("tabpanel").locator("pre code").textContent();
+	assert.match(reactSnippet, /<JuliyaProvider locale="ko">/);
+	assert.match(reactSnippet, /<JuliyaText as="h1">/);
+	assert.doesNotMatch(reactSnippet, /<JuliyaText[^>]*locale=/);
 	assert.equal(await page.getByRole("navigation", { name: "주 메뉴" }).getByRole("link", { name: "체험하기", exact: true }).count(), 0);
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => hero.getBoundingClientRect().height >= innerHeight - 80), "desktop hero fills the first view");
 	await verifyLandingGeometry(page);
-	assert.equal(await page.locator(".reading-sample").count(), 1);
-	assert.equal(await page.locator(".reading-principles article").count(), 3);
+	assert.equal(await page.locator(".capability-grid article").count(), 3);
+	assert.equal(await page.locator(".landing a[href$='/comparison/']").count(), 0);
 	assert.equal(await page.locator(".case-comparison").count(), 0);
-	assert.equal(await page.locator(".reading-sample strong").count(), 1);
 	if (engine.name() === "chromium") {
 		await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
 		await page.screenshot({ path: "test-results/renewal/landing-desktop.png", fullPage: true, animations: "disabled" });
