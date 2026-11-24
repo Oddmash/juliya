@@ -13,22 +13,33 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /id="kowrap-preview"/);
 	assert.doesNotMatch(html, /id="inline-preview"/);
 	assert.match(html, /class="text-link inline-guide-link"/);
-	assert.match(html, /<div id="editor"/);
+	assert.match(html, /<section id="editor"/);
 	assert.match(html, /id="demo-width"/);
 	assert.match(html, /id="demo-text"/);
 	assert.doesNotMatch(html, /Oddmash에서 만든 한국어 줄바꿈 라이브러리/);
-	assert.match(html, /--paper:#faf9f6/);
-	assert.match(html, /--ink:#232822/);
-	assert.match(html, /내 문장으로 비교하기/);
-	assert.match(html, /data-om-theme="light"/);
+	assert.match(html, /--paper:#09090b/);
+	assert.match(html, /--ink:#fafafa/);
+	assert.match(html, /내 문장으로 확인하기/);
+	assert.match(html, /data-om-theme="dark"/);
 	assert.match(html, /aria-keyshortcuts="Meta\+K Control\+K"/);
-	assert.doesNotMatch(html, /id="hero-title"[^>]*>[^<]*<br/);
+	assert.match(html, /id="hero-title"[^>]*>줄이야/);
+	assert.doesNotMatch(html, /한국어를 위한 오픈소스 줄바꿈 엔진/);
 	assert.match(html, /기본 CSS/);
-	assert.match(html, /Kowrap/);
+	assert.match(html, /Juliya/);
 	assert.ok(html.includes(`${basePath}/_next/`));
 	assert.ok(html.includes(`${basePath}/docs/`));
 	assert.ok(html.includes("@oddmash/kowrap/react"));
 	assert.ok(existsSync(new URL(".nojekyll", output)));
+});
+
+test("translated landing and reference routes are exported", () => {
+	for (const language of ["en", "ja", "zh"]) {
+		assert.match(read(`${language}/index.html`), /Juliya/);
+		assert.ok(read(`${language}/docs/core/index.html`).includes(`@oddmash/kowrap/${language}`));
+		for (const slug of ["forced-breaks", "inline", "dom", "react", "vue", "svelte", "ssr", "api", "troubleshooting"]) {
+			assert.ok(existsSync(new URL(`${language}/docs/${slug}/index.html`, output)));
+		}
+	}
 });
 
 test("all Markdown guides are prerendered and have base-path-safe navigation", () => {
