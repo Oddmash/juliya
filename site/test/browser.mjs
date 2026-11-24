@@ -67,6 +67,12 @@ const verifySpecimen = async (page, motion) => {
 		}));
 	};
 	await compare();
+	assert.ok(await panels.evaluate(panel => {
+		const stage = panel.querySelector(".specimen-stage").getBoundingClientRect();
+		const ruler = panel.querySelector(".specimen-ruler").getBoundingClientRect();
+		const layout = panel.querySelector(".specimen-layout").getBoundingClientRect();
+		return Math.abs((ruler.top + layout.bottom) / 2 - (stage.top + stage.bottom) / 2) <= 12;
+	}), "the ruler and text are centered in their reserved stage");
 	if (motion) {
 		await panels.scrollIntoViewIfNeeded();
 		const first = await panels.getAttribute("data-example");
@@ -103,6 +109,7 @@ const verifySpecimen = async (page, motion) => {
 				partialOpacity: false,
 				maxRulerDifference: 0,
 				maxLayoutShift: 0,
+				maxRows: 0,
 				done: false,
 			};
 			const observe = () => {
@@ -117,6 +124,7 @@ const verifySpecimen = async (page, motion) => {
 				const phaseKey = `${step}:${phase}`;
 				if (!observation.phases.includes(phaseKey)) observation.phases.push(phaseKey);
 				const bounds = sample.getBoundingClientRect();
+				observation.maxRows = Math.max(observation.maxRows, Math.round(bounds.height / parseFloat(getComputedStyle(sample).lineHeight)));
 				const summary = observation.steps[step] ??= { min: bounds.width, max: bounds.width, rowChanges: false, breakChanges: false, verticalMotion: false, rows: {}, breaks: [], widths: [], frames: 0 };
 				summary.min = Math.min(summary.min, bounds.width);
 				summary.max = Math.max(summary.max, bounds.width);
@@ -160,6 +168,7 @@ const verifySpecimen = async (page, motion) => {
 			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
 			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
 			assert.ok(observation.maxLayoutShift <= 1, "text reflow does not shift the brand, calls to action or following section");
+			assert.ok(observation.maxRows >= 3 && observation.maxRows <= 5, "the longer specimen fills the stage without exceeding its five desktop lines");
 		} catch (error) {
 			console.error("Specimen motion observation:", JSON.stringify(await page.evaluate(() => window.specimenObservation)));
 			throw error;
@@ -169,6 +178,7 @@ const verifySpecimen = async (page, motion) => {
 		assert.equal(await panels.getAttribute("lang"), "ko");
 		await compare();
 		await page.getByRole("button", { name: "시연 일시정지" }).press("Enter");
+		assert.ok(await panels.evaluate(panel => Math.abs(panel.querySelector(".specimen-pause").getBoundingClientRect().right - panel.getBoundingClientRect().right) <= 1), "pause control is aligned to the right edge");
 		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "false");
 		const current = await panels.getAttribute("data-example");
 		const pausedWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
@@ -223,8 +233,11 @@ try {
 	assert.equal(await comparison.locator(".example-notification").getAttribute("lang"), "ja");
 	assert.equal(await comparison.locator(".example-developer").getAttribute("lang"), "en");
 	assert.equal(await comparison.locator(".benchmark-details").count(), 0);
+	assert.equal(await comparison.locator(".example-description[lang='ko']").count(), 4);
+	await comparison.locator(".examples-intro .example-description br").first().waitFor({ state: "attached" });
 	assert.ok(await comparison.locator(".footer").evaluate(footer => Math.abs(footer.getBoundingClientRect().bottom - innerHeight) <= 1), "footer is anchored to the viewport on a short page");
 	await comparison.setViewportSize({ width: 320, height: 812 });
+	await comparison.locator(".example-case .example-description br").first().waitFor({ state: "attached" });
 	assert.ok(await comparison.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
 	assert.ok(await comparison.locator(".footer").evaluate(footer => footer.getBoundingClientRect().top >= document.querySelector("#main").getBoundingClientRect().bottom - 1), "footer stays after long mobile content");
 	await comparison.close();
