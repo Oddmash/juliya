@@ -307,13 +307,24 @@ try {
 	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/kowrap");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length >= 2);
 	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4, "rapid copy events display a bounded stack");
-	await docs.evaluate(async () => {
+	const stackOverflow = await docs.evaluate(async () => {
 		const button = document.querySelector("[data-package-tabs] [data-copy-target]");
+		const region = document.querySelector(".copy-toast-region");
+		let maximumOverflow = 0;
+		const sample = () => {
+			maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight, region.scrollWidth - region.clientWidth);
+		};
 		for (let i = 0; i < 5; i++) {
 			button.click();
-			await new Promise(resolve => setTimeout(resolve, 35));
+			await new Promise(resolve => requestAnimationFrame(() => { sample(); requestAnimationFrame(() => { sample(); resolve(); }); }));
 		}
+		const start = performance.now();
+		while (performance.now() - start < 220) {
+			await new Promise(resolve => requestAnimationFrame(() => { sample(); resolve(); }));
+		}
+		return maximumOverflow;
 	});
+	assert.ok(stackOverflow <= 0, "stacked toast entrance never creates an incidental scrollbar");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
 	const oldestNotice = docs.locator("[data-copy-notice]").first();
 	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
