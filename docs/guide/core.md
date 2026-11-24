@@ -22,6 +22,7 @@ const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
 | `width` | 필수 | number | 없음 | 양수의 최대 줄 폭 |
 | `measure` | 필수 | Measure | 없음 | 문자열을 받아 같은 단위의 폭을 반환하는 함수 |
 | `measureRange` | 선택 | (start: number, end: number) => number | 없음 | 원문 범위의 폭을 직접 측정하는 함수 |
+| `locale` | 선택 | WrapLocale | `ko` | 한국어, 영어, 일본어, 중국어 간체의 줄바꿈 규칙 선택 |
 | `strategy` | 선택 | WrapOptions["strategy"] | `balanced` | 균형 최적화 또는 `greedy` 순차 탐색 |
 | `breakLongWords` | 선택 | boolean | `true` | 긴 어절의 grapheme 분리 |
 | `forcedBreaks` | 선택 | readonly number[] | 없음 | 반드시 줄을 나눌 원문 UTF-16 위치 |
