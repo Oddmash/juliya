@@ -48,6 +48,8 @@ jobs:
       - run: pnpm --dir test/framework-app install --frozen-lockfile
       - run: pnpm test:frameworks
       - run: pnpm test:browser
+        env:
+          HOME: /root
       - run: pnpm test:package
   site:
     needs: scope
@@ -83,6 +85,7 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /kowrap
       - name: Verify landing page and documentation
         env:
+          HOME: /root
           NEXT_PUBLIC_BASE_PATH: /kowrap
         run: pnpm --dir site test:browser "${{ matrix.browser }}"
 
