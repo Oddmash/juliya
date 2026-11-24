@@ -49,6 +49,7 @@ export const LandingSpecimen = () => {
 
 		let settle: number | undefined;
 		let played = false;
+		let measuredWidth = 0;
 		const measure = () => {
 			const target = applied.querySelector("p");
 			if (!target) return;
@@ -58,6 +59,7 @@ export const LandingSpecimen = () => {
 			if (played) return;
 			if (!target.querySelector("br[data-kowrap-break]") || document.fonts?.status === "loading") return;
 			played = true;
+			measuredWidth = native.getBoundingClientRect().width;
 			const moved = next.some((word, i) => Math.abs(word.getBoundingClientRect().top - old[i].getBoundingClientRect().top) > 1);
 			if (!moved) { setPhase("kowrap"); return; }
 			setPhase("css");
@@ -82,20 +84,20 @@ export const LandingSpecimen = () => {
 			played = true;
 		};
 		const resize = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(() => {
-			if (played) finish();
+			if (played && Math.abs(native.getBoundingClientRect().width - measuredWidth) > 1) finish();
 			else schedule();
 		});
 		resize?.observe(native);
 		const mutation = new MutationObserver(schedule);
 		mutation.observe(applied, { childList: true, subtree: true });
-		window.addEventListener("resize", finish);
+		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
 		schedule();
 		const advance = window.setTimeout(() => setIndex(value => (value + 1) % examples.length), 5200);
 		return () => {
 			resize?.disconnect();
 			mutation.disconnect();
-			window.removeEventListener("resize", finish);
+			window.removeEventListener("resize", schedule);
 			document.fonts?.removeEventListener("loadingdone", schedule);
 			cancelAnimationFrame(frame);
 			window.clearTimeout(advance);
