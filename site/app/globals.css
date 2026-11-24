@@ -1,5 +1,5 @@
 :root {
-	color-scheme: light;
+	color-scheme: dark;
 	font-family: var(--sans);
 	color: var(--ink);
 	background: var(--paper);
@@ -7,7 +7,7 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 }
-[data-om-theme="light"] {
+[data-om-theme="dark"] {
 	--om-semantic-color-bg: var(--paper);
 	--om-semantic-color-surface: var(--surface);
 	--om-semantic-color-text: var(--ink);
@@ -203,6 +203,13 @@ h3 {
 }
 .nav-links a:hover {
 	color: var(--action);
+}
+.language-select, #demo-locale { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); min-height: 34px; max-width: 130px; padding: 5px 8px; }
+.nav .language-select { font-size: 13px; }
+@media (max-width: 560px) {
+	.nav-links { gap: 6px; }
+	.header-search-trigger span { display: none !important; }
+	.nav .language-select { max-width: 82px; padding-inline: 4px; }
 }
 .eyebrow {
 	font: 600 12px / 1.5 var(--sans);
@@ -853,9 +860,9 @@ h3 {
 .docs-content {
 	grid-area: content;
 	min-width: 0;
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: var(--radius-lg);
+	background: transparent;
+	border: none;
+	border-radius: 0;
 	padding: 35px 38px 45px;
 }
 .docs-content h1 {
@@ -884,7 +891,7 @@ h3 {
 .docs-content li {
 	color: var(--muted);
 	line-height: 1.8;
-	font-size: 15px;
+	font-size: 16px;
 	word-break: keep-all;
 }
 .docs-content p {
@@ -983,6 +990,10 @@ h3 {
 .docs-content blockquote p {
 	margin: 0;
 }
+.benchmark-details { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; margin-block: 28px; }
+.benchmark-details summary { cursor: pointer; color: var(--ink); font-weight: 550; }
+.benchmark-details section { margin-top: 24px; }
+.docs-technical-link { margin-block-start: 28px; }
 .toc {
 	grid-area: toc;
 	position: sticky;
@@ -1117,8 +1128,9 @@ h3 {
 	.nav-links {
 		gap: 10px;
 	}
-	.header-search-trigger span, .header-search-trigger kbd { display: none; }
+	.header-search-trigger kbd { display: none; }
 	.header-search-trigger { padding: 6px 9px; }
+	.header-search-trigger span { display: inline; font-size: 12px; }
 	.nav .version { display: none; }
 	.nav-links .desktop-link {
 		display: none;
@@ -1264,6 +1276,10 @@ h3 {
 	.docs-content td {
 		min-width: 100px;
 	}
+}
+@media (max-width: 380px) {
+	.nav-links { gap: 8px; }
+	.nav-links > a:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
 	html {
