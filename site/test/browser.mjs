@@ -166,7 +166,7 @@ const verifySpecimen = async (page, motion) => {
 		const pausedWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
 		await page.waitForTimeout(8000);
 		assert.equal(await panels.getAttribute("data-example"), current);
-		assert.equal(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width), pausedWidth);
+		assert.ok(Math.abs(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width) - pausedWidth) <= 1, "paused width remains unchanged (allowing subpixel rounding)");
 		assert.equal(await panels.getAttribute("data-phase"), "kowrap");
 		await page.getByRole("button", { name: "시연 재생" }).press("Enter");
 		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true");

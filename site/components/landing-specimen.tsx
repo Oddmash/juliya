@@ -71,6 +71,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const [visible, setVisible] = useState(false);
 	const [reduced, setReduced] = useState(true);
 	const [paused, setPaused] = useState(false);
+	const [pausedWidth, setPausedWidth] = useState<number>();
 	const [phase, setPhase] = useState<Phase>("kowrap");
 	const examples = specimenScenes[initialLocale];
 	const example = examples[index];
@@ -79,6 +80,15 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const units = useMemo(() => specimenUnits(example.text, initialLocale), [example.text, initialLocale]);
 	const { ref, lines } = useJuliya({ text: example.text, locale, tag: "p" });
 	const breaks = lines.slice(0, -1).map(line => line.end);
+	const togglePaused = () => {
+		if (paused) {
+			setPausedWidth(undefined);
+			setPaused(false);
+			return;
+		}
+		setPausedWidth(after.current?.querySelector("p")?.getBoundingClientRect().width);
+		setPaused(true);
+	};
 
 	useEffect(() => {
 		const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -205,7 +215,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label={motionLabels[initialLocale][0]} data-rotating={rotating}>
-			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": widthStep === 1 && narrowWidth !== undefined ? `${narrowWidth}px` : `${example.widths[widthStep]}em`, "--specimen-ratio": widthRatios[widthStep] } as CSSProperties}>
+			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": pausedWidth !== undefined ? `${pausedWidth}px` : widthStep === 1 && narrowWidth !== undefined ? `${narrowWidth}px` : `${example.widths[widthStep]}em`, "--specimen-ratio": pausedWidth !== undefined ? "100%" : widthRatios[widthStep] } as CSSProperties}>
 				<div className="specimen-stage">
 					<div className="specimen-ruler" aria-hidden="true"><span /></div>
 					<div className="specimen-layout">
@@ -214,7 +224,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 					</div>
 				</div>
 				<div className="specimen-label">
-					{!reduced && <button type="button" className="specimen-pause" aria-label={motionLabels[initialLocale][paused ? 1 : 2]} onClick={() => setPaused(value => !value)}>{paused ? "▶" : "Ⅱ"}</button>}
+					{!reduced && <button type="button" className="specimen-pause" aria-label={motionLabels[initialLocale][paused ? 1 : 2]} onClick={togglePaused}>{paused ? "▶" : "Ⅱ"}</button>}
 				</div>
 			</div>
 		</section>
