@@ -657,7 +657,9 @@ try {
 						const panel = document.querySelector(".specimen-panels");
 						return panel.dataset.widthStep === "1" && panel.dataset.phase === "kowrap" &&
 							!previous.includes(panel.dataset.example);
-					}, seen, { timeout: 40000 });
+					}, seen, { timeout: 40000 }).catch(error => {
+						throw new Error(`Mobile scene audit ${language || "ko"} ${width}px timed out; observed ${seen.length}/8 scenes (${seen.join(", ") || "none"})`, { cause: error });
+					});
 					const geometry = await compact.locator(".specimen-panels").evaluate(panel => {
 						const hero = panel.closest(".landing-intro");
 						const stage = panel.querySelector(".specimen-stage").getBoundingClientRect();
