@@ -34,16 +34,15 @@ test("CI and release verify every integration browser", () => {
   assert.ok(integration, "Integration must exercise each browser engine");
   assert.deepEqual(integration[1].split(",").map((name) => name.trim()).sort(), browsers);
 
+  const imageVersion = (job) => job.match(/^\s*image: mcr\.microsoft\.com\/playwright:v([\d.]+)-noble@sha256:[a-f0-9]{64}$/m)?.[1];
   const publish = read(".github/workflows/publish.yml");
-  const install = publish.match(/^\s*- run: pnpm --dir test\/next-app exec playwright install --with-deps (.+)$/m);
-  assert.ok(install, "Publish must install the integration browsers");
-  assert.deepEqual(install[1].trim().split(/\s+/).sort(), browsers);
+  assert.equal(imageVersion(publish), JSON.parse(read("test/next-app/package.json")).devDependencies.playwright);
+  assert.doesNotMatch(publish, /playwright install --with-deps/);
   assert.match(publish, /^\s*- run: pnpm test:browser$/m);
 
   const ci = read(".github/workflows/ci.yml");
   const [core, site] = ci.split(/^  site:\s*$/m);
   assert.ok(site, "CI must include the site browser job");
-  const imageVersion = (job) => job.match(/^\s*image: mcr\.microsoft\.com\/playwright:v([\d.]+)-noble@sha256:[a-f0-9]{64}$/m)?.[1];
   assert.equal(imageVersion(core), JSON.parse(read("test/next-app/package.json")).devDependencies.playwright);
   assert.equal(imageVersion(site), JSON.parse(read("site/package.json")).devDependencies.playwright);
   assert.match(core, /^\s*- run: pnpm test:browser$/m);
@@ -51,4 +50,29 @@ test("CI and release verify every integration browser", () => {
   assert.ok(matrix, "CI must test each site browser");
   assert.deepEqual(matrix[1].split(",").map((name) => name.trim()).sort(), browsers);
   assert.match(site, /run: pnpm --dir site test:browser "\$\{\{ matrix\.browser \}\}"/);
+});
+
+test("CI events avoid duplicate main push checks while deployment retains verification", () => {
+  const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+  const ci = read(".github/workflows/ci.yml");
+  const ciEvents = ci.split("\nconcurrency:")[0];
+  assert.match(ciEvents, /^  pull_request:/m);
+  assert.match(ciEvents, /^  workflow_dispatch:/m);
+  assert.doesNotMatch(ciEvents, /^  push:/m);
+  assert.match(ci, /^  verify:\s*$/m);
+
+  const pages = read(".github/workflows/pages.yml");
+  assert.match(pages, /on:\n  push:\n    branches: \[main\]\n    paths:/);
+  assert.match(pages, /^\s*- run: pnpm test:site$/m);
+  assert.match(pages, /^\s*- run: pnpm --dir site test:browser$/m);
+  assert.match(pages, /deploy:\n    if: github\.ref == 'refs\/heads\/main'\n    needs: build/);
+
+  const publish = read(".github/workflows/publish.yml");
+  assert.match(publish, /on:\n  release:\n    types: \[published\]/);
+  for (const task of ["test", "test:hydration", "test:frameworks", "test:browser", "test:package"]) {
+    assert.ok(publish.includes(`- run: pnpm ${task}\n`));
+  }
+  assert.match(publish, /publish:\n[^\n]+\n    needs: verify/);
+  assert.match(publish, /id-token: write/);
+  assert.match(publish, /npm publish .*--access public --ignore-scripts/);
 });
