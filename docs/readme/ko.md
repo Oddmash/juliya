@@ -6,7 +6,7 @@
 
 한국어 어절, 영어 수식 관계, 일본어·중국어의 연속 텍스트와 문장부호를 고려합니다. 언어별 규칙은 휴리스틱이며 모든 문장의 의미를 완벽하게 분석한다는 보장은 없습니다.
 
-[체험하기](https://oddmash.github.io/juliya/#playground) | [문서](https://oddmash.github.io/juliya/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
+[체험하기](https://oddmash.github.io/juliya/#editor) | [문서](https://oddmash.github.io/juliya/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
 
 랜딩에서는 선택한 언어의 다양한 예제를 표시하고 폭에 따라 실제 줄바꿈 위치가 변화하는 모습을 시연합니다.
 
@@ -65,7 +65,7 @@ import { JuliyaProvider, JuliyaText } from '@oddmash/juliya/react';
 
 ## 특징
 
-- 한국어 어절을 보존하는 균형 잡힌 줄바꿈
+- 언어별 줄바꿈 경계와 실제 너비를 고려한 균형 잡힌 줄바꿈
 - 화면 폭 변화에 따른 자동 재계산
 - 의도적인 개행 위치 지정
 - 강조, 링크 등 인라인 마크업 유지
