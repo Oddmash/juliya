@@ -4,7 +4,7 @@
 
 Juliya is a locale-aware text wrapping library for readable headings and short passages in Korean, English, Japanese, and Simplified Chinese. It combines language-specific break boundaries with measured layout width instead of relying on character counts alone.
 
-[Playground](https://oddmash.github.io/juliya/en/#playground) | [Documentation](https://oddmash.github.io/juliya/en/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
+[Playground](https://oddmash.github.io/juliya/en/#editor) | [Documentation](https://oddmash.github.io/juliya/en/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
 
 ## Choose a language
 
