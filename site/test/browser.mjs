@@ -267,6 +267,14 @@ try {
 		return page;
 	};
 	const desktop = { width: 1280, height: 900 };
+	const refresh = await openPage(desktop);
+	await refresh.emulateMedia({ reducedMotion: "no-preference" });
+	await refresh.goto(`${origin}/`, { waitUntil: "domcontentloaded" });
+	const firstPaint = await refresh.locator(".specimen-stage").evaluate(element => ({ opacity: getComputedStyle(element).opacity, animation: getComputedStyle(element).animationName }));
+	assert.deepEqual(firstPaint, { opacity: "1", animation: "none" });
+	await refresh.reload({ waitUntil: "domcontentloaded" });
+	assert.deepEqual(await refresh.locator(".specimen-stage").evaluate(element => ({ opacity: getComputedStyle(element).opacity, animation: getComputedStyle(element).animationName })), firstPaint, "refresh keeps the hero visible without an entrance animation");
+	await refresh.close();
 	const comparison = await openPage({ width: 1280, height: 1400 });
 	await comparison.goto(`${origin}/comparison/`);
 	assert.equal(await comparison.locator(".example-case").count(), 3);
