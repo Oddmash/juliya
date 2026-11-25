@@ -553,6 +553,22 @@ try {
 		.click();
 	await docs.waitForURL("**/docs/ssr/");
 	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
+	for (const language of ["", "en", "ja", "zh"]) {
+		const compact = await openPage({ width: 320, height: 812 });
+		await compact.emulateMedia({ reducedMotion: "reduce" });
+		await compact.goto(language ? `${origin}/${language}/` : `${origin}/`);
+		for (const width of [320, 375, 430]) {
+			await compact.setViewportSize({ width, height: 812 });
+			await compact.evaluate(() => document.fonts.ready);
+			assert.ok(await compact.locator(".landing-intro").evaluate(hero => {
+				const specimen = hero.querySelector(".specimen").getBoundingClientRect();
+				const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
+				return cue.top >= specimen.bottom - 1 && cue.top - specimen.bottom <= 16;
+			}), "mobile scroll cue follows the reserved specimen without extra viewport space");
+			if (engine.name() === "chromium") await compact.screenshot({ path: `test-results/renewal/landing-${language || "ko"}-${width}.png`, animations: "disabled" });
+		}
+		await compact.close();
+	}
 	const mobileViewport = { width: 375, height: 812 };
 	const mobile = await openPage(mobileViewport);
 	await mobile.emulateMedia({ reducedMotion: "reduce" });
