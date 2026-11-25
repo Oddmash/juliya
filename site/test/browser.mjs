@@ -304,8 +304,9 @@ try {
 		await localized.locator(".hero-actions .button-primary").click();
 		await localized.waitForURL(`${origin}/${language}/docs/`);
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared CTA preserves client navigation");
-		await localized.waitForLoadState("networkidle");
-		await localized.goto(`${origin}/${language}/docs/core/`);
+		await localized.locator(`.docs-sidebar a[href="${basePath}/${language}/docs/core/"]`).click();
+		await localized.waitForURL(`${origin}/${language}/docs/core/`);
+		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared documentation links preserve client navigation");
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
 		await localized.close();
