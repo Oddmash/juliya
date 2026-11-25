@@ -78,7 +78,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 				</Link>
 				<div>
 					<a href="https://github.com/Oddmash">Oddmash</a>
-					<a href="https://www.npmjs.com/package/@oddmash/kowrap">npm</a>
+					<a href="https://www.npmjs.com/package/@oddmash/juliya">npm</a>
 					<a href={repositoryUrl}>GitHub</a>
 				</div>
 			</footer>

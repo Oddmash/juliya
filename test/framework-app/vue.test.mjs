@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { initDOM } from "./dom.mjs";
-import { kowrapDirective } from "@oddmash/kowrap/vue";
+import { kowrapDirective } from "@oddmash/juliya/vue";
 
 test("Vue 3 mounts a directive, applies reactive options and unmounts", async () => {
   const dom = initDOM();

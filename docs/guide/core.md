@@ -5,7 +5,7 @@
 ## wrap
 
 ```ts
-import { wrap } from '@oddmash/kowrap';
+import { wrap } from '@oddmash/juliya';
 
 const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
   width: 12,
@@ -36,8 +36,8 @@ const lines = wrap('한글 어절을 자연스럽게 줄바꿈합니다.', {
 실제 화면 폭을 기준으로 코어 엔진을 직접 사용하려면 다음처럼 캔버스 측정 함수를 전달할 수 있습니다. 브라우저에서 실행하는 예제입니다.
 
 ```ts
-import { wrap } from '@oddmash/kowrap';
-import { createCanvasMeasure } from '@oddmash/kowrap/dom';
+import { wrap } from '@oddmash/juliya';
+import { createCanvasMeasure } from '@oddmash/juliya/dom';
 
 await document.fonts.ready;
 const measure = createCanvasMeasure({ font: '400 24px sans-serif' });
@@ -97,7 +97,7 @@ wrap('아주긴공백없는문자열', {
 `segmentSentences(text, locale?)`는 `Intl.Segmenter`로 문장을 분리합니다. 기본 locale은 `ko`이고, 각 조각은 `text`, `start`, `end`를 반환합니다. 문장 끝의 원문 공백과 부호를 버리지 않습니다.
 
 ```ts
-import { segmentSentences } from '@oddmash/kowrap';
+import { segmentSentences } from '@oddmash/juliya';
 
 const segments = segmentSentences('첫 문장입니다. 다음 문장입니다!');
 ```

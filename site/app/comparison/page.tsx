@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { JuliyaText } from "@oddmash/kowrap/react";
+import { JuliyaText } from "@oddmash/juliya/react";
 
 export const metadata = { title: "활용 예시" };
 
@@ -34,7 +34,7 @@ const Page = () => (
 				<div className="example-surface example-developer" lang="en">
 					<span className="example-meta">GUIDE / REACT</span>
 					<JuliyaText as="h3" locale="en">Build a better experience with React and TypeScript.</JuliyaText>
-					<code>import &#123; JuliyaText &#125; from &apos;@oddmash/kowrap/react&apos;;</code>
+					<code>import &#123; JuliyaText &#125; from &apos;@oddmash/juliya/react&apos;;</code>
 				</div>
 				<JuliyaText as="p" locale="ko" className="example-description">긴 영문 설명과 기술 용어가 포함된 가이드에서도 읽기 흐름을 유지합니다.</JuliyaText>
 			</section>

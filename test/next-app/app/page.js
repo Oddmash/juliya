@@ -1,6 +1,6 @@
-import { wrap } from "@oddmash/kowrap";
-import { WrapText } from "@oddmash/kowrap/react";
-import { SentenceText } from "@oddmash/kowrap/react/server";
+import { wrap } from "@oddmash/juliya";
+import { WrapText } from "@oddmash/juliya/react";
+import { SentenceText } from "@oddmash/juliya/react/server";
 import { portfolioCorpus } from "../../fixtures/portfolio-prose.mjs";
 
 const text = "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험할 수 있습니다.";

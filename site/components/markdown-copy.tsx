@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { copyText } from "./copy-button";
 import { useCopyToast } from "./copy-toast";
-import { mountKowrap } from "@oddmash/kowrap/dom";
+import { mountKowrap } from "@oddmash/juliya/dom";
 
 export const MarkdownCopy = () => {
 	const notifyCopy = useCopyToast();

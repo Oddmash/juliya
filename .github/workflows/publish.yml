@@ -64,19 +64,11 @@ jobs:
           mkdir -p release-artifacts
           npm pack --ignore-scripts --pack-destination release-artifacts
           if [ "$ALREADY_PUBLISHED" = "false" ]; then
-            npm publish --dry-run --ignore-scripts "./release-artifacts/oddmash-kowrap-${RELEASE_VERSION}.tgz"
+            npm publish --dry-run --ignore-scripts "./release-artifacts/oddmash-juliya-${RELEASE_VERSION}.tgz"
           fi
-      - name: Pack verified Juliya candidate
-        run: node scripts/pack-juliya.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: juliya-npm-package
-          path: oddmash-juliya-${{ steps.version.outputs.version }}.tgz
-          if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@v4
-        with:
-          name: kowrap-npm-package
           path: release-artifacts/*.tgz
           if-no-files-found: error
           retention-days: 7
@@ -98,7 +90,7 @@ jobs:
           package-manager-cache: false
       - uses: actions/download-artifact@v4
         with:
-          name: kowrap-npm-package
+          name: juliya-npm-package
           path: release-artifacts
       - name: Publish verified tarball via OIDC
-        run: npm publish "./release-artifacts/oddmash-kowrap-${RELEASE_VERSION}.tgz" --access public --ignore-scripts
+        run: npm publish "./release-artifacts/oddmash-juliya-${RELEASE_VERSION}.tgz" --access public --ignore-scripts

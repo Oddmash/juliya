@@ -1,5 +1,5 @@
 {
-  "name": "kowrap-next-integration",
+  "name": "juliya-next-integration",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.25.0",
@@ -9,7 +9,7 @@
     "test:browser": "node browser.mjs"
   },
   "dependencies": {
-    "@oddmash/kowrap": "file:../..",
+    "@oddmash/juliya": "file:../..",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"

@@ -20,11 +20,11 @@ test("release accepts exactly the manifest version and valid prefixed tags", () 
 
 test("registry lookup detects existing versions and fails closed on invalid responses", async () => {
   const response = (status, body) => async () => new Response(JSON.stringify(body), { status });
-  assert.equal(await isPublished("@oddmash/kowrap", "0.1.0", response(200, { versions: { "0.1.0": {} } })), true);
-  assert.equal(await isPublished("@oddmash/kowrap", version, response(200, { versions: {} })), false);
-  assert.equal(await isPublished("@oddmash/kowrap", version, response(404, {})), false);
-  await assert.rejects(isPublished("@oddmash/kowrap", version, response(500, {})));
-  await assert.rejects(isPublished("@oddmash/kowrap", version, response(200, {})));
+  assert.equal(await isPublished("@oddmash/juliya", "0.1.0", response(200, { versions: { "0.1.0": {} } })), true);
+  assert.equal(await isPublished("@oddmash/juliya", version, response(200, { versions: {} })), false);
+  assert.equal(await isPublished("@oddmash/juliya", version, response(404, {})), false);
+  await assert.rejects(isPublished("@oddmash/juliya", version, response(500, {})));
+  await assert.rejects(isPublished("@oddmash/juliya", version, response(200, {})));
 });
 
 test("CI and release verify every integration browser", () => {

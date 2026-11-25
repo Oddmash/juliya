@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { mountKowrap, observeKowrap } from "@oddmash/kowrap/browser";
-import { kowrapDirective } from "@oddmash/kowrap/vue";
-import { kowrap } from "@oddmash/kowrap/svelte";
+import { mountKowrap, observeKowrap } from "@oddmash/juliya/browser";
+import { kowrapDirective } from "@oddmash/juliya/vue";
+import { kowrap } from "@oddmash/juliya/svelte";
 
 const fixture = () => {
   const dom = new JSDOM('<p id="text" style="white-space:normal;padding:10px">원문</p>');

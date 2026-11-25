@@ -6,15 +6,15 @@
 
 | 경로 | 공개 책임 |
 | --- | --- |
-| `@oddmash/kowrap` | `wrap`, `splitLines`, `segmentSentences`, 코어 타입 |
-| `@oddmash/kowrap/ko`, `/en`, `/ja`, `/zh` | 언어별 코어 진입점 |
-| `@oddmash/kowrap/dom`, `@oddmash/kowrap/browser` | `createCanvasMeasure`, `observeKowrap`, `mountKowrap` |
-| `@oddmash/kowrap/react` | `JuliyaText`, `useJuliya`, `JuliyaProvider`, 기존 `WrapText`, `useKowrap` 별칭 |
-| `@oddmash/kowrap/react/server` | `JuliyaSentenceText`, 기존 `SentenceText` 별칭, 클라이언트 실행 없는 서버 컴포넌트 |
-| `@oddmash/kowrap/vue` | Vue 3 디렉티브 |
-| `@oddmash/kowrap/svelte` | Svelte 액션 |
+| `@oddmash/juliya` | `wrap`, `splitLines`, `segmentSentences`, 코어 타입 |
+| `@oddmash/juliya/ko`, `/en`, `/ja`, `/zh` | 언어별 코어 진입점 |
+| `@oddmash/juliya/dom`, `@oddmash/juliya/browser` | `createCanvasMeasure`, `observeKowrap`, `mountKowrap` |
+| `@oddmash/juliya/react` | `JuliyaText`, `useJuliya`, `JuliyaProvider`, 기존 `WrapText`, `useKowrap` 별칭 |
+| `@oddmash/juliya/react/server` | `JuliyaSentenceText`, 기존 `SentenceText` 별칭, 클라이언트 실행 없는 서버 컴포넌트 |
+| `@oddmash/juliya/vue` | Vue 3 디렉티브 |
+| `@oddmash/juliya/svelte` | Svelte 액션 |
 
-발행 예정인 `@oddmash/juliya`는 기존 패키지와 같은 진입점과 동일한 구현을 제공한다.
+`@oddmash/juliya`는 기존 Kowrap 0.4.0과 같은 공개 진입점과 동일한 구현을 제공한다. 이후 발행은 Juliya로만 진행한다.
 
 ## 내부 모듈
 
