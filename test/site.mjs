@@ -150,3 +150,20 @@ test("shared site controls preserve prerendered native documentation and languag
 	assert.match(docs, /om-code-block-content/);
 	assert.ok(docs.includes(`href="${basePath}/docs/core/"`));
 });
+
+test("localized brand links are prerendered on landing and documentation pages", () => {
+	for (const [language, label, name] of [["", "줄이야 홈", "줄이야"], ["en", "Juliya home", "Juliya"], ["ja", "Juliya ホーム", "Juliya"], ["zh", "Juliya 首页", "Juliya"]]) {
+		const prefix = language ? `${language}/` : "";
+		const href = `${basePath}/${prefix}`;
+		for (const path of [`${prefix}index.html`, `${prefix}docs/index.html`]) {
+			const html = read(path);
+			const links = [...html.matchAll(/<a\b[^>]*class="brand"[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]);
+			assert.equal(links.length, 2);
+			for (const link of links) {
+				assert.ok(link.includes(`href="${href}"`));
+				assert.ok(link.includes(`aria-label="${label}"`));
+				assert.ok(link.includes(`class="brand-name">${name}</span>`));
+			}
+		}
+	}
+});
