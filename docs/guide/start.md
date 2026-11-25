@@ -1,5 +1,7 @@
 # 빠르게 시작하기
 
+[한국어](https://oddmash.github.io/juliya/docs/) · [English](https://oddmash.github.io/juliya/en/docs/) · [日本語](https://oddmash.github.io/juliya/ja/docs/) · [简体中文](https://oddmash.github.io/juliya/zh/docs/)
+
 줄이야(Juliya)는 한국어, 영어, 일본어, 중국어 간체의 제목과 짧은 문장을 실제 화면 폭에 맞춰 읽기 좋은 위치에서 줄바꿈하는 라이브러리입니다.
 
 CSS의 `word-break: keep-all`은 어절 중간에서 줄이 나뉘지 않게 합니다. 줄이야는 여기에 언어별 줄바꿈 규칙과 각 줄의 너비를 함께 고려합니다. React, Next.js, Vue, Svelte, 일반 HTML에서 사용할 수 있습니다.

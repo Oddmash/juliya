@@ -1,6 +1,6 @@
 # 줄이야 (Juliya) 개발 지침
 
-Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/AGENTS.md)을 따른다. 현재 제품의 주요 사용자가 한국어 사용자이므로 README와 기여 문서는 한국어로 유지한다. 필요할 때만 추가 언어를 지원한다.
+Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/AGENTS.md)을 따른다. README의 기본 언어는 영어이며 한국어, 일본어, 중국어 간체 번역은 `docs/readme/`에서 관리한다. 네 언어의 제품 소개, 공개 API 예제, 지원 범위 및 이전 안내를 동기화한다. 기여 문서는 한국어로 유지하고 공개 기여 양식은 영어를 사용한다.
 
 - README는 제품 소개, 실제 줄바꿈 예시와 지원 범위만 담는다. 설치, 개발, 테스트, 릴리스는 `CONTRIBUTING.md`에 둔다.
 
@@ -16,7 +16,7 @@ Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/A
 - 배포 전 `pnpm test`, `pnpm test:hydration`, `pnpm test:frameworks`, `pnpm test:browser`, `pnpm test:package`를 확인한다.
 - 라이선스와 npm 공개 배포는 프로젝트 소유자의 결정을 따른다.
 - 안정 릴리스 태그는 `vX.Y.Z` 형식이며 태그 시점의 `package.json` 버전과 동일해야 한다. 릴리스 노트는 `docs/releases/`와 `CHANGELOG.md`를 함께 갱신하며 기존 태그를 덮어쓰지 않는다.
-- 문서 사이트는 `site/`의 Next.js 정적 export로 관리한다. 사용자용 문서 원본은 `docs/guide/`의 Markdown이며 사이트는 빌드 시 원본을 읽는다. 배포 산출물 `site/out`은 npm 패키지에 포함하지 않는다.
+- 문서 사이트는 `site/`의 Next.js 정적 export로 관리한다. 사용자용 한국어 문서 원본은 `docs/guide/`의 Markdown이며 사이트는 빌드 시 원본을 읽는다. 영어, 일본어, 중국어 간체 문서의 설명과 예제는 `site/lib/translated-guides.ts`에서 같은 공개 API 계약으로 관리한다. 배포 산출물 `site/out`은 npm 패키지에 포함하지 않는다.
 - 사이트 디자인은 [Oddmash UI 작업 기준](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)을 따르며 카본 블랙과 중립 회색, 밝은 텍스트를 기본으로 사용한다. `site/theme/tokens.json`에 사이트 토큰을 관리한다. 파란색은 포커스, 빨간색은 오류에 사용한다. 긴 대시를 장식 문자로 사용하지 않는다. 첫 화면에는 하나의 실제 줄바꿈 시연을 표시하고 벤치마크는 기술 참고 영역에만 둔다. 비교 예제와 대응 코드는 동기화하며 이동 경로는 측정된 실제 위치를 기반으로 한다.
 
 ## Public contribution language
