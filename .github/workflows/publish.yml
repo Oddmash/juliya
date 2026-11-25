@@ -66,6 +66,14 @@ jobs:
           if [ "$ALREADY_PUBLISHED" = "false" ]; then
             npm publish --dry-run --ignore-scripts "./release-artifacts/oddmash-kowrap-${RELEASE_VERSION}.tgz"
           fi
+      - name: Pack verified Juliya candidate
+        run: node scripts/pack-juliya.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: juliya-npm-package
+          path: oddmash-juliya-${{ steps.version.outputs.version }}.tgz
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: kowrap-npm-package

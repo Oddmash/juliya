@@ -1,7 +1,7 @@
 {
   "name": "@oddmash/kowrap",
   "license": "MIT",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Locale-aware text wrapping for Korean, English, Japanese and Simplified Chinese",
   "type": "module",
   "packageManager": "pnpm@11.25.0",
@@ -18,7 +18,7 @@
     "./vue": { "types": "./dist/adapters/vue/index.d.ts", "import": "./dist/adapters/vue/index.js" },
     "./svelte": { "types": "./dist/adapters/svelte/index.d.ts", "import": "./dist/adapters/svelte/index.js" }
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "NOTICE.md"],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

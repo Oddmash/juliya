@@ -16,7 +16,9 @@ test("published entrypoints exist and the tarball excludes development files", (
   }
   assert.ok(files.has("README.md"));
   assert.ok(files.has("package.json"));
-  assert.ok([...files].every((file) => file.startsWith("dist/") || /^(README\.md|LICENSE(?:\..+)?|package\.json)$/.test(file)));
+  assert.ok(files.has("LICENSE"));
+  assert.ok(files.has("NOTICE.md"));
+  assert.ok([...files].every((file) => file.startsWith("dist/") || /^(README\.md|NOTICE\.md|LICENSE(?:\..+)?|package\.json)$/.test(file)));
   assert.equal(manifest.publishConfig.access, "public");
   assert.equal(manifest.publishConfig.registry, "https://registry.npmjs.org/");
   assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0);
@@ -27,6 +29,8 @@ test("Juliya package candidate exports the same implementation and locale paths"
   assert.equal(pack.name, "@oddmash/juliya");
   assert.equal(pack.version, manifest.version);
   const files = new Set(pack.files.map(({ path }) => path));
+  assert.ok(files.has("LICENSE"));
+  assert.ok(files.has("NOTICE.md"));
   for (const entry of Object.values(manifest.exports)) {
     assert.ok(files.has(entry.types.slice(2)));
     assert.ok(files.has(entry.import.slice(2)));
