@@ -1,5 +1,12 @@
 # 변경 이력
 
+## [0.4.0](docs/releases/v0.4.0.md)
+
+- Introduce the Juliya brand and locale-aware text wrapping for Korean, English, Japanese, and Simplified Chinese.
+- Add locale subpath exports, React locale inheritance, and compatible Juliya component and hook aliases.
+- Localize the landing and guides, refine measured reflow demonstrations, and retain existing Korean and framework behavior.
+- License the implementation under MIT and prepare equivalent Kowrap and Juliya package artifacts.
+
 ## [0.3.4](docs/releases/v0.3.4.md)
 
 - Add ESLint checks for source, scripts, tests, and the documentation site.

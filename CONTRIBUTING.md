@@ -80,7 +80,7 @@ GitHub 저장소의 Settings > Pages > Build and deployment에서 Source를 GitH
 
 ## npm 릴리스
 
-기존 `@oddmash/kowrap` 패키지는 계속 호환됩니다. 새 브랜드 패키지 후보는 `pnpm pack:juliya`로 같은 빌드와 공개 진입점을 담은 `@oddmash/juliya` tarball을 생성합니다. 새 패키지의 최초 발행과 Trusted Publisher 설정은 소유자가 검증한 뒤 진행합니다.
+기존 `@oddmash/kowrap` 패키지는 계속 호환됩니다. 새 브랜드 패키지 후보는 `pnpm pack:juliya`로 같은 빌드와 공개 진입점을 담은 `@oddmash/juliya` tarball을 생성합니다. 새 패키지의 최초 발행과 Trusted Publisher 설정은 소유자가 검증한 뒤 진행합니다. 릴리스 검증 워크플로는 두 패키지의 tarball을 별도 아티팩트로 제공합니다. `juliya-npm-package` 아티팩트는 소유자가 검증한 최초 발행에 사용하며 기존 Kowrap 자동 발행과 분리합니다.
 
 최초 패키지 등록 이후에는 `package.json` 버전과 동일한 `vX.Y.Z` 태그로 GitHub Release를 발행합니다. 안정 버전 릴리스 발행 시 `Publish npm package` 워크플로가 자동 실행됩니다. main에서 수동으로 버전을 입력해 publish를 끈 상태로 검증할 수도 있습니다. 기존 npm 버전은 다시 발행하지 않으며 테스트를 통과한 tarball만 배포합니다.
 
