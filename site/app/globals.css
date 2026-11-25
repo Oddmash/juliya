@@ -381,7 +381,6 @@ h3 {
 .control-range input {
 	min-width: 55px;
 	width: 100%;
-	accent-color: var(--action);
 }
 .editor {
 	border: 1px solid var(--border);
