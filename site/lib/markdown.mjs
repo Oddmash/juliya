@@ -25,8 +25,8 @@ const packageTabs = (content, id) => {
 	const managers = ["npm", "pnpm", "yarn"];
 	if (content.length !== managers.length || managers.some((manager, i) => !content[i].startsWith(manager + " "))) return null;
 	const tabs = managers.map((manager, i) => `<button type="button" role="tab" id="${id}-${manager}-tab" aria-selected="${i === 0}" aria-controls="${id}-${manager}-panel" tabindex="${i === 0 ? 0 : -1}" data-package-tab data-package-code="${id}-${manager}">${manager === "yarn" ? "Yarn" : manager}</button>`).join("");
-	const panels = managers.map((manager, i) => `<div role="tabpanel" id="${id}-${manager}-panel" aria-labelledby="${id}-${manager}-tab" tabindex="0"${i === 0 ? "" : " hidden"}><pre><code id="${id}-${manager}">${escapeHtml(content[i])}</code></pre></div>`).join("");
-	return `<div class="doc-code package-manager-code" data-package-tabs><div class="doc-code-head"><div class="package-manager-tabs" role="tablist" aria-label="패키지 매니저">${tabs}</div><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}-npm">복사</button></div>${panels}</div>`;
+	const panels = managers.map((manager, i) => `<div role="tabpanel" id="${id}-${manager}-panel" aria-labelledby="${id}-${manager}-tab" tabindex="0"${i === 0 ? "" : " hidden"}><pre class="om-code-block-content"><code id="${id}-${manager}">${escapeHtml(content[i])}</code></pre></div>`).join("");
+	return `<div class="doc-code om-code-block package-manager-code" data-package-tabs><div class="doc-code-head om-code-block-header"><div class="package-manager-tabs" role="tablist" aria-label="패키지 매니저">${tabs}</div><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}-npm">복사</button></div>${panels}</div>`;
 };
 
 const safeLink = (href, basePath) => {
@@ -128,7 +128,7 @@ export const renderMarkdown = (markdown, basePath = "") => {
 				continue;
 			}
 			blocks.push(
-				`<div class="doc-code"><div class="doc-code-head"><span>${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button></div><pre><code id="${id}">${highlightCode(content.join("\n"), code[1])}</code></pre></div>`,
+				`<div class="doc-code om-code-block"><div class="doc-code-head om-code-block-header"><span class="om-code-block-caption">${escapeHtml(code[1] || "text")}</span><button type="button" class="om-button om-button--ghost om-button--sm" data-copy-target="${id}">복사</button></div><pre class="om-code-block-content"><code id="${id}">${highlightCode(content.join("\n"), code[1])}</code></pre></div>`,
 			);
 			continue;
 		}
@@ -145,7 +145,7 @@ export const renderMarkdown = (markdown, basePath = "") => {
 						.join("")}</tr>`,
 				);
 			blocks.push(
-				`<div class="doc-table" tabindex="0" role="region" aria-label="표"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
+				`<div class="doc-table om-prose-scroll" tabindex="0" role="region" aria-label="표"><table><thead><tr>${header}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`,
 			);
 			continue;
 		}

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { ButtonLink } from "@oddmash/ui/button";
 import localFont from "next/font/local";
 import { JuliyaText } from "@oddmash/juliya/react";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { LandingSpecimen } from "../components/landing-specimen";
 import { Playground } from "../components/playground";
+import { SiteButtonLink } from "../components/site-navigation";
 import "./landing.css";
 
 const installCommand = "pnpm add @oddmash/juliya";
@@ -23,8 +25,8 @@ const Page = () => (
 				<h1 id="hero-title">줄이야<span className="sr-only"> 다국어 줄바꿈 라이브러리</span></h1>
 				<p className="hero-description">언어별 줄바꿈 경계와 화면 폭을 고려해 읽는 흐름을 지킵니다.</p>
 				<div className="hero-actions">
-					<Link className="button button-primary" href="/docs/">시작하기</Link>
-					<a className="button hero-secondary" href="#editor">내 문장으로 체험하기</a>
+					<SiteButtonLink className="button button-primary" href="/docs/">시작하기</SiteButtonLink>
+					<ButtonLink className="button hero-secondary" variant="secondary" href="#editor">내 문장으로 체험하기</ButtonLink>
 				</div>
 			</div>
 			<LandingSpecimen initialLocale="ko" />
@@ -62,7 +64,7 @@ const Page = () => (
 		</section>
 		<section className="landing-end">
 			<h2>읽기 좋은 다국어 문장을 만들어 보세요.</h2>
-			<Link className="button button-primary" href="/docs/">문서 읽기</Link>
+			<SiteButtonLink className="button button-primary" href="/docs/">문서 읽기</SiteButtonLink>
 		</section>
 	</main>
 );

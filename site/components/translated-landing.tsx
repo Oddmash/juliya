@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ButtonLink } from "@oddmash/ui/button";
 import { LandingSpecimen } from "./landing-specimen";
 import { FrameworkExamples } from "./framework-examples";
 import { Playground } from "./playground";
 import { CopyButton } from "./copy-button";
+import { SiteButtonLink } from "./site-navigation";
 import { engineLocale, landingCopy, languagePath } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
 import "../app/landing.css";
@@ -16,7 +18,7 @@ export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
 			<header className="landing-intro">
 				<div className="hero-copy">
 					<h1 id="hero-title">{copy.title}</h1><p className="hero-description">{copy.description}</p>
-					<div className="hero-actions"><Link className="button button-primary" href={docs}>{copy.start}</Link><a className="button hero-secondary" href="#editor">{copy.try}</a></div>
+					<div className="hero-actions"><SiteButtonLink className="button button-primary" href={docs}>{copy.start}</SiteButtonLink><ButtonLink className="button hero-secondary" variant="secondary" href="#editor">{copy.try}</ButtonLink></div>
 				</div>
 				<LandingSpecimen key={locale} initialLocale={locale} />
 				<a className="hero-scroll" href="#install" aria-label={copy.start}><span aria-hidden="true" /></a>
@@ -33,7 +35,7 @@ export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
 				<article><code>width: 320px</code><h3>{copy.responsive}</h3><p>{copy.responsiveDescription}</p><Link href={docs}>{copy.docs}</Link></article>
 				<article><code>SSR + CSR</code><h3>{copy.ssr}</h3><p>{copy.ssrDescription}</p><Link href={docs}>{copy.docs}</Link></article>
 			</div></section>
-			<section className="landing-end"><h2>{copy.end}</h2><Link className="button button-primary" href={docs}>{copy.read}</Link></section>
+			<section className="landing-end"><h2>{copy.end}</h2><SiteButtonLink className="button button-primary" href={docs}>{copy.read}</SiteButtonLink></section>
 		</main>
 	);
 };
