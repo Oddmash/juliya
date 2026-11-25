@@ -116,3 +116,23 @@ test("Markdown escapes raw HTML and disallowed URLs and generates headings and c
 	assert.match(result.html, /class="syntax-keyword">const<\/span>/);
 	assert.match(result.html, /class="syntax-string">&#39;&lt;tag&gt;&#39;<\/span>/);
 });
+
+
+test("shared site controls preserve prerendered native documentation and language links", () => {
+	const html = read("index.html");
+	assert.match(html, /om-site-header/);
+	assert.match(html, /om-site-footer/);
+	assert.match(html, /om-site-nav/);
+	assert.match(html, /om-clipboard-button/);
+	assert.match(html, /om-toast-viewport/);
+	assert.match(html, /om-platform-link/);
+	assert.match(html, /om-kbd/);
+	assert.match(html, /om-locale-fallback/);
+	assert.ok(html.includes(`href="${basePath}/en/"`));
+	const docs = read("docs/index.html");
+	assert.match(docs, /om-docs-navigation/);
+	assert.match(docs, /om-table-of-contents/);
+	assert.match(docs, /om-prose/);
+	assert.match(docs, /om-code-block-content/);
+	assert.ok(docs.includes(`href="${basePath}/docs/core/"`));
+});
