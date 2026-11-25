@@ -1,5 +1,11 @@
 # 변경 이력
 
+## [0.4.1](docs/releases/v0.4.1.md)
+
+- Complete the migration to the Juliya package and repository.
+- Switch future npm releases to Juliya trusted publishing and update package metadata and examples.
+- Preserve the public API and locale behavior.
+
 ## [0.4.0](docs/releases/v0.4.0.md)
 
 - Introduce the Juliya brand and locale-aware text wrapping for Korean, English, Japanese, and Simplified Chinese.
