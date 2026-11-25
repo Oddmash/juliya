@@ -612,6 +612,60 @@ try {
 		}
 		await compact.close();
 	}
+	if (engine.name() === "chromium") {
+		const verifyMobileScenes = async (language, width) => {
+			const compact = await openPage({ width, height: 812 });
+			try {
+				await compact.emulateMedia({ reducedMotion: "no-preference" });
+				await compact.goto(language ? `${origin}/${language}/` : `${origin}/`);
+				await compact.evaluate(() => document.fonts.ready);
+				await compact.locator(".specimen-panels").scrollIntoViewIfNeeded();
+				await compact.locator('.specimen[data-rotating="true"]').waitFor();
+				const seen = [];
+				let longest = 0;
+				let initial;
+				while (seen.length < 8) {
+					await compact.waitForFunction(previous => {
+						const panel = document.querySelector(".specimen-panels");
+						return panel.dataset.widthStep === "1" && panel.dataset.phase === "kowrap" &&
+							!previous.includes(panel.dataset.example);
+					}, seen, { timeout: 40000 });
+					const geometry = await compact.locator(".specimen-panels").evaluate(panel => {
+						const hero = panel.closest(".landing-intro");
+						const stage = panel.querySelector(".specimen-stage").getBoundingClientRect();
+						const sample = panel.querySelector(".specimen-applied .specimen-text").getBoundingClientRect();
+						const specimen = panel.closest(".specimen").getBoundingClientRect();
+						const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
+						const label = panel.querySelector(".specimen-label").getBoundingClientRect();
+						return {
+							index: panel.dataset.example,
+							sampleHeight: sample.height,
+							fits: sample.top >= stage.top && sample.bottom <= stage.bottom + 1 && sample.bottom <= label.top + 1 &&
+								sample.left >= stage.left - 1 && sample.right <= stage.right + 1,
+							cueGap: cue.top - specimen.bottom,
+							heroHeight: hero.offsetHeight,
+							installTop: document.querySelector("#install").offsetTop,
+						};
+					});
+					assert.ok(!seen.includes(geometry.index), "each mobile scene is examined once");
+					seen.push(geometry.index);
+					const label = `${language || "ko"} ${width}px scene ${geometry.index}`;
+					assert.ok(geometry.fits, `mobile specimen fits its reserved stage: ${label} ${JSON.stringify(geometry)}`);
+					assert.ok(geometry.cueGap >= -1 && geometry.cueGap <= 16, `scroll cue placement: ${label}`);
+					initial ??= geometry;
+					assert.ok(Math.abs(geometry.heroHeight - initial.heroHeight) <= 1 && Math.abs(geometry.installTop - initial.installTop) <= 1, `stable landing layout: ${label}`);
+					if (geometry.sampleHeight > longest) {
+						longest = geometry.sampleHeight;
+						await compact.screenshot({ path: `test-results/renewal/longest-${language || "ko"}-${width}.png` });
+					}
+				}
+				console.log(`Mobile scene audit ${language || "ko"} ${width}px: ${seen.length} unique scenes; maximum text height ${longest}px`);
+			} finally {
+				await compact.close();
+			}
+		};
+		await Promise.all(["", "en", "ja", "zh"].flatMap(language => [320, 375, 430].map(width => verifyMobileScenes(language, width))));
+	}
 	const mobileViewport = { width: 375, height: 812 };
 	const mobile = await openPage(mobileViewport);
 	await mobile.emulateMedia({ reducedMotion: "reduce" });
