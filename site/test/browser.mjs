@@ -113,14 +113,19 @@ const verifySpecimen = async (page, motion) => {
 				maxHighlights: 0,
 				allWordsHighlighted: false,
 				done: false,
+				motionAtReplacement: false,
+				motionWhileLeaving: false,
 			};
 			const observe = () => {
 				observation.maxLayoutShift = Math.max(observation.maxLayoutShift, ...layout().map((value, i) => Math.abs(value - initialLayout[i])));
+				const moving = [...panel.querySelectorAll(".specimen-layout, .specimen-ruler, .specimen-word-visual")].some(element => element.getAnimations().some(animation => animation.playState === "running" || animation.pending));
 				if (panel.dataset.example !== firstIndex) {
+					observation.motionAtReplacement = moving;
 					observation.done = true;
 					return;
 				}
 				const phase = panel.dataset.phase;
+				if (phase === "leaving") observation.motionWhileLeaving ||= moving;
 				const step = panel.dataset.widthStep;
 				observation.rotating ||= panel.closest(".specimen").dataset.rotating === "true";
 				const phaseKey = `${step}:${phase}`;
@@ -158,6 +163,7 @@ const verifySpecimen = async (page, motion) => {
 			requestAnimationFrame(observe);
 		}, firstText);
 		await page.emulateMedia({ reducedMotion: "no-preference" });
+		assert.equal(await page.locator(".specimen-stage").evaluate(element => getComputedStyle(element).animationName), "none", "the server-rendered hero does not fade from transparent");
 		try {
 			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 22000 });
 			const observation = await page.evaluate(() => window.specimenObservation);
@@ -171,6 +177,8 @@ const verifySpecimen = async (page, motion) => {
 			assert.ok(steps[1].breakChanges || steps[2].breakChanges, "the wrapping engine recomputed line-break boundaries at the new width");
 			assert.ok(steps[1].verticalMotion || steps[2].verticalMotion, "the moving words had a measured in-progress vertical transform during the width cycle");
 			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
+			assert.equal(observation.motionWhileLeaving, false, "width and word motion settle before fade-out");
+			assert.equal(observation.motionAtReplacement, false, "new text is never introduced during width or word motion");
 			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
 			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
 			assert.ok(!observation.allWordsHighlighted && observation.maxHighlights <= observation.maxRows, "only changed line starts may be highlighted");
