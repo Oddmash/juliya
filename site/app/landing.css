@@ -105,10 +105,11 @@ body:has(.landing) > .header { position: sticky; top: 0; z-index: 30; background
 	.landing .code-tabs [role="tab"] { padding-inline: 5px; }
 }
 @media (max-width: 760px) {
-	.landing-intro { padding-block: 28px 64px; gap: 24px; }
+	.landing-intro { min-block-size: 0; align-content: start; padding-block: 28px 64px; gap: 24px; }
 	.landing-intro::before { inset-inline: 0; }
 	.hero-copy { gap: 12px; }
 	.hero-copy h1 { font-size: clamp(38px, 10vw, 58px); }
+	.landing :is(.hero-description, h2):is(:lang(ja), :lang(zh)) { word-break: normal; overflow-wrap: anywhere; }
 	.specimen-stage { font-size: clamp(24px, 6.5vw, 38px); block-size: calc(6lh + 48px); padding: 12px 0; gap: 14px; }
 	.landing-install, .capability-grid { grid-template-columns: minmax(0, 1fr); }
 	.capability-grid article + article { border-inline-start: 0; border-block-start: 1px solid var(--border); }
