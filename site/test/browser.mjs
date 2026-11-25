@@ -110,6 +110,8 @@ const verifySpecimen = async (page, motion) => {
 				maxRulerDifference: 0,
 				maxLayoutShift: 0,
 				maxRows: 0,
+				maxHighlights: 0,
+				allWordsHighlighted: false,
 				done: false,
 			};
 			const observe = () => {
@@ -135,7 +137,11 @@ const verifySpecimen = async (page, motion) => {
 				summary.breakChanges ||= breaks !== firstBreaks;
 				if (!summary.breaks.includes(breaks)) summary.breaks.push(breaks);
 				observation.textPreserved &&= sample.textContent === expectedText;
-				for (const word of sample.querySelectorAll("[data-word]")) {
+				const words = [...sample.querySelectorAll("[data-word]")];
+				const highlights = words.filter(word => getComputedStyle(word.firstElementChild).textDecorationLine.includes("underline"));
+				observation.maxHighlights = Math.max(observation.maxHighlights, highlights.length);
+				observation.allWordsHighlighted ||= words.length > 1 && highlights.length === words.length;
+				for (const word of words) {
 					const key = word.dataset.word;
 					const row = word.getBoundingClientRect().top - bounds.top;
 					summary.rows[key] = Math.round(row);
@@ -153,7 +159,7 @@ const verifySpecimen = async (page, motion) => {
 		}, firstText);
 		await page.emulateMedia({ reducedMotion: "no-preference" });
 		try {
-			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 15000 });
+			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 22000 });
 			const observation = await page.evaluate(() => window.specimenObservation);
 			const { firstWidth, steps, partialOpacity, textPreserved } = observation;
 			assert.ok(observation.rotating, "the specimen entered its rotating state");
@@ -167,6 +173,7 @@ const verifySpecimen = async (page, motion) => {
 			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
 			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
 			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
+			assert.ok(!observation.allWordsHighlighted && observation.maxHighlights <= observation.maxRows, "only changed line starts may be highlighted");
 			assert.ok(observation.maxLayoutShift <= 1, "text reflow does not shift the brand, calls to action or following section");
 			assert.ok(observation.maxRows >= 3 && observation.maxRows <= 5, "the longer specimen fills the stage without exceeding its five desktop lines");
 		} catch (error) {
@@ -182,12 +189,37 @@ const verifySpecimen = async (page, motion) => {
 		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "false");
 		const current = await panels.getAttribute("data-example");
 		const pausedWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
-		await page.waitForTimeout(8000);
+		await page.waitForTimeout(14000);
 		assert.equal(await panels.getAttribute("data-example"), current);
 		assert.ok(Math.abs(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width) - pausedWidth) <= 1, "paused width remains unchanged (allowing subpixel rounding)");
 		assert.equal(await panels.getAttribute("data-phase"), "kowrap");
 		await page.getByRole("button", { name: "시연 재생" }).press("Enter");
 		assert.equal(await page.locator(".specimen").getAttribute("data-rotating"), "true");
+		await page.waitForTimeout(300);
+		const scroll = await panels.evaluate(async panel => {
+			const stage = panel.querySelector(".specimen-stage");
+			const sample = panel.querySelector(".specimen-applied .specimen-text");
+			const documentTop = element => element.getBoundingClientRect().top + scrollY;
+			const before = [documentTop(stage), documentTop(sample), scrollY];
+			window.scrollBy({ top: 64, behavior: "instant" });
+			await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+			const after = [documentTop(stage), documentTop(sample), scrollY];
+			return { before, after, transforms: [...sample.querySelectorAll(".specimen-word-visual")].some(word => getComputedStyle(word).transform !== "none") };
+		});
+		assert.ok(scroll.after[2] > scroll.before[2], "the page actually scrolled");
+		assert.ok(Math.abs(scroll.after[0] - scroll.before[0]) <= 1 && Math.abs(scroll.after[1] - scroll.before[1]) <= 1, "the specimen stays anchored on document scroll");
+		assert.equal(scroll.transforms, false, "scrolling alone does not trigger word motion");
+		await page.locator("#install").scrollIntoViewIfNeeded();
+		await page.evaluate(() => window.scrollTo({ top: document.querySelector("#editor").offsetTop, behavior: "instant" }));
+		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "false");
+		const offscreenIndex = await panels.getAttribute("data-example");
+		const offscreenWidth = await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width);
+		await page.waitForTimeout(4200);
+		assert.equal(await panels.getAttribute("data-example"), offscreenIndex);
+		assert.ok(Math.abs(await page.locator(".specimen-applied .specimen-text").evaluate(sample => sample.getBoundingClientRect().width) - offscreenWidth) <= 1, "offscreen width remains unchanged");
+		assert.equal(await page.locator(".specimen-applied [data-reflow]").count(), 0);
+		await panels.scrollIntoViewIfNeeded();
+		await page.waitForFunction(() => document.querySelector(".specimen").dataset.rotating === "true");
 	} else {
 		assert.equal(await panels.getAttribute("data-phase"), "kowrap");
 		assert.equal(await page.locator(".specimen-pause").count(), 0);
