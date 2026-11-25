@@ -4,7 +4,7 @@
 
 Juliya は韓国語、英語、日本語、中国語（簡体字）の見出しや短い文章を、読みやすい位置で改行するライブラリです。言語ごとの改行境界を考慮し、実際の文字幅とコンテナ幅に合わせて行を調整します。
 
-[デモ](https://oddmash.github.io/juliya/ja/#playground) | [ドキュメント](https://oddmash.github.io/juliya/ja/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
+[デモ](https://oddmash.github.io/juliya/ja/#editor) | [ドキュメント](https://oddmash.github.io/juliya/ja/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
 
 ## 言語の選択
 
