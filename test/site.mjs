@@ -50,6 +50,28 @@ test("translated landing and reference routes are exported", () => {
 	}
 });
 
+test("localized READMEs point to the matching exported documentation and editor", () => {
+	const readmes = [
+		["en", "../README.md"],
+		["", "../docs/readme/ko.md"],
+		["ja", "../docs/readme/ja.md"],
+		["zh", "../docs/readme/zh.md"],
+	];
+	for (const [language, path] of readmes) {
+		const source = readFileSync(new URL(path, import.meta.url), "utf8");
+		const prefix = language ? `${language}/` : "";
+		assert.ok(source.includes(`https://oddmash.github.io/juliya/${prefix}docs/`));
+		assert.ok(source.includes(`https://oddmash.github.io/juliya/${prefix}#editor`));
+		assert.ok(source.includes("@oddmash/kowrap@0.4.0"));
+		assert.ok(source.includes("@oddmash/juliya"));
+		for (const locale of ["ko", "ja", "zh"]) {
+			assert.ok(source.includes(`https://github.com/Oddmash/juliya/blob/main/docs/readme/${locale}.md`));
+		}
+		assert.match(read(`${prefix}index.html`), /id="editor"/);
+		assert.ok(existsSync(new URL(`${prefix}docs/index.html`, output)));
+	}
+});
+
 test("all Markdown guides are prerendered and have base-path-safe navigation", () => {
 	for (const slug of [
 		"core",
