@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { DocsNavigation } from "./docs-navigation";
+import { Prose } from "@oddmash/ui/prose";
+import { CodeBlock, CodeBlockHeader, CodeBlockCaption, CodeBlockContent } from "@oddmash/ui/code-block";
 import { CopyButton } from "./copy-button";
 import { engineLocale, landingCopy, languagePath } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
@@ -11,16 +14,16 @@ export const TranslatedDocs = ({ locale, slug }: { locale: Exclude<SiteLocale, "
 	const guide = guides.find(item => item.slug === slug)!;
 	const lang = engineLocale(locale);
 	return <main id="main" lang={lang} className="container docs-shell">
-		<aside className="docs-sidebar"><nav className="docs-nav" aria-label={landingCopy[locale].docs}>{guides.map(item => <Link key={item.slug} href={item.href} aria-current={item.slug === slug ? "page" : undefined}>{item.title}</Link>)}</nav></aside>
-		<article className="docs-content">
+		<DocsNavigation locale={locale} items={guides} current={slug} />
+		<Prose className="docs-content">
 			<p className="docs-breadcrumb"><Link href={`${languagePath(locale)}/`}>Juliya</Link><span>/</span>{landingCopy[locale].docs}</p>
 			<JuliyaProvider locale={lang}>
 				<JuliyaText as="h1">{guide.title}</JuliyaText>
 				<JuliyaText as="p">{guide.body}</JuliyaText>
 			</JuliyaProvider>
-			<div className="doc-code"><div className="doc-code-head"><span>{guide.format}</span><CopyButton value={guide.snippet} icon /></div><pre><code>{guide.snippet}</code></pre></div>
+			<CodeBlock className="doc-code"><CodeBlockHeader className="doc-code-head"><CodeBlockCaption>{guide.format}</CodeBlockCaption><CopyButton value={guide.snippet} icon /></CodeBlockHeader><CodeBlockContent><code>{guide.snippet}</code></CodeBlockContent></CodeBlock>
 			<p><Link href={slug === "start" ? "/docs/" : `/docs/${slug}/`}>{referenceLabel[locale]}</Link></p>
 			<div className="docs-bottom"><Link href={`${languagePath(locale)}/#editor`}>{landingCopy[locale].try}</Link></div>
-		</article>
+		</Prose>
 	</main>;
 };
