@@ -321,6 +321,13 @@ try {
 		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
+	const github = page.locator(".nav").getByRole("link", { name: "GitHub", exact: true });
+	const npm = page.locator(".nav").getByRole("link", { name: "npm", exact: true });
+	assert.ok((await github.getAttribute("class")).includes("om-platform-link"));
+	await github.hover();
+	assert.equal(await github.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
+	await npm.hover();
+	assert.equal(await npm.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
 	const localeTrigger = page.locator(".nav .language-select");
 	assert.equal(await localeTrigger.getAttribute("role"), "combobox");
 	await localeTrigger.press("Enter");
@@ -482,7 +489,9 @@ try {
 		const region = document.querySelector(".copy-toast-region");
 		let maximumOverflow = 0;
 		const sample = () => {
-			maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight, region.scrollWidth - region.clientWidth);
+			const style = getComputedStyle(region);
+			if (style.overflowY === "auto") maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight);
+			if (style.overflowX === "auto") maximumOverflow = Math.max(maximumOverflow, region.scrollWidth - region.clientWidth);
 		};
 		for (let i = 0; i < 5; i++) {
 			button.click();
@@ -496,14 +505,19 @@ try {
 	});
 	assert.ok(stackOverflow <= 0, "stacked toast entrance never creates an incidental scrollbar");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
-	const oldestNotice = docs.locator("[data-copy-notice]").first();
-	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
-	const previousNewest = Number(await docs.locator("[data-copy-notice]").last().getAttribute("data-copy-notice"));
+	const oldestNotice = docs.locator('[data-toast-id][data-state="open"]').first();
+	const oldestId = await oldestNotice.getAttribute("data-toast-id");
+	const previousNewest = Number(await docs.locator('[data-toast-id][data-state="open"]').last().getAttribute("data-toast-id"));
 	const oldestDismiss = oldestNotice.getByRole("button", { name: "알림 닫기" });
 	await oldestDismiss.focus();
 	await docCopy.evaluate(button => button.click());
-	await docs.waitForFunction(previous => document.querySelectorAll(".copy-toast-region .om-toast").length === 4 && [...document.querySelectorAll("[data-copy-notice]")].some(notice => Number(notice.dataset.copyNotice) > previous), previousNewest);
-	assert.equal(await docs.locator(`[data-copy-notice="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "overflow preserves the focused toast");
+	assert.equal(await docs.locator('[data-toast-id][data-state="open"]').count(), 4, "new notices queue until there is space");
+	assert.equal(await docs.locator(`[data-toast-id="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "queue preserves the focused toast");
+	await oldestDismiss.press("Enter");
+	await docs.waitForFunction(previous => [...document.querySelectorAll('[data-toast-id][data-state="open"]')].some(notice => Number(notice.dataset.toastId) > previous), previousNewest);
+	await docCopy.focus();
+	await docs.mouse.move(0, 0);
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 0);
 	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw Error("unavailable"); } } }));
 	await docCopy.click();
 	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").getByText("복사 실패", { exact: true }).waitFor();
