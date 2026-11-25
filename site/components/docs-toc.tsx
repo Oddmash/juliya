@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@oddmash/ui/button";
+import { TableOfContents } from "@oddmash/ui/docs-navigation";
 import type { Guide } from "../lib/guides";
 
 export const DocsToc = ({ headings }: { headings: Guide["headings"] }) => {
 	const [activeId, setActiveId] = useState<string>();
-	const [open, setOpen] = useState(false);
 
 	useEffect(() => {
 		const content = document.getElementById("doc-content");
@@ -48,24 +47,9 @@ export const DocsToc = ({ headings }: { headings: Guide["headings"] }) => {
 	}, [headings]);
 
 	const current = headings.find(({ id }) => id === activeId);
-	return (
-		<nav className="toc" aria-label="이 문서의 내용" data-expanded={open}>
-			<strong className="toc-title">이 문서의 내용</strong>
-			<Button className="toc-toggle" variant="secondary" size="sm" aria-controls="toc-links"
-				aria-expanded={open} onClick={() => setOpen(!open)}>
-				이 문서의 내용{current && <span>{current.text}</span>}
-			</Button>
-			<div id="toc-links" className="toc-links">
-				{headings.map(({ id, text, level }) => (
-					<a key={id} data-level={level} href={`#${id}`} aria-current={id === activeId ? "location" : undefined}
-						onClick={(event) => {
-							if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-							setActiveId(id);
-						if (open) document.getElementById(id)?.focus({ preventScroll: true });
-							setOpen(false);
-						}}>{text}</a>
-				))}
-			</div>
-		</nav>
-	);
+	const label = "이 문서의 내용";
+	return <TableOfContents className="toc" label={label} contentId="doc-content"
+		activeId={activeId ?? null} mobileLabel={current ? `${label} ${current.text}` : label}
+		headings={headings.map(({ id, text, level }) => ({ id, label: text, level }))}
+		onNavigate={heading => setActiveId(heading.id)} />;
 };
