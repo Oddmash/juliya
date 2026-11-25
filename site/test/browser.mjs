@@ -370,6 +370,18 @@ try {
 		await page.locator("#kowrap-preview").textContent(),
 	);
 	const range = page.locator("#demo-width");
+	const fontRange = page.locator("#font-size");
+	for (const slider of [range, fontRange]) {
+		assert.equal(await slider.getAttribute("type"), "range");
+		assert.match(await slider.getAttribute("class"), /\bom-slider\b/);
+		assert.equal(await slider.evaluate((element) => element.labels?.length), 1);
+	}
+	await fontRange.press("End");
+	await page.waitForFunction(() => [...document.querySelectorAll("#native-preview, #kowrap-preview")].every((element) => getComputedStyle(element).fontSize === "32px"));
+	await fontRange.press("Home");
+	await page.waitForFunction(() => [...document.querySelectorAll("#native-preview, #kowrap-preview")].every((element) => getComputedStyle(element).fontSize === "16px"));
+	for (let step = 0; step < 8; step += 1) await fontRange.press("ArrowRight");
+	await page.waitForFunction(() => [...document.querySelectorAll("#native-preview, #kowrap-preview")].every((element) => getComputedStyle(element).fontSize === "24px"));
 	await page.locator(".preview-ruler > span").first().evaluate((marker) => {
 		marker.addEventListener("transitionrun", (event) => {
 			if (event.propertyName === "transform") marker.dataset.animated = "true";
