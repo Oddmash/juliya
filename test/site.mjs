@@ -28,8 +28,8 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.match(html, /Juliya/);
 	assert.ok(html.includes(`${basePath}/_next/`));
 	assert.ok(html.includes(`${basePath}/docs/`));
-	assert.ok(html.includes(`https://github.com/Oddmash/${basePath.split("/").filter(Boolean).at(-1) ?? "kowrap"}`));
-	assert.ok(html.includes("@oddmash/kowrap/react"));
+	assert.ok(html.includes(`https://github.com/Oddmash/${basePath.split("/").filter(Boolean).at(-1) ?? "juliya"}`));
+	assert.ok(html.includes("@oddmash/juliya/react"));
 	assert.ok(html.includes("JuliyaProvider"));
 	assert.ok(html.includes("JuliyaText"));
 	assert.ok(existsSync(new URL(".nojekyll", output)));
@@ -39,11 +39,11 @@ test("translated landing and reference routes are exported", () => {
 	for (const language of ["en", "ja", "zh"]) {
 		assert.match(read(`${language}/index.html`), /Juliya/);
 		const start = read(`${language}/docs/index.html`);
-		assert.ok(start.includes("pnpm add @oddmash/kowrap"));
+		assert.ok(start.includes("pnpm add @oddmash/juliya"));
 		assert.ok(start.includes(`${basePath}/${language}/docs/`));
 		assert.ok(start.includes(`${basePath}/${language}/docs/core/`));
 		assert.match(start, /aria-current="page"/);
-		assert.ok(read(`${language}/docs/core/index.html`).includes(`@oddmash/kowrap/${language}`));
+		assert.ok(read(`${language}/docs/core/index.html`).includes(`@oddmash/juliya/${language}`));
 		for (const slug of ["forced-breaks", "inline", "dom", "react", "vue", "svelte", "ssr", "api", "troubleshooting"]) {
 			assert.ok(existsSync(new URL(`${language}/docs/${slug}/index.html`, output)));
 		}
@@ -70,7 +70,7 @@ test("all Markdown guides are prerendered and have base-path-safe navigation", (
 	}
 	const start = read("docs/index.html");
 	assert.ok(start.includes(`${basePath}/docs/core/`));
-	assert.ok(start.includes("npm install @oddmash/kowrap"));
+	assert.ok(start.includes("npm install @oddmash/juliya"));
 	assert.match(start, /aria-label="패키지 매니저"/);
 	assert.match(start, /data-copy-target="code-1-npm"/);
 	assert.match(start, /id="code-1-pnpm-panel"[^>]*hidden/);

@@ -13,7 +13,7 @@ test("Svelte 5 action mounts and updates through a compiled component", async ()
   let instance;
   try {
     const source = `<script>
-      import { kowrap } from '@oddmash/kowrap/svelte';
+      import { kowrap } from '@oddmash/juliya/svelte';
       let text = $state('한국어 줄바꿈');
       let breaks = $state([3]);
     </script>

@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
-import { wrap } from "@oddmash/kowrap";
-import { WrapText } from "@oddmash/kowrap/react";
+import { wrap } from "@oddmash/juliya";
+import { WrapText } from "@oddmash/juliya/react";
 
 test("range measurements distinguish repeated text in different styles", () => {
   const text = "가나 가나\n가나 가나";

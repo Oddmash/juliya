@@ -7,7 +7,7 @@ Vue에서는 `kowrapDirective`로 DOM 요소의 줄바꿈을 관리합니다. ko
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';
+import { kowrapDirective as vKowrap } from '@oddmash/juliya/vue';
 
 const text = ref('자연스러운 한국어 줄바꿈을 경험하세요.');
 </script>
@@ -23,7 +23,7 @@ const text = ref('자연스러운 한국어 줄바꿈을 경험하세요.');
 
 ```ts
 import { createApp } from 'vue';
-import { kowrapDirective } from '@oddmash/kowrap/vue';
+import { kowrapDirective } from '@oddmash/juliya/vue';
 import App from './App.vue';
 
 const app = createApp(App);
@@ -66,7 +66,7 @@ app.mount('#app');
 ```vue
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';
+import { kowrapDirective as vKowrap } from '@oddmash/juliya/vue';
 
 const text = ref('모든 사람이 자연스러운 한국어를 읽습니다.');
 const force = ref(false);

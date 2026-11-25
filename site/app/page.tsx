@@ -1,13 +1,13 @@
 import Link from "next/link";
 import localFont from "next/font/local";
-import { JuliyaText } from "@oddmash/kowrap/react";
+import { JuliyaText } from "@oddmash/juliya/react";
 import { CopyButton } from "../components/copy-button";
 import { FrameworkExamples } from "../components/framework-examples";
 import { LandingSpecimen } from "../components/landing-specimen";
 import { Playground } from "../components/playground";
 import "./landing.css";
 
-const installCommand = "pnpm add @oddmash/kowrap";
+const installCommand = "pnpm add @oddmash/juliya";
 const display = localFont({
 	src: "./fonts/kowrap-display.woff2",
 	variable: "--landing-display",

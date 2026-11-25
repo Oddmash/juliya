@@ -13,19 +13,19 @@ const examples = [
 		tab: "React",
 		label: "React / Next.js",
 		doc: "react",
-		code: `import { JuliyaProvider, JuliyaText } from '@oddmash/kowrap/react';\n\n<JuliyaProvider locale="ko">\n  <JuliyaText as="h1">\n    ${specimenText}\n  </JuliyaText>\n</JuliyaProvider>`,
+		code: `import { JuliyaProvider, JuliyaText } from '@oddmash/juliya/react';\n\n<JuliyaProvider locale="ko">\n  <JuliyaText as="h1">\n    ${specimenText}\n  </JuliyaText>\n</JuliyaProvider>`,
 	},
 	{
 		tab: "Vue",
 		label: "Vue 3",
 		doc: "vue",
-		code: `<script setup>\nimport { kowrapDirective as vKowrap } from '@oddmash/kowrap/vue';\nconst text = ${JSON.stringify(specimenText)};\n</script>\n\n<template>\n  <p v-kowrap="{ text }"></p>\n</template>`,
+		code: `<script setup>\nimport { kowrapDirective as vKowrap } from '@oddmash/juliya/vue';\nconst text = ${JSON.stringify(specimenText)};\n</script>\n\n<template>\n  <p v-kowrap="{ text }"></p>\n</template>`,
 	},
 	{
 		tab: "Svelte",
 		label: "Svelte 5",
 		doc: "svelte",
-		code: `<script>\n  import { kowrap } from '@oddmash/kowrap/svelte';\n  let text = $state(${JSON.stringify(specimenText)});\n</script>\n\n<p use:kowrap={{ text }}></p>`,
+		code: `<script>\n  import { kowrap } from '@oddmash/juliya/svelte';\n  let text = $state(${JSON.stringify(specimenText)});\n</script>\n\n<p use:kowrap={{ text }}></p>`,
 	},
 	{
 		tab: "HTML",
@@ -34,10 +34,10 @@ const examples = [
 		code: `<!doctype html>
 <html lang="ko">
 <meta charset="utf-8">
-<title>Kowrap 예제</title>
+<title>Juliya 예제</title>
 <p id="title" style="max-width: 220px; font-size: 24px">${specimenText}</p>
 <script type="module">
-  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/juliya@0.4.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
   mountKowrap(title, { text: title.textContent });
@@ -48,7 +48,7 @@ const examples = [
 		tab: "Core",
 		label: "픽셀 단위로 측정하고 줄 데이터 받기",
 		doc: "core",
-		code: `import { wrap } from '@oddmash/kowrap';\nimport { createCanvasMeasure } from '@oddmash/kowrap/dom';\n\nawait document.fonts.ready;\nconst measure = createCanvasMeasure({ font: '400 24px sans-serif' });\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 280,\n  measure,\n});\n\nconsole.log(lines.map(line => line.text));`,
+		code: `import { wrap } from '@oddmash/juliya';\nimport { createCanvasMeasure } from '@oddmash/juliya/dom';\n\nawait document.fonts.ready;\nconst measure = createCanvasMeasure({ font: '400 24px sans-serif' });\nconst lines = wrap(${JSON.stringify(specimenText)}, {\n  width: 280,\n  measure,\n});\n\nconsole.log(lines.map(line => line.text));`,
 	},
 ];
 
@@ -59,7 +59,7 @@ export const FrameworkExamples = ({ locale = "ko" }: { locale?: SiteLocale }) =>
 		...example,
 		label: example.tab,
 		code: example.tab === "HTML"
-			? `import { mountKowrap } from '@oddmash/kowrap/dom';\n\nconst title = document.getElementById('title');\nmountKowrap(title, { text: title.textContent, locale: '${engineLocale(locale)}' });`
+			? `import { mountKowrap } from '@oddmash/juliya/dom';\n\nconst title = document.getElementById('title');\nmountKowrap(title, { text: title.textContent, locale: '${engineLocale(locale)}' });`
 			: example.code.replaceAll(specimenText, samples[locale]).replace('<JuliyaProvider locale="ko">', `<JuliyaProvider locale="${engineLocale(locale)}">`).replace("{ text }", `{ text, locale: '${engineLocale(locale)}' }`).replace("{{ text }}", `{{ text, locale: '${engineLocale(locale)}' }}`).replace("  width: 280,", `  locale: '${engineLocale(locale)}',\n  width: 280,`),
 	}));
 	const selected = localized.find(example => example.tab === active) ?? localized[0];

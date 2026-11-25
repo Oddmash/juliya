@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
-import { JuliyaProvider, JuliyaText, useJuliya, WrapText, useKowrap } from "@oddmash/kowrap/react";
-import { JuliyaSentenceText, SentenceText } from "@oddmash/kowrap/react/server";
-import { createCanvasMeasure } from "@oddmash/kowrap/browser";
+import { JuliyaProvider, JuliyaText, useJuliya, WrapText, useKowrap } from "@oddmash/juliya/react";
+import { JuliyaSentenceText, SentenceText } from "@oddmash/juliya/react/server";
+import { createCanvasMeasure } from "@oddmash/juliya/browser";
 
 test("server renders original text with no DOM or canvas access", () => {
   assert.equal(typeof document, "undefined");

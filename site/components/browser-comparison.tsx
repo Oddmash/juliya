@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { wrap } from "@oddmash/kowrap";
-import { createCanvasMeasure } from "@oddmash/kowrap/dom";
+import { wrap } from "@oddmash/juliya";
+import { createCanvasMeasure } from "@oddmash/juliya/dom";
 import { Button } from "@oddmash/ui/button";
 
 const texts = [

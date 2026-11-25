@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { wrap } from "@oddmash/kowrap";
-import * as ko from "@oddmash/kowrap/ko";
-import * as en from "@oddmash/kowrap/en";
-import * as ja from "@oddmash/kowrap/ja";
-import * as zh from "@oddmash/kowrap/zh";
+import { wrap } from "@oddmash/juliya";
+import * as ko from "@oddmash/juliya/ko";
+import * as en from "@oddmash/juliya/en";
+import * as ja from "@oddmash/juliya/ja";
+import * as zh from "@oddmash/juliya/zh";
 
 const measure = text => [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].length;
 const scenarios = [

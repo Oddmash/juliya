@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
-import * as browser from "@oddmash/kowrap/browser";
-import * as dom from "@oddmash/kowrap/dom";
+import * as browser from "@oddmash/juliya/browser";
+import * as dom from "@oddmash/juliya/dom";
 
 const source = new URL("../src/", import.meta.url);
 const filesIn = (directory) => readdirSync(new URL(`${directory}/`, source), { withFileTypes: true }).filter((item) => item.isFile());

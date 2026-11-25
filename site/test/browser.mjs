@@ -269,7 +269,7 @@ try {
 		await localized.emulateMedia({ reducedMotion: "reduce" });
 		await localized.waitForLoadState("networkidle");
 		await localized.goto(`${origin}/${language}/docs/core/`);
-		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/kowrap/${language}`));
+		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
 		await localized.close();
 	}
@@ -409,7 +409,7 @@ try {
 	await htmlGuide.goto(`${origin}/docs/dom/`);
 	const guideHtml = await htmlGuide.locator("#doc-content pre code").first().textContent();
 	assert.equal(guideHtml.trim(), landingHtml.trim(), "The guide and landing publish the same standalone HTML");
-	assert.match(landingHtml, /https:\/\/cdn\.jsdelivr\.net\/npm\/@oddmash\/kowrap@\d+\.\d+\.\d+\/dist\/dom\/index\.js\/\+esm/);
+	assert.match(landingHtml, /https:\/\/cdn\.jsdelivr\.net\/npm\/@oddmash\/juliya@\d+\.\d+\.\d+\/dist\/dom\/index\.js\/\+esm/);
 	const readme = await readFile(new URL("../../README.md", import.meta.url), "utf8");
 	const readmeHtml = readme.match(/^```html\r?\n([\s\S]+?)^```$/m)?.[1].trim();
 	assert.equal(readmeHtml, landingHtml.trim(), "The README publishes the same standalone HTML");
@@ -430,19 +430,19 @@ try {
 	const installTabs = docs.getByRole("tablist", { name: "패키지 매니저" });
 	const docCopy = docs.locator("[data-package-tabs] [data-copy-target]");
 	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value) => { window.copiedText = value; } } }));
-	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "npm install @oddmash/kowrap");
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "npm install @oddmash/juliya");
 	await docCopy.click();
 	await docs.locator(".copy-toast-region .om-toast").getByRole("status").getByText("복사 완료", { exact: true }).waitFor();
-	assert.equal(await docs.evaluate(() => window.copiedText), "npm install @oddmash/kowrap");
+	assert.equal(await docs.evaluate(() => window.copiedText), "npm install @oddmash/juliya");
 	await installTabs.getByRole("tab", { name: "npm", exact: true }).press("ArrowRight");
 	assert.equal(await installTabs.getByRole("tab", { name: "pnpm", exact: true }).getAttribute("aria-selected"), "true");
-	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "pnpm add @oddmash/kowrap");
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "pnpm add @oddmash/juliya");
 	await docCopy.click();
-	await docs.waitForFunction(() => window.copiedText === "pnpm add @oddmash/kowrap");
+	await docs.waitForFunction(() => window.copiedText === "pnpm add @oddmash/juliya");
 	await installTabs.getByRole("tab", { name: "Yarn", exact: true }).click();
-	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "yarn add @oddmash/kowrap");
+	assert.equal(await docs.locator("[data-package-tabs] [role=tabpanel]:visible pre code").textContent(), "yarn add @oddmash/juliya");
 	await docCopy.click();
-	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/kowrap");
+	await docs.waitForFunction(() => window.copiedText === "yarn add @oddmash/juliya");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length >= 2);
 	assert.ok((await docs.locator(".copy-toast-region .om-toast").count()) <= 4, "rapid copy events display a bounded stack");
 	const stackOverflow = await docs.evaluate(async () => {

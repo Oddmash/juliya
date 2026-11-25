@@ -4,7 +4,7 @@ Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/A
 
 - README는 제품 소개, 실제 줄바꿈 예시와 지원 범위만 담는다. 설치, 개발, 테스트, 릴리스는 `CONTRIBUTING.md`에 둔다.
 
-- 기존 `@oddmash/kowrap`의 공개 진입점 `.`, `./browser`, `./dom`, `./react`, `./react/server`, `./vue`, `./svelte`와 한국어 기본 동작의 호환성을 유지한다. `./browser`는 `./dom`의 호환 경로다. 새 브랜드 패키지는 같은 구현과 `./ko`, `./en`, `./ja`, `./zh` 진입점을 제공한다.
+- `@oddmash/juliya`만 향후 업데이트 및 발행 대상으로 유지한다. `@oddmash/kowrap@0.4.0`은 최종 레거시 릴리스이며 기존 버전은 보존한다. Juliya의 공개 API, 한국어 기본 동작과 기존 컴포넌트·훅 별칭을 유지한다. `./browser`는 `./dom`의 호환 경로이며 `./ko`, `./en`, `./ja`, `./zh`를 제공한다.
 - 한국어, 영어, 일본어, 중국어 간체의 줄바꿈 규칙은 명시적인 locale로 선택한다. 원문과 UTF-16 범위, grapheme 경계, 기존 강제 개행 및 SSR 계약을 보존한다.
 - 엔진 구현은 `src/core/`에 둔다. DOM, React, 디자인 시스템에 의존하지 않는다. 경계 생성·언어 점수·레이아웃 전략·원문 복원을 분리한다.
 - 일반 HTML과 브라우저 측정·관찰·렌더링은 `src/dom/`, 각 프레임워크는 `src/adapters/<framework>/`에서 관리한다. 사용 예시는 `examples/`에 둔다.

@@ -1,14 +1,14 @@
 # API 레퍼런스
 
-줄이야(Juliya)는 기존 `@oddmash/kowrap` API를 유지합니다. 코어의 `locale` 옵션은 `ko`, `en`, `ja`, `zh`, `zh-Hans`를 지원하며, `/ko`, `/en`, `/ja`, `/zh` 진입점으로도 선택할 수 있습니다. React의 `JuliyaProvider`로 공통 언어를 설정할 수 있고, `JuliyaText`, `useJuliya` 및 DOM·Vue·Svelte 옵션에는 개별 `locale`을 전달할 수 있습니다.
+줄이야(Juliya)는 기존 Kowrap 0.4.0의 공개 API를 유지합니다. 코어의 `locale` 옵션은 `ko`, `en`, `ja`, `zh`, `zh-Hans`를 지원하며, `/ko`, `/en`, `/ja`, `/zh` 진입점으로도 선택할 수 있습니다. React의 `JuliyaProvider`로 공통 언어를 설정할 수 있고, `JuliyaText`, `useJuliya` 및 DOM·Vue·Svelte 옵션에는 개별 `locale`을 전달할 수 있습니다.
 
-줄이야는 필요한 환경의 진입점만 불러올 수 있도록 분리되어 있습니다. 신규 버전의 기존 패키지와 발행 예정인 새 패키지 `@oddmash/juliya` 모두 아래 공개 API를 제공합니다.
+줄이야는 필요한 환경의 진입점만 불러올 수 있도록 분리되어 있습니다. 공식 패키지 `@oddmash/juliya`는 아래 공개 API를 제공합니다.
 
 ## 코어
 
 ```ts
-import { wrap, splitLines, segmentSentences } from '@oddmash/kowrap';
-import type { Measure, WrapOptions, WrappedLine, TextSegment } from '@oddmash/kowrap';
+import { wrap, splitLines, segmentSentences } from '@oddmash/juliya';
+import type { Measure, WrapOptions, WrappedLine, TextSegment } from '@oddmash/juliya';
 ```
 
 화면 폭에 맞춰 줄을 계산하려면 `wrap`, 원문의 개행과 지정한 위치만 반영하려면 `splitLines`, 문장 단위가 필요하면 `segmentSentences`를 사용합니다. `wrap`을 선택했을 때만 폭과 측정 함수를 제공해야 합니다.
@@ -37,8 +37,8 @@ interface WrappedLine {
 설치 없이 브라우저에서 시작하려면 [정적 HTML CDN 예제](dom.md)를 사용하세요.
 
 ```ts
-import { createCanvasMeasure, observeKowrap, mountKowrap } from '@oddmash/kowrap/dom';
-import type { CanvasMeasureOptions, KowrapOptions, MountKowrapOptions, KowrapController, KowrapLayout } from '@oddmash/kowrap/dom';
+import { createCanvasMeasure, observeKowrap, mountKowrap } from '@oddmash/juliya/dom';
+import type { CanvasMeasureOptions, KowrapOptions, MountKowrapOptions, KowrapController, KowrapLayout } from '@oddmash/juliya/dom';
 ```
 
 | API | 필수 입력 | 선택 입력 | 출력 |
@@ -83,8 +83,8 @@ Provider와 컨텍스트를 사용하는 컴포넌트 및 훅은 모두 동일�
 ## Vue와 Svelte
 
 ```ts
-import { kowrapDirective } from '@oddmash/kowrap/vue';
-import { kowrap } from '@oddmash/kowrap/svelte';
+import { kowrapDirective } from '@oddmash/juliya/vue';
+import { kowrap } from '@oddmash/juliya/svelte';
 ```
 
 두 어댑터 모두 `MountKowrapOptions`를 받아 공통 DOM 컨트롤러와 연결합니다. Vue에서는 디렉티브 생명주기, Svelte에서는 액션의 update와 destroy를 사용합니다.

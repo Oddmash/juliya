@@ -10,7 +10,7 @@ if (!version || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) {
 
 if (tag && tag !== `v${version}`) throw new Error("Release tags must use the vX.Y.Z format");
 
-if (manifest.name !== "@oddmash/kowrap" || manifest.version !== version) {
+if (manifest.name !== "@oddmash/juliya" || manifest.version !== version) {
   throw new Error(`Release mismatch: package is ${manifest.name}@${manifest.version}, requested ${version}`);
 }
 

@@ -6,7 +6,7 @@ Svelte에서는 `kowrap` 액션을 사용합니다. 라이브러리가 Svelte �
 
 ```svelte
 <script lang="ts">
-  import { kowrap } from '@oddmash/kowrap/svelte';
+  import { kowrap } from '@oddmash/juliya/svelte';
 
   let text = $state('자연스러운 한국어 줄바꿈을 경험하세요.');
 </script>
@@ -48,7 +48,7 @@ Svelte에서는 `kowrap` 액션을 사용합니다. 라이브러리가 Svelte �
 
 ```svelte
 <script lang="ts">
-  import { kowrap } from '@oddmash/kowrap/svelte';
+  import { kowrap } from '@oddmash/juliya/svelte';
 
   let text = $state('모든 사람이 한국어를 읽는 흐름대로.');
   let force = $state(false);

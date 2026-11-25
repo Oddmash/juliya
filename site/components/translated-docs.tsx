@@ -3,7 +3,7 @@ import { CopyButton } from "./copy-button";
 import { engineLocale, landingCopy, languagePath } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
 import { translatedGuides } from "../lib/translated-guides";
-import { JuliyaProvider, JuliyaText } from "@oddmash/kowrap/react";
+import { JuliyaProvider, JuliyaText } from "@oddmash/juliya/react";
 
 const referenceLabel = { en: "Full reference (Korean)", ja: "詳細リファレンス（韓国語）", zh: "完整参考（韩语）" };
 export const TranslatedDocs = ({ locale, slug }: { locale: Exclude<SiteLocale, "ko">; slug: string }) => {

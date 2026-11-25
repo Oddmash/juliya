@@ -17,7 +17,7 @@
 텍스트 자체를 변경하지 않고 특정 위치를 강제하려면 `forcedBreaks` 배열을 사용합니다.
 
 ```ts
-import { wrap } from '@oddmash/kowrap';
+import { wrap } from '@oddmash/juliya';
 
 const text = '자연스러운 한국어 줄바꿈을 경험하세요';
 const forcedBreaks = [text.indexOf('줄바꿈')];
@@ -47,7 +47,7 @@ const valid = [text.indexOf('나')];
 `splitLines(text, forcedBreaks)`는 폭을 측정하지 않고 명시적 개행과 강제 경계만 구분합니다. 결과 형식은 `WrappedLine[]`이고 `width`는 모두 0입니다.
 
 ```ts
-import { splitLines } from '@oddmash/kowrap';
+import { splitLines } from '@oddmash/juliya';
 
 const text = '읽기 좋은 한국어 문장';
 const initial = splitLines(text, [text.indexOf('한국어')]);
@@ -60,7 +60,7 @@ const initial = splitLines(text, [text.indexOf('한국어')]);
 ```tsx
 'use client';
 
-import { useJuliya } from '@oddmash/kowrap/react';
+import { useJuliya } from '@oddmash/juliya/react';
 
 const { ref, lines, forcedBreaks, setForcedBreaks, clearForcedBreaks } = useJuliya({
   text,

@@ -5,7 +5,7 @@
 ## React와 Next.js
 
 ```tsx
-import { JuliyaText } from '@oddmash/kowrap/react';
+import { JuliyaText } from '@oddmash/juliya/react';
 
 <JuliyaText as="p">
   읽기 좋은 <strong>한국어 <em>줄바꿈</em></strong>과{' '}
@@ -16,7 +16,7 @@ import { JuliyaText } from '@oddmash/kowrap/react';
 ## 일반 HTML
 
 ```ts
-import { mountKowrap } from '@oddmash/kowrap/dom';
+import { mountKowrap } from '@oddmash/juliya/dom';
 
 const controller = mountKowrap(element, { inline: true });
 ```

@@ -6,6 +6,7 @@
 - Add locale subpath exports, React locale inheritance, and compatible Juliya component and hook aliases.
 - Localize the landing and guides, refine measured reflow demonstrations, and retain existing Korean and framework behavior.
 - License the implementation under MIT and prepare equivalent Kowrap and Juliya package artifacts.
+- `@oddmash/kowrap@0.4.0` is the final legacy package release. Future updates are published as `@oddmash/juliya` only.
 
 ## [0.3.4](docs/releases/v0.3.4.md)
 

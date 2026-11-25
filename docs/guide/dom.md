@@ -4,16 +4,16 @@ HTML 요소의 줄바꿈을 화면에 적용할 때는 `mountKowrap`을 사용�
 
 ## 번들러 없는 정적 HTML
 
-아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열어보세요. jsDelivr가 Kowrap 0.3.0을 제공하므로 npm 설치나 파일 복사가 필요 없습니다.
+아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열어보세요. jsDelivr가 Juliya 0.4.0을 제공하므로 npm 설치나 파일 복사가 필요 없습니다.
 
 ```html
 <!doctype html>
 <html lang="ko">
 <meta charset="utf-8">
-<title>Kowrap 예제</title>
+<title>Juliya 예제</title>
 <p id="title" style="max-width: 220px; font-size: 24px">팀의 모든 문서를 한곳에서 관리하세요</p>
 <script type="module">
-  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/juliya@0.4.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
   mountKowrap(title, { text: title.textContent });
@@ -32,7 +32,7 @@ Vite 같은 빌드 도구를 사용한다면 패키지 이름으로 가져올 �
 ```
 
 ```ts
-import { mountKowrap } from '@oddmash/kowrap/dom';
+import { mountKowrap } from '@oddmash/juliya/dom';
 
 const element = document.querySelector<HTMLElement>('#title');
 if (!element) throw new Error('Title not found');
@@ -113,7 +113,7 @@ controller.destroy();
 Angular, Solid 또는 자체 렌더러에서는 `observeKowrap`으로 줄 데이터만 받을 수 있습니다. 이 함수는 요소의 자식을 수정하지 않습니다.
 
 ```ts
-import { observeKowrap } from '@oddmash/kowrap/dom';
+import { observeKowrap } from '@oddmash/juliya/dom';
 
 const controller = observeKowrap(element, { text }, ({ lines, measured }) => {
   renderMyLines(lines);
@@ -126,8 +126,8 @@ const controller = observeKowrap(element, { text }, ({ lines, measured }) => {
 ## Canvas 측정
 
 ```ts
-import { wrap } from '@oddmash/kowrap';
-import { createCanvasMeasure } from '@oddmash/kowrap/dom';
+import { wrap } from '@oddmash/juliya';
+import { createCanvasMeasure } from '@oddmash/juliya/dom';
 
 const measure = createCanvasMeasure({
   font: '400 18px sans-serif',
