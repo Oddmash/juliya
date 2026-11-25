@@ -108,7 +108,7 @@ body:has(.landing) > .header { position: sticky; top: 0; z-index: 30; background
 	.landing .code-tabs [role="tab"] { padding-inline: 5px; }
 }
 @media (max-width: 760px) {
-	.landing-intro { padding-block: 28px 64px; gap: 24px; }
+	.landing-intro { min-block-size: 0; align-content: start; padding-block: 28px 64px; gap: 24px; }
 	.landing-intro::before { inset-inline: 0; }
 	.hero-copy { gap: 12px; }
 	.hero-copy h1 { font-size: clamp(38px, 10vw, 58px); }
