@@ -237,11 +237,13 @@ const verifySpecimen = async (page, motion) => {
 const verifyBrand = async (page, language) => {
 	const name = language === "ko" ? "줄이야" : "Juliya";
 	const href = `${basePath}${language === "ko" ? "" : `/${language}`}/`;
+	const label = { ko: "줄이야 홈", en: "Juliya home", ja: "Juliya ホーム", zh: "Juliya 首页" }[language];
 	for (const selector of [".header .brand", ".footer .brand"]) {
 		const brand = page.locator(selector);
 		await brand.locator(".brand-name").filter({ hasText: name }).waitFor();
 		assert.equal(await brand.locator(".brand-name").textContent(), name);
 		assert.equal(await brand.getAttribute("href"), href);
+		assert.equal(await brand.getAttribute("aria-label"), label);
 	}
 	assert.match(await page.locator(".header .brand .version").textContent(), /^v\d+\.\d+\.\d+/);
 };
@@ -339,6 +341,10 @@ try {
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared documentation links preserve client navigation");
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
+		await localized.locator(".footer .brand").click();
+		await localized.waitForURL(`${origin}/${language}/`);
+		await verifyBrand(localized, language);
+		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "localized brand preserves client navigation");
 		await localized.close();
 	}
 	const page = await openPage(desktop);
@@ -377,6 +383,12 @@ try {
 	await page.waitForURL(`${origin}/en/`);
 	await localeTrigger.filter({ hasText: "English" }).waitFor();
 	await verifyBrand(page, "en");
+	for (const [language, name] of [["ja", "日本語"], ["zh", "简体中文"]]) {
+		await localeTrigger.click();
+		await page.getByRole("option", { name, exact: true }).click();
+		await page.waitForURL(`${origin}/${language}/`);
+		await verifyBrand(page, language);
+	}
 	await localeTrigger.click();
 	await page.getByRole("option", { name: "한국어", exact: true }).click();
 	await page.waitForURL(`${origin}/`);
