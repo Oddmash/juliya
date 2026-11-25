@@ -10,7 +10,7 @@ import { shuffledSceneIndices, specimenScenes } from "../lib/specimen-scenes";
 const motionLabels = { ko: ["자동 줄바꿈 시연", "시연 재생", "시연 일시정지"], en: ["Live wrapping demonstration", "Play", "Pause"], ja: ["改行のデモ", "再生", "一時停止"], zh: ["换行演示", "播放", "暂停"] } as const;
 const widthRatios = ["100%", "78%", "92%"] as const;
 const sceneTiming = { read: 3600, resize: 1800, narrowRead: 2500, expandedRead: 2800, leave: 700 } as const;
-type Phase = "kowrap" | "resize" | "leaving";
+type Phase = "kowrap" | "resize" | "leaving" | "entering";
 
 const positions = (element: HTMLElement) => {
 	const origin = element.getBoundingClientRect();
@@ -133,6 +133,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			return;
 		}
 		if (!measured) return;
+		setPhase("kowrap");
 		let timer: number | undefined;
 		let cancelled = false;
 		const schedule = (delay: number, next: () => void) => {
@@ -151,7 +152,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			setWidthStep(0);
 			setNarrowWidth(undefined);
 			setIndex(next);
-			setPhase("kowrap");
+			setPhase("entering");
 		};
 		const leave = () => settled(() => {
 			setPhase("leaving");
@@ -167,7 +168,10 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		};
 		schedule(sceneTiming.read, () => settled(() => {
 			const target = after.current?.querySelector("p");
-			if (target) setNarrowWidth(narrowWidthFor(target, example.widths[1]));
+			if (target) {
+				const measuredWidth = narrowWidthFor(target, example.widths[1]);
+				setNarrowWidth(existing => existing ?? measuredWidth);
+			}
 			setWidthStep(1);
 			setPhase("resize");
 			schedule(sceneTiming.resize, () => settled(() => {
