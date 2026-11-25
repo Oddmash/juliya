@@ -325,9 +325,15 @@ try {
 	const npm = page.locator(".nav").getByRole("link", { name: "npm", exact: true });
 	assert.ok((await github.getAttribute("class")).includes("om-platform-link"));
 	await github.hover();
+	assert.equal(await github.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "none");
+	await page.mouse.move(0, 0);
+	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await github.hover();
 	assert.equal(await github.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
 	await npm.hover();
 	assert.equal(await npm.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
+	await page.mouse.move(0, 0);
+	await page.emulateMedia({ reducedMotion: "reduce" });
 	const localeTrigger = page.locator(".nav .language-select");
 	assert.equal(await localeTrigger.getAttribute("role"), "combobox");
 	await localeTrigger.press("Enter");
