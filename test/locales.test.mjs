@@ -65,3 +65,29 @@ test("CJK profiles preserve mixed Latin text and non-breaking spaces", () => {
     assert.ok(lines.some(line => line.text.includes("TypeScript\u00a0API")));
   }
 });
+
+test("every locale preserves intermediate UTF-16 source ranges", () => {
+  const mixedScenarios = [
+    [ko, "React 👩‍💻 프로젝트의 문서를 읽어 보세요."],
+    [en, "Read the React 👩‍💻 guide before continuing."],
+    [ja, "React 👩‍💻 のガイドを読んでください。"],
+    [zh, "请阅读 React 👩‍💻 的开发指南。"],
+  ];
+
+  for (const [api, text] of mixedScenarios) {
+    for (const strategy of ["balanced", "greedy"]) {
+      for (const width of [5, 9, 14]) {
+        const lines = api.wrap(text, { width, measure, strategy });
+        assert.ok(lines.length > 1);
+        let offset = 0;
+        for (const line of lines) {
+          assert.equal(line.start, offset);
+          assert.equal(line.text, text.slice(line.start, line.end));
+          offset = line.end + line.breakAfter.length;
+        }
+        assert.equal(offset, text.length);
+        assert.equal(lines.map(line => line.text + line.breakAfter).join(""), text);
+      }
+    }
+  }
+});

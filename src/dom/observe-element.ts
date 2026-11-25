@@ -29,7 +29,7 @@ export const fontOf = (computed: CSSStyleDeclaration): CanvasMeasureOptions => (
   fontKerning: computed.fontKerning as CanvasFontKerning,
 });
 
-export const observeElementLayout = (element: HTMLElement, onLayout: (layout: ElementLayout | undefined) => void) => {
+export const observeElementLayout = (element: HTMLElement, onLayout: (layout: ElementLayout | undefined) => void, skipUnchangedResize = false) => {
   const doc = element.ownerDocument;
   const view = doc.defaultView;
   if (!view) {
@@ -41,8 +41,10 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
   let measure: Measure | undefined;
   let observedWidth: { fallback: number; exact: number } | undefined;
   let frame: number | undefined;
+  let published = false;
+  let lastLayout: ElementLayout | undefined;
 
-  const update = (contentWidth?: number) => {
+  const update = (contentWidth?: number, fromObserver = false) => {
     if (!active) return;
     let layout: ElementLayout | undefined;
     try {
@@ -70,6 +72,9 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     } catch {
       layout = undefined;
     }
+    if (skipUnchangedResize && fromObserver && published && layout?.width === lastLayout?.width && layout?.measure === lastLayout?.measure) return;
+    published = true;
+    lastLayout = layout;
     onLayout(layout);
   };
 
@@ -82,14 +87,14 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
   const observer = Observer ? new Observer((entries) => {
     const width = entries?.[0]?.contentRect.width;
     if (width === undefined || !view.requestAnimationFrame) {
-      update(width);
+      update(width, true);
       return;
     }
     if (frame !== undefined) view.cancelAnimationFrame(frame);
     // Rendering can change the observed element's height.
     frame = view.requestAnimationFrame(() => {
       frame = undefined;
-      update(width);
+      update(width, true);
     });
   }) : undefined;
   observer?.observe(element);
