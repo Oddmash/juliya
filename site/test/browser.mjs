@@ -560,6 +560,7 @@ try {
 		for (const width of [320, 375, 430]) {
 			await compact.setViewportSize({ width, height: 812 });
 			await compact.evaluate(() => document.fonts.ready);
+			assert.ok(await compact.locator(".landing").evaluate(landing => [...landing.querySelectorAll(".hero-description, h2")].every(element => element.scrollWidth <= element.clientWidth + 1)), "localized hero and section copy fit the mobile viewport");
 			assert.ok(await compact.locator(".landing-intro").evaluate(hero => {
 				const specimen = hero.querySelector(".specimen").getBoundingClientRect();
 				const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
