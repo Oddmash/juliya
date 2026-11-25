@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@oddmash/ui@0.4.0'

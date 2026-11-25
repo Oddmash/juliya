@@ -10,6 +10,7 @@ import { Button } from "@oddmash/ui/button";
 import { Card } from "@oddmash/ui/card";
 import { Textarea } from "@oddmash/ui/textarea";
 import { SelectDropdown as Select } from "@oddmash/ui/select";
+import { Slider } from "@oddmash/ui/slider";
 import { CopyButton } from "./copy-button";
 
 const koreanPresets = [
@@ -203,9 +204,8 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 					<label htmlFor="demo-width">
 						{copy.width} <output htmlFor="demo-width">{width}px</output>
 					</label>
-					<input
+					<Slider
 						id="demo-width"
-						type="range"
 						min="180"
 						max="460"
 						step="4"
@@ -272,9 +272,8 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 							<label htmlFor="font-size">
 								{copy.font} <output htmlFor="font-size">{font}px</output>
 							</label>
-							<input
+							<Slider
 								id="font-size"
-								type="range"
 								min="16"
 								max="32"
 								value={font}
