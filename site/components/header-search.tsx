@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@oddmash/ui/button";
+import { Kbd } from "@oddmash/ui/kbd";
 import { Input } from "@oddmash/ui/input";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@oddmash/ui/dialog";
 import { landingCopy } from "../lib/locales";
@@ -39,7 +40,7 @@ export const HeaderSearch = ({ items, locale = "ko" }: { items: SearchItem[]; lo
 		<DialogTrigger asChild>
 			<Button ref={trigger} variant="secondary" size="sm" className="header-search-trigger" aria-label={copy.search} aria-keyshortcuts="Meta+K Control+K">
 				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
-				<span>{copy.search}</span><kbd>⌘ K</kbd>
+				<span>{copy.search}</span><Kbd>⌘ K</Kbd>
 			</Button>
 		</DialogTrigger>
 		<DialogContent className="search-dialog" theme="dark" onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }} onCloseAutoFocus={(event) => { event.preventDefault(); trigger.current?.focus(); }}>
