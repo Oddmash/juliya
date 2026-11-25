@@ -234,6 +234,18 @@ const verifySpecimen = async (page, motion) => {
 		assert.ok(await panels.evaluate(panel => panel.getAnimations({ subtree: true }).length === 0));
 	}
 };
+const verifyBrand = async (page, language) => {
+	const name = language === "ko" ? "줄이야" : "Juliya";
+	const href = `${basePath}${language === "ko" ? "" : `/${language}`}/`;
+	for (const selector of [".header .brand", ".footer .brand"]) {
+		const brand = page.locator(selector);
+		await brand.locator(".brand-name").filter({ hasText: name }).waitFor();
+		assert.equal(await brand.locator(".brand-name").textContent(), name);
+		assert.equal(await brand.getAttribute("href"), href);
+	}
+	assert.match(await page.locator(".header .brand .version").textContent(), /^v\d+\.\d+\.\d+/);
+};
+
 const verifyLandingGeometry = async (page) => {
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => {
 		const copy = hero.querySelector(".hero-copy").getBoundingClientRect();
@@ -295,6 +307,7 @@ try {
 		await localized.goto(`${origin}/${language}/`);
 		await localized.getByRole("button", { name: label, exact: true }).waitFor();
 		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		await verifyBrand(localized, language);
 		await verifyLandingGeometry(localized);
 		const verifyLanguage = async () => {
 			assert.equal(await localized.locator(".specimen-panels").getAttribute("lang"), language === "zh" ? "zh-Hans" : language);
@@ -319,6 +332,7 @@ try {
 		await localized.evaluate(() => { window.sharedCtaNavigation = true; });
 		await localized.locator(".hero-actions .button-primary").click();
 		await localized.waitForURL(`${origin}/${language}/docs/`);
+		await verifyBrand(localized, language);
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared CTA preserves client navigation");
 		await localized.locator(`.docs-sidebar a[href="${basePath}/${language}/docs/core/"]`).click();
 		await localized.waitForURL(`${origin}/${language}/docs/core/`);
@@ -362,10 +376,12 @@ try {
 	await page.getByRole("option", { name: "English", exact: true }).click();
 	await page.waitForURL(`${origin}/en/`);
 	await localeTrigger.filter({ hasText: "English" }).waitFor();
+	await verifyBrand(page, "en");
 	await localeTrigger.click();
 	await page.getByRole("option", { name: "한국어", exact: true }).click();
 	await page.waitForURL(`${origin}/`);
 	await localeTrigger.filter({ hasText: "한국어" }).waitFor();
+	await verifyBrand(page, "ko");
 	const demoLocale = page.locator("#demo-locale");
 	assert.equal(await demoLocale.getAttribute("role"), "combobox");
 	await demoLocale.press("Enter");
