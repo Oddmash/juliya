@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HeaderSearch } from "./header-search";
+import { ButtonLink } from "@oddmash/ui/button";
+import type { ButtonLinkProps } from "@oddmash/ui/button";
 import { LocalePicker } from "@oddmash/ui/locale-picker";
 import { SiteNav } from "@oddmash/ui/site-layout";
 import { PlatformLink, PlatformLinks } from "@oddmash/ui/platform-link";
@@ -13,6 +15,17 @@ import { translatedGuides } from "../lib/translated-guides";
 import { repositoryUrl } from "../lib/project";
 
 interface Item { slug: string; title: string; group: string; body: string; href: string }
+export const SiteButtonLink = ({ href, onClick, ...props }: ButtonLinkProps) => {
+	const router = useRouter();
+	return <ButtonLink {...props} href={(process.env.NEXT_PUBLIC_BASE_PATH ?? "") + href}
+		onClick={event => {
+			onClick?.(event);
+			if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey || (props.target && props.target !== "_self") || props.download != null) return;
+			event.preventDefault();
+			router.push(href);
+		}} />;
+};
+
 export const SiteNavigation = ({ items }: { items: Item[] }) => {
 	const pathname = usePathname() ?? "/";
 	const router = useRouter();
