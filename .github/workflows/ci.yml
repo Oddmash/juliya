@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    branches: [develop, main]
     types: [opened, reopened, synchronize, edited, ready_for_review]
   workflow_dispatch:
 
@@ -60,17 +61,58 @@ jobs:
             test/next-app/pnpm-lock.yaml
             test/framework-app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - name: Build library and run unit tests
+        run: pnpm test
       - run: pnpm --dir test/next-app install --frozen-lockfile
-      - run: pnpm test:hydration
+      - run: pnpm --dir test/next-app test:hydration
       - run: pnpm --dir test/framework-app install --frozen-lockfile
-      - run: pnpm test:frameworks
-      - run: pnpm test:browser
+      - run: pnpm --dir test/framework-app test
+      - run: pnpm --dir test/next-app build
+      - run: pnpm --dir test/next-app test:browser
         env:
           HOME: /root
-      - run: pnpm test:package
-  site:
+      - run: node --test test/package.mjs
+  site-build:
     needs: scope
+    if: needs.scope.outputs.site == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+      options: --ipc=host
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            site/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --dir site install --frozen-lockfile
+      - run: pnpm --dir site build && node --test test/site.mjs
+        env:
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      - name: Preserve verified site build
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-site-build
+          path: |
+            dist/
+            site/out/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  site:
+    needs: [scope, site-build]
     if: needs.scope.outputs.site == 'true'
     strategy:
       fail-fast: false
@@ -95,12 +137,12 @@ jobs:
           cache-dependency-path: |
             pnpm-lock.yaml
             site/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - name: Restore verified site build
+        uses: actions/download-artifact@v4
+        with:
+          name: verified-site-build
+          path: .
       - run: pnpm --dir site install --frozen-lockfile
-      - run: pnpm test:site
-        env:
-          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
       - name: Verify landing page and documentation
         env:
           HOME: /root
@@ -113,11 +155,12 @@ jobs:
           name: site-renewal-captures-${{ matrix.browser }}
           path: site/test-results/renewal/
           if-no-files-found: warn
+          retention-days: 7
 
   verify:
-    needs: [scope, lint, test, site]
+    needs: [scope, lint, test, site-build, site]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Confirm appropriate checks passed
@@ -128,9 +171,11 @@ jobs:
           RESULT_0: ${{ needs.test.result }}
           RUN_1: ${{ needs.scope.outputs.site }}
           RESULT_1: ${{ needs.site.result }}
+          BUILD_RESULT: ${{ needs.site-build.result }}
         run: |
           test "$SCOPE_RESULT" = success
           test "$LINT_RESULT" = success
           verify() { case "$1:$2" in true:success|false:skipped) return 0 ;; *) return 1 ;; esac; }
           verify "$RUN_0" "$RESULT_0"
+          verify "$RUN_1" "$BUILD_RESULT"
           verify "$RUN_1" "$RESULT_1"
