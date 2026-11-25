@@ -15,7 +15,7 @@ export const observeKowrap = (element: HTMLElement, initial: KowrapOptions, onLa
     }
     const lines = wrap(options.text, { ...options, ...measurement });
     onLayout({ lines, measured: true });
-  });
+  }, true);
   return {
     update: (next) => {
       if (!active) return;

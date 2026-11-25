@@ -113,14 +113,19 @@ const verifySpecimen = async (page, motion) => {
 				maxHighlights: 0,
 				allWordsHighlighted: false,
 				done: false,
+				motionAtReplacement: false,
+				motionWhileLeaving: false,
 			};
 			const observe = () => {
 				observation.maxLayoutShift = Math.max(observation.maxLayoutShift, ...layout().map((value, i) => Math.abs(value - initialLayout[i])));
+				const moving = [...panel.querySelectorAll(".specimen-layout, .specimen-ruler, .specimen-word-visual")].some(element => element.getAnimations().some(animation => animation.playState === "running" || animation.pending));
 				if (panel.dataset.example !== firstIndex) {
+					observation.motionAtReplacement = moving;
 					observation.done = true;
 					return;
 				}
 				const phase = panel.dataset.phase;
+				if (phase === "leaving") observation.motionWhileLeaving ||= moving;
 				const step = panel.dataset.widthStep;
 				observation.rotating ||= panel.closest(".specimen").dataset.rotating === "true";
 				const phaseKey = `${step}:${phase}`;
@@ -158,6 +163,7 @@ const verifySpecimen = async (page, motion) => {
 			requestAnimationFrame(observe);
 		}, firstText);
 		await page.emulateMedia({ reducedMotion: "no-preference" });
+		assert.equal(await page.locator(".specimen-stage").evaluate(element => getComputedStyle(element).animationName), "none", "the server-rendered hero does not fade from transparent");
 		try {
 			await page.waitForFunction(() => window.specimenObservation.done, undefined, { timeout: 22000 });
 			const observation = await page.evaluate(() => window.specimenObservation);
@@ -171,6 +177,8 @@ const verifySpecimen = async (page, motion) => {
 			assert.ok(steps[1].breakChanges || steps[2].breakChanges, "the wrapping engine recomputed line-break boundaries at the new width");
 			assert.ok(steps[1].verticalMotion || steps[2].verticalMotion, "the moving words had a measured in-progress vertical transform during the width cycle");
 			assert.ok(partialOpacity, "the old specimen faded through intermediate opacity before replacement");
+			assert.equal(observation.motionWhileLeaving, false, "width and word motion settle before fade-out");
+			assert.equal(observation.motionAtReplacement, false, "new text is never introduced during width or word motion");
 			assert.ok(textPreserved, "the same text was preserved throughout its width cycle");
 			assert.ok(observation.maxRulerDifference <= 1, "the ruler tracked the text width throughout the animation");
 			assert.ok(!observation.allWordsHighlighted && observation.maxHighlights <= observation.maxRows, "only changed line starts may be highlighted");
@@ -259,6 +267,14 @@ try {
 		return page;
 	};
 	const desktop = { width: 1280, height: 900 };
+	const refresh = await openPage(desktop);
+	await refresh.emulateMedia({ reducedMotion: "no-preference" });
+	await refresh.goto(`${origin}/`, { waitUntil: "domcontentloaded" });
+	const firstPaint = await refresh.locator(".specimen-stage").evaluate(element => ({ opacity: getComputedStyle(element).opacity, animation: getComputedStyle(element).animationName }));
+	assert.deepEqual(firstPaint, { opacity: "1", animation: "none" });
+	await refresh.reload({ waitUntil: "domcontentloaded" });
+	assert.deepEqual(await refresh.locator(".specimen-stage").evaluate(element => ({ opacity: getComputedStyle(element).opacity, animation: getComputedStyle(element).animationName })), firstPaint, "refresh keeps the hero visible without an entrance animation");
+	await refresh.close();
 	const comparison = await openPage({ width: 1280, height: 1400 });
 	await comparison.goto(`${origin}/comparison/`);
 	assert.equal(await comparison.locator(".example-case").count(), 3);
@@ -300,7 +316,13 @@ try {
 		assert.notEqual(await verifyLanguage(), sample, "rotating examples stay in the selected language");
 		await localized.emulateMedia({ reducedMotion: "reduce" });
 		await localized.waitForLoadState("networkidle");
-		await localized.goto(`${origin}/${language}/docs/core/`);
+		await localized.evaluate(() => { window.sharedCtaNavigation = true; });
+		await localized.locator(".hero-actions .button-primary").click();
+		await localized.waitForURL(`${origin}/${language}/docs/`);
+		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared CTA preserves client navigation");
+		await localized.locator(`.docs-sidebar a[href="${basePath}/${language}/docs/core/"]`).click();
+		await localized.waitForURL(`${origin}/${language}/docs/core/`);
+		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared documentation links preserve client navigation");
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
 		await localized.close();
@@ -321,6 +343,19 @@ try {
 		return [...document.fonts].some((face) => face.family.replaceAll('"', "") === family.replaceAll('"', "") && face.status === "loaded");
 	}), "the locally hosted display face loads");
 	assert.equal(await page.locator("#editor #demo-text").isVisible(), true);
+	const github = page.locator(".nav").getByRole("link", { name: "GitHub", exact: true });
+	const npm = page.locator(".nav").getByRole("link", { name: "npm", exact: true });
+	assert.ok((await github.getAttribute("class")).includes("om-platform-link"));
+	await github.hover();
+	assert.equal(await github.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "none");
+	await page.mouse.move(0, 0);
+	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await github.hover();
+	assert.equal(await github.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
+	await npm.hover();
+	assert.equal(await npm.locator("svg").evaluate(svg => getComputedStyle(svg).animationName), "om-platform-pulse");
+	await page.mouse.move(0, 0);
+	await page.emulateMedia({ reducedMotion: "reduce" });
 	const localeTrigger = page.locator(".nav .language-select");
 	assert.equal(await localeTrigger.getAttribute("role"), "combobox");
 	await localeTrigger.press("Enter");
@@ -494,7 +529,9 @@ try {
 		const region = document.querySelector(".copy-toast-region");
 		let maximumOverflow = 0;
 		const sample = () => {
-			maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight, region.scrollWidth - region.clientWidth);
+			const style = getComputedStyle(region);
+			if (style.overflowY === "auto") maximumOverflow = Math.max(maximumOverflow, region.scrollHeight - region.clientHeight);
+			if (style.overflowX === "auto") maximumOverflow = Math.max(maximumOverflow, region.scrollWidth - region.clientWidth);
 		};
 		for (let i = 0; i < 5; i++) {
 			button.click();
@@ -508,14 +545,19 @@ try {
 	});
 	assert.ok(stackOverflow <= 0, "stacked toast entrance never creates an incidental scrollbar");
 	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 4);
-	const oldestNotice = docs.locator("[data-copy-notice]").first();
-	const oldestId = await oldestNotice.getAttribute("data-copy-notice");
-	const previousNewest = Number(await docs.locator("[data-copy-notice]").last().getAttribute("data-copy-notice"));
+	const oldestNotice = docs.locator('[data-toast-id][data-state="open"]').first();
+	const oldestId = await oldestNotice.getAttribute("data-toast-id");
+	const previousNewest = Number(await docs.locator('[data-toast-id][data-state="open"]').last().getAttribute("data-toast-id"));
 	const oldestDismiss = oldestNotice.getByRole("button", { name: "알림 닫기" });
 	await oldestDismiss.focus();
 	await docCopy.evaluate(button => button.click());
-	await docs.waitForFunction(previous => document.querySelectorAll(".copy-toast-region .om-toast").length === 4 && [...document.querySelectorAll("[data-copy-notice]")].some(notice => Number(notice.dataset.copyNotice) > previous), previousNewest);
-	assert.equal(await docs.locator(`[data-copy-notice="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "overflow preserves the focused toast");
+	assert.equal(await docs.locator('[data-toast-id][data-state="open"]').count(), 4, "new notices queue until there is space");
+	assert.equal(await docs.locator(`[data-toast-id="${oldestId}"] button`).evaluate(button => document.activeElement === button), true, "queue preserves the focused toast");
+	await oldestDismiss.press("Enter");
+	await docs.waitForFunction(previous => [...document.querySelectorAll('[data-toast-id][data-state="open"]')].some(notice => Number(notice.dataset.toastId) > previous), previousNewest);
+	await docCopy.focus();
+	await docs.mouse.move(0, 0);
+	await docs.waitForFunction(() => document.querySelectorAll(".copy-toast-region .om-toast").length === 0);
 	await docs.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw Error("unavailable"); } } }));
 	await docCopy.click();
 	await docs.locator(".copy-toast-region .om-toast").getByRole("alert").getByText("복사 실패", { exact: true }).waitFor();
@@ -553,6 +595,23 @@ try {
 		.click();
 	await docs.waitForURL("**/docs/ssr/");
 	assert.match(await docs.locator("h1").textContent(), /SSR과 하이드레이션/);
+	for (const language of ["", "en", "ja", "zh"]) {
+		const compact = await openPage({ width: 320, height: 812 });
+		await compact.emulateMedia({ reducedMotion: "reduce" });
+		await compact.goto(language ? `${origin}/${language}/` : `${origin}/`);
+		for (const width of [320, 375, 430]) {
+			await compact.setViewportSize({ width, height: 812 });
+			await compact.evaluate(() => document.fonts.ready);
+			assert.ok(await compact.locator(".landing").evaluate(landing => [...landing.querySelectorAll(".hero-description, h2")].every(element => element.scrollWidth <= element.clientWidth + 1)), "localized hero and section copy fit the mobile viewport");
+			assert.ok(await compact.locator(".landing-intro").evaluate(hero => {
+				const specimen = hero.querySelector(".specimen").getBoundingClientRect();
+				const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
+				return cue.top >= specimen.bottom - 1 && cue.top - specimen.bottom <= 16;
+			}), "mobile scroll cue follows the reserved specimen without extra viewport space");
+			if (engine.name() === "chromium") await compact.screenshot({ path: `test-results/renewal/landing-${language || "ko"}-${width}.png`, animations: "disabled" });
+		}
+		await compact.close();
+	}
 	const mobileViewport = { width: 375, height: 812 };
 	const mobile = await openPage(mobileViewport);
 	await mobile.emulateMedia({ reducedMotion: "reduce" });

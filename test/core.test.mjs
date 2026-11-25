@@ -201,3 +201,19 @@ test("technical phrase lookup treats inherited object names as ordinary words", 
     assert.equal(reconstruct(run(text, 12)), text);
   }
 });
+
+test("balanced Korean wrapping preserves technical noun phrases within the same line budget", () => {
+  const measure = value => [...value].reduce((sum, character) => sum + (/[가-힣]/u.test(character) ? 1 : 0.5), 0);
+  const cases = [
+    ["Node.js 20 이상과 호환되는 패키지 매니저를 사용하세요. 기존 TypeScript 프로젝트에서 실행합니다.", 24, "패키지 매니저를", 3],
+    ["프로젝트의 패키지 매니저를 변경하세요. 기존 설정은 유지하세요.", 10, "패키지 매니저를", 4],
+    ["소스 아키텍처 검사기와 TypeScript 계약 런타임을 결합합니다. 기존 설정을 사용합니다.", 11, "계약 런타임을", 5],
+  ];
+  for (const [text, width, phrase, count] of cases) {
+    const lines = wrap(text, { width, measure, locale: "ko", strategy: "balanced" });
+    assert.equal(lines.length, count);
+    assert.equal(reconstruct(lines), text);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes(phrase)));
+  }
+});
