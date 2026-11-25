@@ -9,15 +9,27 @@ import { shuffledSceneIndices, specimenScenes } from "../lib/specimen-scenes";
 
 const motionLabels = { ko: ["자동 줄바꿈 시연", "시연 재생", "시연 일시정지"], en: ["Live wrapping demonstration", "Play", "Pause"], ja: ["改行のデモ", "再生", "一時停止"], zh: ["换行演示", "播放", "暂停"] } as const;
 const widthRatios = ["100%", "78%", "92%"] as const;
+const sceneTiming = { narrow: 3600, narrowSettled: 5400, expand: 7900, expanded: 9700, leave: 12500, next: 13200 } as const;
 type Phase = "css" | "kowrap" | "resize" | "leaving";
 
 const positions = (element: HTMLElement) => {
-	const top = element.getBoundingClientRect().top;
+	const origin = element.getBoundingClientRect();
+	const local = (bounds: DOMRect) => ({ left: bounds.left - origin.left, right: bounds.right - origin.left, top: bounds.top - origin.top, width: bounds.width });
 	return new Map(Array.from(element.querySelectorAll<HTMLElement>("[data-word]"), word => {
-		const bounds = word.getBoundingClientRect();
+		const bounds = local(word.getBoundingClientRect());
 		const visual = word.firstElementChild as HTMLElement;
-		return [word.dataset.word!, { word, visual, bounds, visualBounds: visual.getBoundingClientRect(), row: bounds.top - top }] as const;
+		return [word.dataset.word!, { word, visual, bounds, visualBounds: local(visual.getBoundingClientRect()), row: bounds.top }] as const;
 	}));
+};
+
+const lineStarts = (words: ReturnType<typeof positions>) => {
+	const starts = new Set<string>();
+	let previousRow: number | undefined;
+	for (const [key, { row }] of words) {
+		if (previousRow !== undefined && Math.abs(row - previousRow) > 1) starts.add(key);
+		previousRow = row;
+	}
+	return starts;
 };
 
 const narrowWidthFor = (element: HTMLElement, preset: number) => {
@@ -65,6 +77,8 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
 	const queue = useRef<number[]>([]);
+	const playedIndex = useRef<number | undefined>(undefined);
+	const wasVisible = useRef(false);
 	const [index, setIndex] = useState(0);
 	const [widthStep, setWidthStep] = useState<0 | 1 | 2>(0);
 	const [narrowWidth, setNarrowWidth] = useState<number>();
@@ -72,6 +86,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const [reduced, setReduced] = useState(true);
 	const [paused, setPaused] = useState(false);
 	const [pausedWidth, setPausedWidth] = useState<number>();
+	const [offscreenWidth, setOffscreenWidth] = useState<number>();
 	const [phase, setPhase] = useState<Phase>("kowrap");
 	const examples = specimenScenes[initialLocale];
 	const example = examples[index];
@@ -80,6 +95,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const units = useMemo(() => specimenUnits(example.text, initialLocale), [example.text, initialLocale]);
 	const { ref, lines } = useJuliya({ text: example.text, locale, tag: "p" });
 	const breaks = lines.slice(0, -1).map(line => line.end);
+	const heldWidth = pausedWidth ?? offscreenWidth;
 	const togglePaused = () => {
 		if (paused) {
 			setPausedWidth(undefined);
@@ -95,7 +111,14 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		const sync = () => setReduced(preference.matches);
 		sync();
 		preference.addEventListener("change", sync);
-		const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting)) : undefined;
+		const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([entry]) => {
+			const next = entry.isIntersecting && entry.intersectionRatio >= .35;
+			if (next === wasVisible.current) return;
+			if (!next) setOffscreenWidth(after.current?.querySelector("p")?.getBoundingClientRect().width);
+			else setOffscreenWidth(undefined);
+			wasVisible.current = next;
+			setVisible(next);
+		}, { threshold: .35 }) : undefined;
 		if (section.current && observer) observer.observe(section.current);
 		else setVisible(true);
 		return () => { preference.removeEventListener("change", sync); observer?.disconnect(); };
@@ -115,11 +138,11 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 				}
 				setWidthStep(1);
 				setPhase("resize");
-			}, 2050),
-			window.setTimeout(() => setPhase("kowrap"), 3350),
-			window.setTimeout(() => { setWidthStep(2); setPhase("resize"); }, 3900),
-			window.setTimeout(() => setPhase("kowrap"), 5200),
-			window.setTimeout(() => setPhase("leaving"), 6100),
+			}, sceneTiming.narrow),
+			window.setTimeout(() => setPhase("kowrap"), sceneTiming.narrowSettled),
+			window.setTimeout(() => { setWidthStep(2); setPhase("resize"); }, sceneTiming.expand),
+			window.setTimeout(() => setPhase("kowrap"), sceneTiming.expanded),
+			window.setTimeout(() => setPhase("leaving"), sceneTiming.leave),
 			window.setTimeout(() => {
 				if (!queue.current.length) queue.current = shuffledSceneIndices(examples.length, index);
 				const next = queue.current.shift() ?? 0;
@@ -127,7 +150,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 				setNarrowWidth(undefined);
 				setIndex(next);
 				setPhase("kowrap");
-			}, 6600),
+			}, sceneTiming.next),
 		];
 		return () => timers.forEach(timer => window.clearTimeout(timer));
 	}, [example, examples, index, rotating]);
@@ -139,58 +162,60 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		const animations = new Map<string, Animation>();
 		let frame: number | undefined;
 		let settle: number | undefined;
+		let highlightTimer: number | undefined;
 		let previous: ReturnType<typeof positions> | undefined;
-		let played = false;
+		let played = playedIndex.current === index;
+		const clearHighlights = () => applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
 		const measure = () => {
 			const target = applied.querySelector("p");
 			if (!target || document.fonts?.status === "loading") return;
 			const current = positions(target);
 			if (!current.size) return;
 			const initial = !played;
+			if (!initial && !previous) { previous = current; return; }
 			if (initial && !target.querySelector("[data-kowrap-break]")) {
 				played = true;
+				playedIndex.current = index;
 				previous = current;
 				return;
 			}
 			const old = initial ? positions(native) : previous;
 			if (!old) return;
 			played = true;
+			playedIndex.current = index;
 			const moved = [...current].filter(([key, destination]) => {
 				const source = old.get(key);
 				return source && Math.abs(source.row - destination.row) > 1;
 			});
-			const shifted = [...current].some(([key, destination]) => {
-				const source = old.get(key);
-				return source && Math.abs(source.bounds.top - destination.bounds.top) > 1;
-			});
-			if (moved.length || shifted) {
+			if (moved.length) {
 				const movedKeys = new Set(moved.map(([key]) => key));
-				const movedRows = moved.map(([, destination]) => destination.row);
+				const oldStarts = lineStarts(old);
+				const newStarts = lineStarts(current);
+				clearHighlights();
+				window.clearTimeout(highlightTimer);
 				for (const [key, destination] of current) {
-					if (movedRows.some(row => Math.abs(row - destination.row) <= 1)) destination.word.dataset.reflow = movedKeys.has(key) ? "moved" : "neighbor";
-					else delete destination.word.dataset.reflow;
+					if (newStarts.has(key) && !oldStarts.has(key)) destination.word.dataset.reflow = "boundary";
+				}
+				highlightTimer = window.setTimeout(clearHighlights, 1100);
+				for (const [key, destination] of current) {
 					const source = old.get(key);
-					if (!source || (!initial && !movedKeys.has(key) && Math.abs(source.bounds.top - destination.bounds.top) <= 1) || typeof destination.visual.animate !== "function") continue;
+					if (!source || !movedKeys.has(key) || typeof destination.visual.animate !== "function") continue;
 					const dx = source.visualBounds.left - destination.bounds.left;
 					const dy = source.visualBounds.top - destination.bounds.top;
 					if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
 					animations.get(key)?.cancel();
 					const from = `translate(${dx}px, ${dy}px)`;
-					animations.set(key, destination.visual.animate(initial ? [
-						{ transform: from, offset: 0 },
-						{ transform: from, offset: .34, easing: "cubic-bezier(.22, 1, .36, 1)" },
-						{ transform: "translate(0, 0)", offset: 1 },
-					] : [
+					animations.set(key, destination.visual.animate([
 						{ transform: from },
 						{ transform: "translate(0, 0)" },
-					], { duration: initial ? 1450 : 540, easing: initial ? "linear" : "cubic-bezier(.22,1,.36,1)" }));
+					], { duration: initial ? 1200 : 800, easing: "cubic-bezier(.4,0,.2,1)" }));
 				}
 				if (initial) {
 					setPhase(phase => phase === "kowrap" ? "css" : phase);
-					settle = window.setTimeout(() => setPhase(phase => phase === "css" ? "kowrap" : phase), 1450);
+					settle = window.setTimeout(() => setPhase(phase => phase === "css" ? "kowrap" : phase), 1200);
 				}
 			}
-			previous = moved.length || shifted ? positions(target) : current;
+			previous = current;
 		};
 		const schedule = () => {
 			if (frame !== undefined) return;
@@ -200,7 +225,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		resize?.observe(native);
 		const target = applied.querySelector("p");
 		if (target) resize?.observe(target);
-		const mutation = new MutationObserver(measure);
+		const mutation = new MutationObserver(schedule);
 		mutation.observe(applied, { childList: true, subtree: true, characterData: true });
 		window.addEventListener("resize", schedule);
 		document.fonts?.addEventListener("loadingdone", schedule);
@@ -212,14 +237,15 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			document.fonts?.removeEventListener("loadingdone", schedule);
 			if (frame !== undefined) cancelAnimationFrame(frame);
 			window.clearTimeout(settle);
+			window.clearTimeout(highlightTimer);
 			animations.forEach(animation => animation.cancel());
-			applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
+			clearHighlights();
 		};
 	}, [index, rotating]);
 
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label={motionLabels[initialLocale][0]} data-rotating={rotating}>
-			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": pausedWidth !== undefined ? `${pausedWidth}px` : widthStep === 1 && narrowWidth !== undefined ? `${narrowWidth}px` : `${example.widths[widthStep]}em`, "--specimen-ratio": pausedWidth !== undefined ? "100%" : widthRatios[widthStep] } as CSSProperties}>
+			<div className="specimen-panels" lang={locale} data-example={index} data-phase={phase} data-width-step={widthStep} style={{ "--specimen-width": heldWidth !== undefined ? `${heldWidth}px` : widthStep === 1 && narrowWidth !== undefined ? `${narrowWidth}px` : `${example.widths[widthStep]}em`, "--specimen-ratio": heldWidth !== undefined ? "100%" : widthRatios[widthStep] } as CSSProperties}>
 				<div className="specimen-stage">
 					<div className="specimen-ruler" aria-hidden="true"><span /></div>
 					<div className="specimen-layout">
