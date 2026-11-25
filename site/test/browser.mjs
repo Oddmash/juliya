@@ -234,6 +234,20 @@ const verifySpecimen = async (page, motion) => {
 		assert.ok(await panels.evaluate(panel => panel.getAnimations({ subtree: true }).length === 0));
 	}
 };
+const verifyBrand = async (page, language) => {
+	const name = language === "ko" ? "줄이야" : "Juliya";
+	const href = `${basePath}${language === "ko" ? "" : `/${language}`}/`;
+	const label = { ko: "줄이야 홈", en: "Juliya home", ja: "Juliya ホーム", zh: "Juliya 首页" }[language];
+	for (const selector of [".header .brand", ".footer .brand"]) {
+		const brand = page.locator(selector);
+		await brand.locator(".brand-name").filter({ hasText: name }).waitFor();
+		assert.equal(await brand.locator(".brand-name").textContent(), name);
+		assert.equal(await brand.getAttribute("href"), href);
+		assert.equal(await brand.getAttribute("aria-label"), label);
+	}
+	assert.match(await page.locator(".header .brand .version").textContent(), /^v\d+\.\d+\.\d+/);
+};
+
 const verifyLandingGeometry = async (page) => {
 	assert.ok(await page.locator(".landing-intro").evaluate(hero => {
 		const copy = hero.querySelector(".hero-copy").getBoundingClientRect();
@@ -295,6 +309,7 @@ try {
 		await localized.goto(`${origin}/${language}/`);
 		await localized.getByRole("button", { name: label, exact: true }).waitFor();
 		assert.equal(await localized.locator("#hero-title").textContent(), "Juliya");
+		await verifyBrand(localized, language);
 		await verifyLandingGeometry(localized);
 		const verifyLanguage = async () => {
 			assert.equal(await localized.locator(".specimen-panels").getAttribute("lang"), language === "zh" ? "zh-Hans" : language);
@@ -319,12 +334,17 @@ try {
 		await localized.evaluate(() => { window.sharedCtaNavigation = true; });
 		await localized.locator(".hero-actions .button-primary").click();
 		await localized.waitForURL(`${origin}/${language}/docs/`);
+		await verifyBrand(localized, language);
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared CTA preserves client navigation");
 		await localized.locator(`.docs-sidebar a[href="${basePath}/${language}/docs/core/"]`).click();
 		await localized.waitForURL(`${origin}/${language}/docs/core/`);
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared documentation links preserve client navigation");
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
+		await localized.locator(".footer .brand").click();
+		await localized.waitForURL(`${origin}/${language}/`);
+		await verifyBrand(localized, language);
+		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "localized brand preserves client navigation");
 		await localized.close();
 	}
 	const page = await openPage(desktop);
@@ -362,10 +382,18 @@ try {
 	await page.getByRole("option", { name: "English", exact: true }).click();
 	await page.waitForURL(`${origin}/en/`);
 	await localeTrigger.filter({ hasText: "English" }).waitFor();
+	await verifyBrand(page, "en");
+	for (const [language, name] of [["ja", "日本語"], ["zh", "简体中文"]]) {
+		await localeTrigger.click();
+		await page.getByRole("option", { name, exact: true }).click();
+		await page.waitForURL(`${origin}/${language}/`);
+		await verifyBrand(page, language);
+	}
 	await localeTrigger.click();
 	await page.getByRole("option", { name: "한국어", exact: true }).click();
 	await page.waitForURL(`${origin}/`);
 	await localeTrigger.filter({ hasText: "한국어" }).waitFor();
+	await verifyBrand(page, "ko");
 	const demoLocale = page.locator("#demo-locale");
 	assert.equal(await demoLocale.getAttribute("role"), "combobox");
 	await demoLocale.press("Enter");
