@@ -4,6 +4,8 @@ import type { CSSProperties, ReactNode } from "react";
 import manifest from "../../package.json";
 import tokens from "../theme/tokens.json";
 import { SiteNavigation } from "../components/site-navigation";
+import { SiteHeader, SiteHeaderInner, SiteFooter, SiteNav } from "@oddmash/ui/site-layout";
+import { PlatformLink, PlatformLinks } from "@oddmash/ui/platform-link";
 import { CopyToastProvider } from "../components/copy-toast";
 import { getGuides, guideHref } from "../lib/guides";
 import { repositoryUrl } from "../lib/project";
@@ -61,27 +63,29 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 			<a className="skip-link" href="#main">
 				본문 바로가기
 			</a>
-			<header className="header">
-				<div className="nav container">
+			<SiteHeader className="header">
+				<SiteHeaderInner className="nav container">
 					<Link className="brand" href="/" aria-label="줄이야 홈">
 						<Logo />
 						줄이야<span className="version">v{manifest.version}</span>
 					</Link>
 					<SiteNavigation items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
-				</div>
-			</header>
+				</SiteHeaderInner>
+			</SiteHeader>
 			{children}
-			<footer className="footer container">
+			<SiteFooter className="footer container">
 				<Link className="brand" href="/">
 					<Logo size={23} />
 					줄이야
 				</Link>
-				<div>
+				<SiteNav className="footer-links" aria-label="Oddmash">
 					<a href="https://github.com/Oddmash">Oddmash</a>
-					<a href="https://www.npmjs.com/package/@oddmash/juliya">npm</a>
-					<a href={repositoryUrl}>GitHub</a>
-				</div>
-			</footer>
+					<PlatformLinks>
+						<PlatformLink platform="npm" href="https://www.npmjs.com/package/@oddmash/juliya" aria-label="npm" title="npm" />
+						<PlatformLink platform="github" href={repositoryUrl} aria-label="GitHub" title="GitHub" />
+					</PlatformLinks>
+				</SiteNav>
+			</SiteFooter>
 			</CopyToastProvider>
 		</body>
 	</html>
