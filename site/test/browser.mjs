@@ -304,6 +304,7 @@ try {
 		await localized.locator(".hero-actions .button-primary").click();
 		await localized.waitForURL(`${origin}/${language}/docs/`);
 		assert.equal(await localized.evaluate(() => window.sharedCtaNavigation), true, "shared CTA preserves client navigation");
+		await localized.waitForLoadState("networkidle");
 		await localized.goto(`${origin}/${language}/docs/core/`);
 		assert.ok((await localized.locator(".docs-content code").textContent()).includes(`@oddmash/juliya/${language}`));
 		await localized.waitForLoadState("networkidle");
