@@ -9,7 +9,9 @@ const manifest = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"
 const staging = await mkdtemp(resolve(tmpdir(), "juliya-package-"));
 try {
   await cp(resolve(root, "dist"), resolve(staging, "dist"), { recursive: true });
-  await cp(resolve(root, "README.md"), resolve(staging, "README.md"));
+  for (const file of ["README.md", "LICENSE", "NOTICE.md"]) {
+    await cp(resolve(root, file), resolve(staging, file));
+  }
   const published = { ...manifest };
   delete published.scripts;
   delete published.devDependencies;
