@@ -64,15 +64,15 @@ export const FrameworkExamples = ({ locale = "ko" }: { locale?: SiteLocale }) =>
 	}));
 	const selected = localized.find(example => example.tab === active) ?? localized[0];
 	return (
-		<Tabs value={active} onValueChange={setActive} className="code-window">
-			<div className="code-toolbar">
+		<Tabs value={active} onValueChange={setActive} className="code-window om-code-block">
+			<div className="code-toolbar om-code-block-header">
 			<TabsList className="code-tabs" aria-label="환경별 예제">
 				{examples.map(({ tab }) => <TabsTrigger key={tab} value={tab}>{tab}</TabsTrigger>)}
 			</TabsList>
 			<CopyButton key={selected.tab} className="copy-code" value={selected.code} icon />
 			</div>
 			{localized.map((example) => <TabsContent key={example.tab} value={example.tab} className="framework-panel">
-				<div className="code-body"><pre><code>{example.code}</code></pre></div>
+				<div className="code-body"><pre className="om-code-block-content"><code>{example.code}</code></pre></div>
 				<div className="code-foot"><span>{example.label}</span><Link href={locale === "ko" ? `/docs/${example.doc}/` : `${languagePath(locale)}/docs/`}>{locale === "ko" ? "사용 문서" : landingCopy[locale].docs}</Link></div>
 			</TabsContent>)}
 		</Tabs>
