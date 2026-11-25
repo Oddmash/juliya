@@ -142,6 +142,7 @@ test("shared site controls preserve prerendered native documentation and languag
 	assert.match(html, /om-kbd/);
 	assert.match(html, /om-locale-fallback/);
 	assert.ok(html.includes(`href="${basePath}/en/"`));
+	assert.match(html, new RegExp(`<a[^>]*class="[^"]*om-button[^"]*button-primary[^"]*"[^>]*href="${basePath}/docs/"|<a[^>]*href="${basePath}/docs/"[^>]*class="[^"]*om-button[^"]*button-primary[^"]*"`));
 	const docs = read("docs/index.html");
 	assert.match(docs, /om-docs-navigation/);
 	assert.match(docs, /om-table-of-contents/);
