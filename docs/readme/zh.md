@@ -4,7 +4,7 @@
 
 Juliya 是面向韩语、英语、日语和简体中文的文本换行库，适用于标题和短段落。它结合语言特定的换行边界与实际字体和容器宽度，帮助文本在自然的位置换行。
 
-[演示](https://oddmash.github.io/juliya/zh/#playground) | [文档](https://oddmash.github.io/juliya/zh/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
+[演示](https://oddmash.github.io/juliya/zh/#editor) | [文档](https://oddmash.github.io/juliya/zh/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
 
 ## 选择语言
 
