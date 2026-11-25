@@ -1,4 +1,4 @@
-name: Deploy documentation to GitHub Pages
+name: Deploy Pages
 
 on:
   push:
@@ -61,7 +61,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm --dir site install --frozen-lockfile
-      - run: pnpm test:site
+      - run: pnpm --dir site build && node --test test/site.mjs
       - run: pnpm --dir site test:browser
         env:
           HOME: /root

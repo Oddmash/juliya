@@ -41,11 +41,23 @@ test("CI and release verify every integration browser", () => {
   assert.match(publish, /^\s*- run: pnpm test:browser$/m);
 
   const ci = read(".github/workflows/ci.yml");
-  const [core, site] = ci.split(/^  site:\s*$/m);
+  const [core, siteBuildAndBrowser] = ci.split(/^  site-build:\s*$/m);
+  assert.ok(siteBuildAndBrowser, "CI must include the shared site build job");
+  const [siteBuild, site] = siteBuildAndBrowser.split(/^  site:\s*$/m);
   assert.ok(site, "CI must include the site browser job");
   assert.equal(imageVersion(core), JSON.parse(read("test/next-app/package.json")).devDependencies.playwright);
   assert.equal(imageVersion(site), JSON.parse(read("site/package.json")).devDependencies.playwright);
-  assert.match(core, /^\s*- run: pnpm test:browser$/m);
+  assert.match(core, /^\s*run: pnpm test$/m);
+  assert.match(core, /^\s*- run: pnpm --dir test\/next-app test:hydration$/m);
+  assert.match(core, /^\s*- run: pnpm --dir test\/framework-app test$/m);
+  assert.match(core, /- run: pnpm --dir test\/next-app build\n\s*- run: pnpm --dir test\/next-app test:browser/);
+  assert.match(core, /^\s*- run: node --test test\/package\.mjs$/m);
+  assert.match(siteBuild, /^\s*- run: pnpm build$/m);
+  assert.match(siteBuild, /^\s*- run: pnpm --dir site build && node --test test\/site\.mjs$/m);
+  assert.match(siteBuild, /uses: actions\/upload-artifact@v4\n\s*with:\n\s*name: verified-site-build/);
+  assert.match(site, /needs: \[scope, site-build\]/);
+  assert.match(site, /uses: actions\/download-artifact@v4\n\s*with:\n\s*name: verified-site-build/);
+  assert.doesNotMatch(site, /^\s*- run: pnpm (?:build|--dir site build)/m);
   const matrix = site.match(/^\s*browser: \[([^\]]+)\]$/m);
   assert.ok(matrix, "CI must test each site browser");
   assert.deepEqual(matrix[1].split(",").map((name) => name.trim()).sort(), browsers);
@@ -60,10 +72,13 @@ test("CI events avoid duplicate main push checks while deployment retains verifi
   assert.match(ciEvents, /^  workflow_dispatch:/m);
   assert.doesNotMatch(ciEvents, /^  push:/m);
   assert.match(ci, /^  verify:\s*$/m);
+  assert.match(ci, /needs: \[scope, lint, test, site-build, site\]/);
+  assert.match(ci, /verify "\$RUN_1" "\$BUILD_RESULT"/);
 
   const pages = read(".github/workflows/pages.yml");
   assert.match(pages, /on:\n  push:\n    branches: \[main\]\n    paths:/);
-  assert.match(pages, /^\s*- run: pnpm test:site$/m);
+  assert.match(pages, /^\s*- run: pnpm build$/m);
+  assert.match(pages, /^\s*- run: pnpm --dir site build && node --test test\/site\.mjs$/m);
   assert.match(pages, /^\s*- run: pnpm --dir site test:browser$/m);
   assert.match(pages, /deploy:\n    if: github\.ref == 'refs\/heads\/main'\n    needs: build/);
 
