@@ -50,6 +50,19 @@ test("translated landing and reference routes are exported", () => {
 	}
 });
 
+test("exported playground uses labeled shared Oddmash sliders", () => {
+	for (const route of ["index.html", "en/index.html", "ja/index.html", "zh/index.html"]) {
+		const html = read(route);
+		for (const id of ["demo-width", "font-size"]) {
+			const input = html.match(new RegExp(`<input[^>]*id="${id}"[^>]*>`))?.[0];
+			assert.ok(input, `${route} contains ${id}`);
+			assert.match(input, /\bclass="[^\"]*\bom-slider\b/);
+			assert.match(input, /\btype="range"/);
+			assert.match(html, new RegExp(`<label[^>]*for="${id}"`));
+		}
+	}
+});
+
 test("localized READMEs point to the matching exported documentation and editor", () => {
 	const readmes = [
 		["en", "../README.md"],

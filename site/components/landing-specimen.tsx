@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useJuliya } from "@oddmash/juliya/react";
 import { engineLocale } from "../lib/locales";
@@ -9,8 +9,8 @@ import { shuffledSceneIndices, specimenScenes } from "../lib/specimen-scenes";
 
 const motionLabels = { ko: ["자동 줄바꿈 시연", "시연 재생", "시연 일시정지"], en: ["Live wrapping demonstration", "Play", "Pause"], ja: ["改行のデモ", "再生", "一時停止"], zh: ["换行演示", "播放", "暂停"] } as const;
 const widthRatios = ["100%", "78%", "92%"] as const;
-const sceneTiming = { narrow: 3600, narrowSettled: 5400, expand: 7900, expanded: 9700, leave: 12500, next: 13200 } as const;
-type Phase = "css" | "kowrap" | "resize" | "leaving";
+const sceneTiming = { read: 3600, resize: 1800, narrowRead: 2500, expandedRead: 2800, leave: 700 } as const;
+type Phase = "kowrap" | "resize" | "leaving" | "entering";
 
 const positions = (element: HTMLElement) => {
 	const origin = element.getBoundingClientRect();
@@ -77,12 +77,12 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const before = useRef<HTMLParagraphElement>(null);
 	const after = useRef<HTMLDivElement>(null);
 	const queue = useRef<number[]>([]);
-	const playedIndex = useRef<number | undefined>(undefined);
 	const wasVisible = useRef(false);
 	const [index, setIndex] = useState(0);
 	const [widthStep, setWidthStep] = useState<0 | 1 | 2>(0);
 	const [narrowWidth, setNarrowWidth] = useState<number>();
 	const [visible, setVisible] = useState(false);
+	const [pageVisible, setPageVisible] = useState(true);
 	const [reduced, setReduced] = useState(true);
 	const [paused, setPaused] = useState(false);
 	const [pausedWidth, setPausedWidth] = useState<number>();
@@ -91,9 +91,9 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 	const examples = specimenScenes[initialLocale];
 	const example = examples[index];
 	const locale = engineLocale(initialLocale);
-	const rotating = visible && !reduced && !paused;
+	const rotating = visible && pageVisible && !reduced && !paused;
 	const units = useMemo(() => specimenUnits(example.text, initialLocale), [example.text, initialLocale]);
-	const { ref, lines } = useJuliya({ text: example.text, locale, tag: "p" });
+	const { ref, lines, measured } = useJuliya({ text: example.text, locale, tag: "p" });
 	const breaks = lines.slice(0, -1).map(line => line.end);
 	const heldWidth = pausedWidth ?? offscreenWidth;
 	const togglePaused = () => {
@@ -111,6 +111,9 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		const sync = () => setReduced(preference.matches);
 		sync();
 		preference.addEventListener("change", sync);
+		const syncVisibility = () => setPageVisible(!document.hidden);
+		syncVisibility();
+		document.addEventListener("visibilitychange", syncVisibility);
 		const observer = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([entry]) => {
 			const next = entry.isIntersecting && entry.intersectionRatio >= .35;
 			if (next === wasVisible.current) return;
@@ -121,7 +124,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 		}, { threshold: .35 }) : undefined;
 		if (section.current && observer) observer.observe(section.current);
 		else setVisible(true);
-		return () => { preference.removeEventListener("change", sync); observer?.disconnect(); };
+		return () => { preference.removeEventListener("change", sync); document.removeEventListener("visibilitychange", syncVisibility); observer?.disconnect(); };
 	}, []);
 
 	useEffect(() => {
@@ -129,65 +132,77 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			setPhase("kowrap");
 			return;
 		}
-		const timers = [
-			window.setTimeout(() => {
-				const target = after.current?.querySelector("p");
-				if (target) {
-					const measured = narrowWidthFor(target, example.widths[1]);
-					setNarrowWidth(existing => existing ?? measured);
-				}
-				setWidthStep(1);
-				setPhase("resize");
-			}, sceneTiming.narrow),
-			window.setTimeout(() => setPhase("kowrap"), sceneTiming.narrowSettled),
-			window.setTimeout(() => { setWidthStep(2); setPhase("resize"); }, sceneTiming.expand),
-			window.setTimeout(() => setPhase("kowrap"), sceneTiming.expanded),
-			window.setTimeout(() => setPhase("leaving"), sceneTiming.leave),
-			window.setTimeout(() => {
-				if (!queue.current.length) queue.current = shuffledSceneIndices(examples.length, index);
-				const next = queue.current.shift() ?? 0;
-				setWidthStep(0);
-				setNarrowWidth(undefined);
-				setIndex(next);
+		if (!measured) return;
+		setPhase("kowrap");
+		let timer: number | undefined;
+		let cancelled = false;
+		const schedule = (delay: number, next: () => void) => {
+			timer = window.setTimeout(() => { if (!cancelled) next(); }, delay);
+		};
+		const settled = (next: () => void) => {
+			const panel = section.current;
+			const moving = panel && Array.from(panel.querySelectorAll<HTMLElement>(".specimen-layout, .specimen-ruler, .specimen-word-visual"))
+				.some(element => element.getAnimations().some(animation => animation.playState === "running" || animation.pending));
+			if (moving || document.fonts?.status === "loading") schedule(100, () => settled(next));
+			else next();
+		};
+		const replace = () => {
+			if (!queue.current.length) queue.current = shuffledSceneIndices(examples.length, index);
+			const next = queue.current.shift() ?? 0;
+			setWidthStep(0);
+			setNarrowWidth(undefined);
+			setIndex(next);
+			setPhase("entering");
+		};
+		const leave = () => settled(() => {
+			setPhase("leaving");
+			schedule(sceneTiming.leave, replace);
+		});
+		const expand = () => {
+			setWidthStep(2);
+			setPhase("resize");
+			schedule(sceneTiming.resize, () => settled(() => {
 				setPhase("kowrap");
-			}, sceneTiming.next),
-		];
-		return () => timers.forEach(timer => window.clearTimeout(timer));
-	}, [example, examples, index, rotating]);
+				schedule(sceneTiming.expandedRead, leave);
+			}));
+		};
+		schedule(sceneTiming.read, () => settled(() => {
+			const target = after.current?.querySelector("p");
+			if (target) {
+				const measuredWidth = narrowWidthFor(target, example.widths[1]);
+				setNarrowWidth(existing => existing ?? measuredWidth);
+			}
+			setWidthStep(1);
+			setPhase("resize");
+			schedule(sceneTiming.resize, () => settled(() => {
+				setPhase("kowrap");
+				schedule(sceneTiming.narrowRead, expand);
+			}));
+		}));
+		return () => { cancelled = true; window.clearTimeout(timer); };
+	}, [example, examples, index, rotating, measured]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const native = before.current;
 		const applied = after.current;
-		if (!native || !applied || !rotating) return;
+		if (!native || !applied || !rotating || !measured) return;
 		const animations = new Map<string, Animation>();
 		let frame: number | undefined;
-		let settle: number | undefined;
 		let highlightTimer: number | undefined;
 		let previous: ReturnType<typeof positions> | undefined;
-		let played = playedIndex.current === index;
 		const clearHighlights = () => applied.querySelectorAll<HTMLElement>("[data-reflow]").forEach(word => delete word.dataset.reflow);
 		const measure = () => {
 			const target = applied.querySelector("p");
 			if (!target || document.fonts?.status === "loading") return;
 			const current = positions(target);
 			if (!current.size) return;
-			const initial = !played;
-			if (!initial && !previous) { previous = current; return; }
-			if (initial && !target.querySelector("[data-kowrap-break]")) {
-				played = true;
-				playedIndex.current = index;
-				previous = current;
-				return;
-			}
-			const old = initial ? positions(native) : previous;
-			if (!old) return;
-			played = true;
-			playedIndex.current = index;
+			if (!previous) { previous = current; return; }
+			const old = previous;
 			const moved = [...current].filter(([key, destination]) => {
 				const source = old.get(key);
 				return source && Math.abs(source.row - destination.row) > 1;
 			});
-			if (moved.length) {
+			if (moved.length && applied.closest(".specimen-panels")?.getAttribute("data-phase") === "resize") {
 				const movedKeys = new Set(moved.map(([key]) => key));
 				const oldStarts = lineStarts(old);
 				const newStarts = lineStarts(current);
@@ -208,11 +223,7 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 					animations.set(key, destination.visual.animate([
 						{ transform: from },
 						{ transform: "translate(0, 0)" },
-					], { duration: initial ? 1200 : 800, easing: "cubic-bezier(.4,0,.2,1)" }));
-				}
-				if (initial) {
-					setPhase(phase => phase === "kowrap" ? "css" : phase);
-					settle = window.setTimeout(() => setPhase(phase => phase === "css" ? "kowrap" : phase), 1200);
+					], { duration: 800, easing: "cubic-bezier(.4,0,.2,1)" }));
 				}
 			}
 			previous = current;
@@ -236,12 +247,11 @@ const Specimen = ({ initialLocale }: { initialLocale: SiteLocale }) => {
 			window.removeEventListener("resize", schedule);
 			document.fonts?.removeEventListener("loadingdone", schedule);
 			if (frame !== undefined) cancelAnimationFrame(frame);
-			window.clearTimeout(settle);
 			window.clearTimeout(highlightTimer);
 			animations.forEach(animation => animation.cancel());
 			clearHighlights();
 		};
-	}, [index, rotating]);
+	}, [index, rotating, measured]);
 
 	return (
 		<section ref={section} className="specimen" id="playground" aria-label={motionLabels[initialLocale][0]} data-rotating={rotating}>
