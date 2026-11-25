@@ -24,7 +24,11 @@ concurrency:
 jobs:
   verify:
     if: (github.event_name == 'release' && !github.event.release.prerelease && github.event.release.tag_name != 'v0.1.0') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+      options: --ipc=host
     outputs:
       version: ${{ steps.version.outputs.version }}
       published: ${{ steps.registry.outputs.published }}
@@ -33,12 +37,18 @@ jobs:
       RELEASE_VERSION: ${{ inputs.version }}
       RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            test/next-app/pnpm-lock.yaml
+            test/framework-app/pnpm-lock.yaml
       - name: Verify release version
         id: version
         run: node scripts/check-release.mjs
@@ -53,8 +63,9 @@ jobs:
         if: hashFiles('test/framework-app/package.json') != ''
       - run: pnpm test:frameworks
         if: hashFiles('test/framework-app/package.json') != ''
-      - run: pnpm --dir test/next-app exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:browser
+        env:
+          HOME: /root
       - run: pnpm test:package
       - name: Pack verified package
         env:
