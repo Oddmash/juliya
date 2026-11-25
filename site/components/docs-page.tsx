@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Prose } from "@oddmash/ui/prose";
 import { guideHref, getGuides } from "../lib/guides";
 import type { Guide } from "../lib/guides";
 import { DocsNavigation } from "./docs-navigation";
@@ -20,7 +21,7 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 		<main id="main" className="container docs-shell">
 			<DocsNavigation items={items} current={guide.slug} />
 			<DocsToc key={guide.slug} headings={guide.headings} />
-			<article className="docs-content">
+			<Prose className="docs-content">
 				<p className="docs-breadcrumb"><Link href="/docs/">문서</Link><span aria-hidden="true">/</span><span>{guide.group}</span></p>
 				<div
 					id="doc-content"
@@ -40,7 +41,7 @@ export const DocsPage = ({ guide }: { guide: Guide }) => {
 					)}
 				</div>
 				<p className="docs-technical-link"><Link href="/comparison/">실제 UI 활용 예시</Link></p>
-			</article>
+			</Prose>
 		</main>
 	);
 };

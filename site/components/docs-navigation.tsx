@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Button } from "@oddmash/ui/button";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { DocsNavigation as SharedDocsNavigation } from "@oddmash/ui/docs-navigation";
+import type { SiteLocale } from "../lib/locales";
+import { landingCopy } from "../lib/locales";
 
 interface Item {
 	slug: string;
@@ -11,52 +13,26 @@ interface Item {
 	group: string;
 }
 
-export const DocsNavigation = ({
-	items,
-	current,
-}: {
+const browseLabels = { ko: "문서 목록", en: "Browse documentation", ja: "ドキュメントを一覧表示", zh: "浏览文档" };
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+export const DocsNavigation = ({ items, current, locale = "ko" }: {
 	items: Item[];
 	current: string;
+	locale?: SiteLocale;
 }) => {
-	const [open, setOpen] = useState(false);
-	const groups = useMemo(
-		() => [...new Set(items.map((item) => item.group))],
-		[items],
-	);
+	const router = useRouter();
+	const groups = useMemo(() => [...new Set(items.map(item => item.group))].map(group => ({
+		id: group,
+		label: group,
+		items: items.filter(item => item.group === group).map(item => ({ id: item.slug, href: basePath + item.href, label: item.title })),
+	})), [items]);
 	return (
-		<>
-			<Button variant="secondary"
-				type="button"
-				className="mobile-docs-toggle"
-				aria-expanded={open}
-				aria-controls="docs-sidebar"
-				onClick={() => setOpen(!open)}
-			>
-				문서 목록 {open ? "닫기" : "열기"}
-			</Button>
-			<aside
-				className={`docs-sidebar ${open ? "is-open" : ""}`}
-				id="docs-sidebar"
-			>
-				{groups.map((group) => (
-						<div key={group}>
-							<p className="sidebar-label">{group}</p>
-							<nav className="docs-nav" aria-label={group}>
-								{items
-									.filter((item) => item.group === group)
-									.map((item) => (
-										<Link
-											key={item.slug}
-											href={item.href}
-											aria-current={item.slug === current ? "page" : undefined}
-										>
-											{item.title}
-										</Link>
-									))}
-							</nav>
-						</div>
-					))}
-			</aside>
-		</>
+		<SharedDocsNavigation className="docs-sidebar" aria-label={landingCopy[locale].docs}
+			groups={groups} currentId={current} mobileLabel={browseLabels[locale]}
+			onNavigate={(item, event) => {
+				event.preventDefault();
+				router.push(item.href.slice(basePath.length));
+			}} />
 	);
 };
