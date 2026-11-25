@@ -67,20 +67,20 @@ pnpm --dir site dev
 ### 정적 배포
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/kowrap pnpm test:site
+NEXT_PUBLIC_BASE_PATH=/juliya pnpm test:site
 pnpm --dir site exec playwright install chromium firefox webkit
-NEXT_PUBLIC_BASE_PATH=/kowrap pnpm --dir site test:browser
+NEXT_PUBLIC_BASE_PATH=/juliya pnpm --dir site test:browser
 ```
 
 Firefox 또는 WebKit에서 실행하려면 마지막 명령에 각각 `firefox` 또는 `webkit`을 추가합니다.
 
 Next.js의 정적 export 결과는 `site/out/`에 생성됩니다. npm 패키지의 `dist/`와 별개입니다.
 
-GitHub 저장소의 Settings > Pages > Build and deployment에서 Source를 GitHub Actions로 선택합니다. `pages.yml`은 main의 관련 변경사항 또는 수동 실행에서 정적 사이트를 빌드하고 검증한 뒤 GitHub Pages에 배포합니다. 배포 URL은 https://oddmash.github.io/kowrap/ 입니다.
+GitHub 저장소의 Settings > Pages > Build and deployment에서 Source를 GitHub Actions로 선택합니다. `pages.yml`은 main의 관련 변경사항 또는 수동 실행에서 정적 사이트를 빌드하고 검증한 뒤 GitHub Pages에 배포합니다. 배포 URL은 https://oddmash.github.io/juliya/ 입니다.
 
 ## npm 릴리스
 
-기존 `@oddmash/kowrap` 패키지는 계속 호환됩니다. 새 브랜드 패키지 후보는 `pnpm pack:juliya`로 같은 빌드와 공개 진입점을 담은 `@oddmash/juliya` tarball을 생성합니다. 새 패키지의 최초 발행과 Trusted Publisher 설정은 소유자가 검증한 뒤 진행합니다. 릴리스 검증 워크플로는 두 패키지의 tarball을 별도 아티팩트로 제공합니다. `juliya-npm-package` 아티팩트는 소유자가 검증한 최초 발행에 사용하며 기존 Kowrap 자동 발행과 분리합니다.
+앞으로 `@oddmash/juliya`만 발행합니다. `@oddmash/kowrap@0.4.0`은 마지막 레거시 버전입니다. 최초 Juliya 발행 및 Trusted Publisher 설정은 소유자가 검증합니다. 릴리스 워크플로는 Juliya tarball만 생성하고 검증합니다.
 
 최초 패키지 등록 이후에는 `package.json` 버전과 동일한 `vX.Y.Z` 태그로 GitHub Release를 발행합니다. 안정 버전 릴리스 발행 시 `Publish npm package` 워크플로가 자동 실행됩니다. main에서 수동으로 버전을 입력해 publish를 끈 상태로 검증할 수도 있습니다. 기존 npm 버전은 다시 발행하지 않으며 테스트를 통과한 tarball만 배포합니다.
 
@@ -92,14 +92,14 @@ npm Trusted Publisher 설정은 다음과 같습니다.
 | --- | --- |
 | Provider | GitHub Actions |
 | Organization or user | Oddmash |
-| Repository | kowrap |
+| Repository | juliya |
 | Workflow filename | publish.yml |
 | Environment | 비워 둠 |
 | Allowed actions | npm publish 허용 |
 
 ### 브랜드 및 저장소 전환
 
-GitHub 저장소를 `Oddmash/juliya`로 변경할 때는 기존 패키지와 새 패키지의 npm Trusted Publisher를 새로운 저장소명으로 설정하고, 두 패키지의 repository URL을 일치시킵니다. 기존 npm 패키지 이름과 공개 API는 유지합니다. Pages는 저장소명에 맞춰 base path를 설정합니다. 프로젝트 Pages URL은 저장소 이름 변경 시 자동 리디렉션되지 않으므로 기존 외부 링크를 점검하고 새 URL을 공지합니다. 이전 저장소명을 재사용하지 않습니다.
+GitHub 저장소명은 `Oddmash/juliya`이며 npm Trusted Publisher도 같은 이름을 사용합니다. Pages는 실제 저장소명으로 base path를 설정합니다. 이전 GitHub 저장소명은 재사용하지 않습니다. 이전 Pages URL은 자동 리디렉션을 보장하지 않습니다.
 
 최초 버전이 없다면 소유자가 npm 로그인 및 2FA로 공개 패키지를 등록하고 OIDC를 연결합니다.
 

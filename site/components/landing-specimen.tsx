@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { useJuliya } from "@oddmash/kowrap/react";
+import { useJuliya } from "@oddmash/juliya/react";
 import { engineLocale } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
 import { shuffledSceneIndices, specimenScenes } from "../lib/specimen-scenes";

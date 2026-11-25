@@ -10,7 +10,7 @@ import "../app/landing.css";
 export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
 	const copy = landingCopy[locale];
 	const docs = `${languagePath(locale)}/docs/`;
-	const command = "pnpm add @oddmash/kowrap";
+	const command = "pnpm add @oddmash/juliya";
 	return (
 		<main id="main" lang={engineLocale(locale)} className="container landing">
 			<header className="landing-intro">

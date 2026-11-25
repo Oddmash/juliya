@@ -2,7 +2,7 @@
 
 React에서는 레이아웃에 직접 사용하는 `JuliyaText`, 렌더링을 직접 구성하는 `useJuliya` 훅, 공통 언어를 설정하는 `JuliyaProvider`를 제공합니다. Next.js에서도 같은 패키지를 사용합니다.
 
-이 문서의 `@oddmash/juliya`는 새 패키지가 발행된 뒤 사용할 수 있습니다. 신규 버전의 `@oddmash/kowrap`에서도 같은 API를 사용할 수 있습니다.
+이 문서는 공식 패키지 `@oddmash/juliya`를 사용합니다. 기존 Kowrap 0.4.0의 공개 API를 유지합니다.
 
 ## JuliyaText
 
@@ -205,9 +205,9 @@ export default Page;
 `useKowrap`과 `useJuliya`는 동일한 훅입니다. 기존 옵션과 반환값을 유지합니다. `SentenceText`도 `JuliyaSentenceText`와 동일한 서버 전용 컴포넌트입니다.
 
 ```tsx
-import { WrapText, useKowrap } from '@oddmash/kowrap/react';
+import { WrapText, useKowrap } from '@oddmash/juliya/react';
 ```
 
-기존 패키지명과 위 API는 계속 지원합니다. 새 API에서는 Provider가 있는 경우 그 언어를 공유하고, Provider가 없는 기존 사용 환경에서는 종전처럼 한국어가 기본값입니다.
+기존 API 이름은 Juliya에서도 사용할 수 있습니다. 새 API에서는 Provider가 있는 경우 그 언어를 공유하고, Provider가 없는 기존 사용 환경에서는 종전처럼 한국어가 기본값입니다.
 
-두 패키지명을 동시에 설치하면 각 패키지가 별도의 React 컨텍스트를 생성합니다. `JuliyaProvider`와 해당 Provider의 하위 컴포넌트 및 훅은 반드시 같은 패키지명에서 가져오세요.
+레거시 Kowrap과 Juliya를 동시에 설치하면 각 패키지가 별도의 React 컨텍스트를 생성합니다. `JuliyaProvider`와 해당 Provider의 하위 컴포넌트 및 훅은 반드시 같은 패키지명에서 가져오세요.

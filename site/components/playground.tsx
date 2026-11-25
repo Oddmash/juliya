@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { splitLines } from "@oddmash/kowrap";
-import type { WrapLocale } from "@oddmash/kowrap";
-import { JuliyaText } from "@oddmash/kowrap/react";
+import { splitLines } from "@oddmash/juliya";
+import type { WrapLocale } from "@oddmash/juliya";
+import { JuliyaText } from "@oddmash/juliya/react";
 import { Button } from "@oddmash/ui/button";
 import { Card } from "@oddmash/ui/card";
 import { Textarea } from "@oddmash/ui/textarea";
@@ -174,7 +174,7 @@ export const Playground = ({ initialLocale = "ko" }: { initialLocale?: DemoLocal
 	const styleCode = `const style = {\n  width: ${width}, maxWidth: "100%", fontSize: ${font},\n  fontWeight: 650, lineHeight: 1.55,\n  letterSpacing: "-.037em",\n};`;
 	const textCode = `const text = ${JSON.stringify(text)};`;
 	const withoutCode = `${textCode}\n${styleCode}\n\n<p style={{ ...style, whiteSpace: "pre-wrap",\n  wordBreak: "keep-all", overflowWrap: "anywhere" }}>\n  {text}\n</p>`;
-	const withCode = `import { JuliyaText } from "@oddmash/kowrap/react";\n\n${textCode}\n${styleCode}\n\n<JuliyaText as="p" locale="${locale}" style={style}${breaks.length ? ` forcedBreaks={${JSON.stringify(breaks)}}` : ""}>\n  {text}\n</JuliyaText>`;
+	const withCode = `import { JuliyaText } from "@oddmash/juliya/react";\n\n${textCode}\n${styleCode}\n\n<JuliyaText as="p" locale="${locale}" style={style}${breaks.length ? ` forcedBreaks={${JSON.stringify(breaks)}}` : ""}>\n  {text}\n</JuliyaText>`;
 
 	return (
 		<section

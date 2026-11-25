@@ -1,59 +1,56 @@
-# 줄이야 (Juliya)
+# Juliya (줄이야)
 
-한국어, 영어, 일본어, 중국어 간체의 줄바꿈 경계와 실제 화면 폭을 함께 고려하는 라이브러리입니다. 기존 Kowrap의 공개 API와 한국어 기본 동작을 유지합니다.
+[English](https://github.com/Oddmash/juliya#readme) · [한국어](https://github.com/Oddmash/juliya/blob/main/docs/readme/ko.md) · [日本語](https://github.com/Oddmash/juliya/blob/main/docs/readme/ja.md) · [简体中文](https://github.com/Oddmash/juliya/blob/main/docs/readme/zh.md)
 
-한국어 어절, 영어 수식 관계, 일본어·중국어의 연속 텍스트와 문장부호를 고려합니다. 언어별 규칙은 휴리스틱이며 모든 문장의 의미를 완벽하게 분석한다는 보장은 없습니다.
+Juliya is a locale-aware text wrapping library for readable headings and short passages in Korean, English, Japanese, and Simplified Chinese. It combines language-specific break boundaries with measured layout width instead of relying on character counts alone.
 
-[체험하기](https://oddmash.github.io/kowrap/#playground) | [문서](https://oddmash.github.io/kowrap/docs/) | [npm](https://www.npmjs.com/package/@oddmash/kowrap)
+[Playground](https://oddmash.github.io/juliya/en/#editor) | [Documentation](https://oddmash.github.io/juliya/en/docs/) | [npm](https://www.npmjs.com/package/@oddmash/juliya)
 
-랜딩에서는 선택한 언어의 다양한 예제를 표시하고 폭에 따라 실제 줄바꿈 위치가 변화하는 모습을 시연합니다.
+## Choose a language
 
-## 언어 선택
-
-신규 언어 진입점이 포함된 버전에서는 하나의 패키지에서 원하는 언어를 선택합니다.
+| Language | Entry point | Locale |
+| --- | --- | --- |
+| Korean | `@oddmash/juliya/ko` | `ko` |
+| English | `@oddmash/juliya/en` | `en` |
+| Japanese | `@oddmash/juliya/ja` | `ja` |
+| Simplified Chinese | `@oddmash/juliya/zh` | `zh`, `zh-Hans` |
 
 ```ts
-import { wrap } from '@oddmash/kowrap/ja';
+import { wrap } from '@oddmash/juliya/en';
 
-const lines = wrap('読みやすい文章を、もっと自然に。', {
-  width: 10,
-  measure: text => [...text].length,
+const lines = wrap('Read every line naturally.', {
+  width: 12,
+  measure: (text) => [...text].length,
 });
 ```
 
-지원 경로는 `/ko`, `/en`, `/ja`, `/zh`입니다. 기존 루트의 `wrap(text, { width, measure })`는 한국어를 유지하며, `locale` 옵션으로 명시적으로 변경할 수 있습니다. React, DOM, Vue, Svelte의 기존 진입점은 유지합니다.
+This example uses character counts for illustration. The DOM and framework adapters measure actual font and container width. The default root entry point uses Korean unless a locale is selected explicitly.
 
-새 브랜드 패키지 `@oddmash/juliya`는 동일한 구현과 언어별 진입점으로 발행할 예정입니다. 신규 패키지가 발행되면 `@oddmash/juliya/ko`, `@oddmash/juliya/en`, `@oddmash/juliya/ja`, `@oddmash/juliya/zh`로 가져올 수 있습니다. 기존 패키지는 삭제하거나 덮어쓰지 않습니다.
-
-## React에서 언어 선택
-
-신규 버전의 `JuliyaProvider`로 애플리케이션 언어를 한 번 설정하면 그 하위의 `JuliyaText`와 `useJuliya`가 언어를 공유합니다.
+## React and Next.js
 
 ```tsx
 import { JuliyaProvider, JuliyaText } from '@oddmash/juliya/react';
 
-<JuliyaProvider locale="ja">
-  <JuliyaText as="h1">読みやすい文章を、もっと自然に。</JuliyaText>
-  <JuliyaText as="p">画面の幅に合わせて改行します。</JuliyaText>
+<JuliyaProvider locale="en">
+  <JuliyaText as="h1">Read every line naturally.</JuliyaText>
+  <JuliyaText as="p">Wrap text based on the available space.</JuliyaText>
 </JuliyaProvider>
 ```
 
-개별 문장에 다른 언어를 적용하려면 `locale`을 직접 지정할 수 있습니다. Provider를 사용하지 않으면 기본 언어는 한국어입니다. 기존 `WrapText`, `useKowrap` 이름은 계속 사용할 수 있습니다. 예제의 새 패키지명은 신규 패키지가 발행된 뒤 사용할 수 있습니다.
+The provider shares its locale with child components and hooks. An explicit locale on a child takes precedence. See the [React guide](https://oddmash.github.io/juliya/en/docs/react/).
 
-두 패키지를 함께 사용하는 경우 Provider와 하위 컴포넌트는 동일한 패키지에서 가져오세요. [React 및 i18n 연동 예제](docs/guide/react.md)를 참고하세요.
+## Try in a browser
 
-## HTML에서 바로 실행하기
-
-아래 코드를 `index.html`로 저장하고 인터넷에 연결된 브라우저에서 열면 jsDelivr가 Kowrap `0.3.0`을 불러옵니다.
+Save this Korean example as `index.html` and open it in a browser with an internet connection. The standalone example uses the verified Juliya 0.4.0 CDN entry point.
 
 ```html
 <!doctype html>
 <html lang="ko">
 <meta charset="utf-8">
-<title>Kowrap 예제</title>
+<title>Juliya 예제</title>
 <p id="title" style="max-width: 220px; font-size: 24px">팀의 모든 문서를 한곳에서 관리하세요</p>
 <script type="module">
-  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/kowrap@0.3.0/dist/dom/index.js/+esm';
+  import { mountKowrap } from 'https://cdn.jsdelivr.net/npm/@oddmash/juliya@0.4.0/dist/dom/index.js/+esm';
 
   const title = document.getElementById('title');
   mountKowrap(title, { text: title.textContent });
@@ -61,16 +58,16 @@ import { JuliyaProvider, JuliyaText } from '@oddmash/juliya/react';
 </html>
 ```
 
-## 특징
+## Features
 
-- 한국어 어절을 보존하는 균형 잡힌 줄바꿈
-- 화면 폭 변화에 따른 자동 재계산
-- 의도적인 개행 위치 지정
-- 강조, 링크 등 인라인 마크업 유지
-- React, Next.js, Vue, Svelte 및 일반 HTML 지원
+- Language-specific line breaking and balanced line widths.
+- Automatic recalculation when the container or font changes.
+- Explicit line breaks and nested inline markup preservation.
+- React, Next.js, Vue, Svelte, and plain HTML support.
+- Heuristic language rules, not comprehensive natural-language analysis. Best suited to headings and short passages.
 
-## 지원 범위
+## Migrating from Kowrap
 
-kowrap은 제목과 짧은 문장에 적합합니다. 강조와 링크를 포함한 중첩 인라인 텍스트도 지원합니다.
+`@oddmash/kowrap@0.4.0` is the final legacy release. All future updates and fixes are published exclusively as `@oddmash/juliya`. Existing versions remain available. Switch the package name while retaining the public API and subpath imports. Compatibility names such as `mountKowrap`, `WrapText`, and `useKowrap` remain available in Juliya.
 
-[기여 안내](CONTRIBUTING.md)
+[Migration and usage](https://oddmash.github.io/juliya/en/docs/) | [Contributing](CONTRIBUTING.md) | [MIT License](LICENSE)

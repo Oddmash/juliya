@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { segmentSentences, splitLines, wrap } from "@oddmash/kowrap";
+import { segmentSentences, splitLines, wrap } from "@oddmash/juliya";
 import { portfolioCorpus } from "./fixtures/portfolio-prose.mjs";
 
 const proportionalMeasure = (text) => [...text].reduce((width, char) => width + (/[가-힣]/u.test(char) ? 1 : char === " " ? 0.3 : 0.5), 0);

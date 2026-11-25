@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@oddmash/kowrap':
+      '@oddmash/juliya':
         specifier: file:../..
         version: file:../..(react@19.3.1)
       next:
@@ -314,7 +314,7 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@oddmash/kowrap@file:../..':
+  '@oddmash/juliya@file:../..':
     resolution: {directory: ../.., type: directory}
     engines: {node: '>=20'}
     peerDependencies:
@@ -721,7 +721,7 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.4.6':
     optional: true
 
-  '@oddmash/kowrap@file:../..(react@19.3.1)':
+  '@oddmash/juliya@file:../..(react@19.3.1)':
     optionalDependencies:
       react: 19.3.1
 

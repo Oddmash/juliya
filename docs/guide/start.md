@@ -1,5 +1,7 @@
 # 빠르게 시작하기
 
+[한국어](https://oddmash.github.io/juliya/docs/) · [English](https://oddmash.github.io/juliya/en/docs/) · [日本語](https://oddmash.github.io/juliya/ja/docs/) · [简体中文](https://oddmash.github.io/juliya/zh/docs/)
+
 줄이야(Juliya)는 한국어, 영어, 일본어, 중국어 간체의 제목과 짧은 문장을 실제 화면 폭에 맞춰 읽기 좋은 위치에서 줄바꿈하는 라이브러리입니다.
 
 CSS의 `word-break: keep-all`은 어절 중간에서 줄이 나뉘지 않게 합니다. 줄이야는 여기에 언어별 줄바꿈 규칙과 각 줄의 너비를 함께 고려합니다. React, Next.js, Vue, Svelte, 일반 HTML에서 사용할 수 있습니다.
@@ -9,14 +11,14 @@ CSS의 `word-break: keep-all`은 어절 중간에서 줄이 나뉘지 않게 합
 사용 중인 패키지 매니저에 맞는 명령어 하나만 실행하세요.
 
 ```package-managers
-npm install @oddmash/kowrap
-pnpm add @oddmash/kowrap
-yarn add @oddmash/kowrap
+npm install @oddmash/juliya
+pnpm add @oddmash/juliya
+yarn add @oddmash/juliya
 ```
 
 Node.js 20 이상과 `Intl.Segmenter`를 지원하는 현대 브라우저를 대상으로 합니다. 패키지는 ESM을 제공하고 전역 CSS나 프레임워크 런타임을 강제로 추가하지 않습니다. React를 사용할 때는 React 18.2 이상 또는 React 19가 필요합니다.
 
-새 이름의 `@oddmash/juliya`는 발행 예정입니다. 아래 새 API와 언어별 진입점은 신규 버전에서 제공하며, 같은 버전의 `@oddmash/kowrap`에서도 기존 및 새 API를 함께 사용할 수 있습니다. 이미 사용하고 있는 기존 버전의 동작은 바뀌지 않습니다.
+`@oddmash/juliya`가 앞으로 업데이트되는 공식 패키지입니다. `@oddmash/kowrap@0.4.0`은 마지막 레거시 버전이며 기존 버전은 그대로 설치할 수 있습니다.
 
 ## 1분 만에 적용하기
 
@@ -40,20 +42,20 @@ const Heading = () => (
 
 | 환경 | import 경로 | 주요 API |
 | --- | --- | --- |
-| JavaScript / TypeScript | `@oddmash/kowrap` | `wrap`, `splitLines`, `segmentSentences` |
-| HTML / DOM (빌드 도구 사용) | `@oddmash/kowrap/dom` | `mountKowrap`, `observeKowrap` |
-| React / Next.js | `@oddmash/kowrap/react` | `JuliyaText`, `useJuliya`, `JuliyaProvider` (기존 이름도 지원) |
-| React Server Component | `@oddmash/kowrap/react/server` | `JuliyaSentenceText`, `SentenceText` |
-| Vue 3 | `@oddmash/kowrap/vue` | `kowrapDirective` |
-| Svelte | `@oddmash/kowrap/svelte` | `kowrap` |
+| JavaScript / TypeScript | `@oddmash/juliya` | `wrap`, `splitLines`, `segmentSentences` |
+| HTML / DOM (빌드 도구 사용) | `@oddmash/juliya/dom` | `mountKowrap`, `observeKowrap` |
+| React / Next.js | `@oddmash/juliya/react` | `JuliyaText`, `useJuliya`, `JuliyaProvider` (기존 이름도 지원) |
+| React Server Component | `@oddmash/juliya/react/server` | `JuliyaSentenceText`, `SentenceText` |
+| Vue 3 | `@oddmash/juliya/vue` | `kowrapDirective` |
+| Svelte | `@oddmash/juliya/svelte` | `kowrap` |
 
 일반 HTML에서는 [CDN 예제](dom.md)처럼 `<script type="module">` 안에서 모듈 URL을 가져오면 npm 설치 없이 시작할 수 있습니다. 기존 `/browser` 진입점은 `/dom`과 동일하게 동작합니다.
 
 ### 패키지 이름 전환
 
-새 패키지가 발행되면 기존 이름과 신규 이름의 동일 버전은 같은 API를 제공합니다. 기존 이름을 계속 사용할 수도 있습니다.
+기존 Kowrap 0.4.0 사용자는 패키지 이름만 바꾸면 동일한 API를 사용할 수 있습니다. 향후 업데이트는 Juliya로만 제공합니다.
 
-| 기존 이름 | 신규 이름 (발행 예정) |
+| 기존 이름 | 신규 이름 |
 | --- | --- |
 | `@oddmash/kowrap` | `@oddmash/juliya` |
 | `@oddmash/kowrap/ko`, `/en`, `/ja`, `/zh` | `@oddmash/juliya/ko`, `/en`, `/ja`, `/zh` |
@@ -69,7 +71,7 @@ const Heading = () => (
 ## JavaScript 첫 예제
 
 ```ts
-import { wrap } from '@oddmash/kowrap';
+import { wrap } from '@oddmash/juliya';
 
 const text = '오늘은 모든 사람이 함께 자연스럽게 줄바꿈합니다.';
 const lines = wrap(text, {

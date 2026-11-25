@@ -4,8 +4,8 @@ import { createElement, act, Fragment } from "react";
 import { renderToString } from "react-dom/server";
 import { hydrateRoot } from "react-dom/client";
 import { JSDOM } from "jsdom";
-import { wrap } from "@oddmash/kowrap";
-import { JuliyaProvider, JuliyaText, useJuliya, WrapText, useKowrap } from "@oddmash/kowrap/react";
+import { wrap } from "@oddmash/juliya";
+import { JuliyaProvider, JuliyaText, useJuliya, WrapText, useKowrap } from "@oddmash/juliya/react";
 
 test("hydrates original SSR text and recalculates on a resize", async () => {
   const text = "오늘은 모든 사람이 함께 자연스러운 한국어 줄바꿈을 경험합니다.";
