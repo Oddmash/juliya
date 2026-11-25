@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    branches: [develop, main]
     types: [opened, reopened, synchronize, edited, ready_for_review]
   workflow_dispatch:
 
@@ -60,15 +61,17 @@ jobs:
             test/next-app/pnpm-lock.yaml
             test/framework-app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - name: Build library and run unit tests
+        run: pnpm test
       - run: pnpm --dir test/next-app install --frozen-lockfile
-      - run: pnpm test:hydration
+      - run: pnpm --dir test/next-app test:hydration
       - run: pnpm --dir test/framework-app install --frozen-lockfile
-      - run: pnpm test:frameworks
-      - run: pnpm test:browser
+      - run: pnpm --dir test/framework-app test
+      - run: pnpm --dir test/next-app build
+      - run: pnpm --dir test/next-app test:browser
         env:
           HOME: /root
-      - run: pnpm test:package
+      - run: node --test test/package.mjs
   site:
     needs: scope
     if: needs.scope.outputs.site == 'true'
@@ -98,7 +101,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm --dir site install --frozen-lockfile
-      - run: pnpm test:site
+      - run: pnpm --dir site build && node --test test/site.mjs
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
       - name: Verify landing page and documentation
@@ -113,11 +116,12 @@ jobs:
           name: site-renewal-captures-${{ matrix.browser }}
           path: site/test-results/renewal/
           if-no-files-found: warn
+          retention-days: 7
 
   verify:
     needs: [scope, lint, test, site]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     timeout-minutes: 5
     steps:
       - name: Confirm appropriate checks passed
