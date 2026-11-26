@@ -239,8 +239,11 @@ try {
       const before = getComputedStyle(element.querySelector("a")).fontSize;
       const mounted = mountKowrap(element, { inline: true, locale: "en", forcedBreaks: [5] });
       const withBreak = getComputedStyle(element.querySelector("a")).fontSize;
+      await document.fonts.ready;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const initial = offsets(element);
       stylesheet.textContent = ".selector-fixture > a:first-child { font-size: 52px; }";
-      mounted.refresh();
+      mounted.update({ inline: true, locale: "en", forcedBreaks: [5] });
       const refreshed = offsets(element);
       const freshForced = create();
       const freshForcedMount = mountKowrap(freshForced, { inline: true, locale: "en", forcedBreaks: [5] });
@@ -257,12 +260,13 @@ try {
       element.remove();
       fresh.remove();
       stylesheet.remove();
-      return { before, withBreak, actual, expected, refreshed, expectedRefresh };
+      return { before, withBreak, actual, expected, initial, refreshed, expectedRefresh };
     });
     assert.equal(authorStyle.before, "40px");
     assert.equal(authorStyle.withBreak, "16px");
     assert.deepEqual(authorStyle.actual, authorStyle.expected);
     assert.deepEqual(authorStyle.refreshed, authorStyle.expectedRefresh);
+    assert.notDeepEqual(authorStyle.initial, authorStyle.expectedRefresh);
     const beforeFont = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
       const element = document.querySelector("#font");
