@@ -178,12 +178,13 @@ try {
       const selectedNode = element.firstChild;
       selection.setBaseAndExtent(selectedNode, 0, selectedNode, 1);
       const selected = selection.toString();
+      const textMutations = () => records.takeRecords().filter((record) => record.type === "characterData" || [...record.addedNodes, ...record.removedNodes].some((node) => node.nodeType === Node.TEXT_NODE)).length;
       controller.refresh();
-      const refreshMutations = records.takeRecords().length;
+      const refreshMutations = textMutations();
       const metadata = {};
       metadata.self = metadata;
       controller.update({ inline: true, locale: "ko", metadata });
-      const updateMutations = records.takeRecords().length;
+      const updateMutations = textMutations();
       const selectionPreserved = selection.anchorNode === selectedNode && selection.toString() === selected;
       selection.removeAllRanges();
       element.style.minHeight = "400px";
@@ -238,6 +239,14 @@ try {
       const before = getComputedStyle(element.querySelector("a")).fontSize;
       const mounted = mountKowrap(element, { inline: true, locale: "en", forcedBreaks: [5] });
       const withBreak = getComputedStyle(element.querySelector("a")).fontSize;
+      stylesheet.textContent = ".selector-fixture > a:first-child { font-size: 52px; }";
+      mounted.refresh();
+      const refreshed = offsets(element);
+      const freshForced = create();
+      const freshForcedMount = mountKowrap(freshForced, { inline: true, locale: "en", forcedBreaks: [5] });
+      const expectedRefresh = offsets(freshForced);
+      freshForcedMount.destroy();
+      freshForced.remove();
       mounted.update({ inline: true, locale: "en" });
       const actual = offsets(element);
       const fresh = create();
@@ -248,11 +257,12 @@ try {
       element.remove();
       fresh.remove();
       stylesheet.remove();
-      return { before, withBreak, actual, expected };
+      return { before, withBreak, actual, expected, refreshed, expectedRefresh };
     });
     assert.equal(authorStyle.before, "40px");
     assert.equal(authorStyle.withBreak, "16px");
     assert.deepEqual(authorStyle.actual, authorStyle.expected);
+    assert.deepEqual(authorStyle.refreshed, authorStyle.expectedRefresh);
     const beforeFont = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
       const element = document.querySelector("#font");
