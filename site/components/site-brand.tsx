@@ -1,14 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { landingCopy, languageFromPath, languagePath } from "../lib/locales";
+import { landingCopy, languagePath, type SiteLocale } from "../lib/locales";
 
 const homeLabels = { ko: "줄이야 홈", en: "Juliya home", ja: "Juliya ホーム", zh: "Juliya 首页" };
 
-export const SiteBrand = ({ children, version }: { children: ReactNode; version?: string }) => {
-	const locale = languageFromPath(usePathname() ?? "/");
+export const SiteBrand = ({ children, locale, version }: { children: ReactNode; locale: SiteLocale; version?: string }) => {
 	return (
 		<Link className="brand" href={`${languagePath(locale)}/`} aria-label={homeLabels[locale]}>
 			{children}

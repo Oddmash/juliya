@@ -235,6 +235,15 @@ const verifySpecimen = async (page, motion) => {
 	}
 };
 const verifyBrand = async (page, language) => {
+	const documentLanguage = language === "zh" ? "zh-Hans" : language;
+	await page.waitForFunction(lang => document.documentElement.lang === lang, documentLanguage);
+	const skipLabel = {
+		ko: "본문 바로가기",
+		en: "Skip to main content",
+		ja: "本文へ移動",
+		zh: "跳到主要内容",
+	}[language];
+	assert.equal(await page.locator(".skip-link").textContent(), skipLabel);
 	const name = language === "ko" ? "줄이야" : "Juliya";
 	const href = `${basePath}${language === "ko" ? "" : `/${language}`}/`;
 	const label = { ko: "줄이야 홈", en: "Juliya home", ja: "Juliya ホーム", zh: "Juliya 首页" }[language];

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DocsPage } from "../../../components/docs-page";
-import { getGuide, getGuides } from "../../../lib/guides";
+import { DocsPage } from "../../../../components/docs-page";
+import { getGuide, getGuides } from "../../../../lib/guides";
 
 interface Props {
 	params: Promise<{ slug: string }>;

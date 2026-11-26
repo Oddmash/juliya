@@ -35,6 +35,30 @@ test("Next export includes actual native and kowrap examples and synchronized co
 	assert.ok(existsSync(new URL(".nojekyll", output)));
 });
 
+test("initial HTML declares the page language without client JavaScript", () => {
+	const locales = [
+		["", "ko", "본문 바로가기"],
+		["en/", "en", "Skip to main content"],
+		["ja/", "ja", "本文へ移動"],
+		["zh/", "zh-Hans", "跳到主要内容"],
+	];
+	for (const [prefix, lang, skipLabel] of locales) {
+		for (const route of ["index.html", "docs/index.html", "docs/core/index.html"]) {
+			const path = prefix + route;
+			const html = read(path);
+			assert.equal(html.match(/<html\b[^>]*\blang="([^"]+)"/)?.[1], lang, path);
+			assert.ok(html.includes(`href="#main">${skipLabel}</a>`), path);
+		}
+	}
+});
+
+test("the exported 404 retains a Korean document and home link", () => {
+	const html = read("404.html");
+	assert.match(html, /<html\b[^>]*\blang="ko"/);
+	assert.match(html, /<h1>페이지를 찾을 수 없습니다<\/h1>/);
+	assert.ok(html.includes(`href="${basePath}/">홈으로 돌아가세요.`));
+});
+
 test("translated landing and reference routes are exported", () => {
 	for (const language of ["en", "ja", "zh"]) {
 		assert.match(read(`${language}/index.html`), /Juliya/);
