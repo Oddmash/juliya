@@ -21,6 +21,10 @@ Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/A
 - 문서 사이트는 `site/`의 Next.js 정적 export로 관리한다. 사용자용 한국어 문서 원본은 `docs/guide/`의 Markdown이며 사이트는 빌드 시 원본을 읽는다. 영어, 일본어, 중국어 간체 문서의 설명과 예제는 `site/lib/translated-guides.ts`에서 같은 공개 API 계약으로 관리한다. 배포 산출물 `site/out`은 npm 패키지에 포함하지 않는다.
 - 사이트 디자인은 [Oddmash UI 작업 기준](https://github.com/Oddmash/oddmash-ui/blob/main/AGENTS.md)을 따르며 카본 블랙과 중립 회색, 밝은 텍스트를 기본으로 사용한다. `site/theme/tokens.json`에 사이트 토큰을 관리한다. 파란색은 포커스, 빨간색은 오류에 사용한다. 긴 대시를 장식 문자로 사용하지 않는다. 첫 화면에는 하나의 실제 줄바꿈 시연을 표시하고 벤치마크는 기술 참고 영역에만 둔다. 비교 예제와 대응 코드는 동기화하며 이동 경로는 측정된 실제 위치를 기반으로 한다.
 
+## GitHub account use
+
+Follow the [Oddmash GitHub account policy](https://github.com/Oddmash/.github/blob/main/docs/github-account-policy.md). Use `arvynoo` for AI-authored commits, issues and PRs with command-scoped authentication and a separate checkout or worktree per session. Only `qtaghdi` gives final approval to and manually merges external contributions.
+
 ## Public contribution language
 
 Write issue and pull request titles, bodies, public review discussions, commit messages, and changelog entries in English. Use the shared English issue and PR templates from [Oddmash](https://github.com/Oddmash/.github/blob/main/CONTRIBUTING.md). Preserve existing product documentation localization and provide translation help when needed.
