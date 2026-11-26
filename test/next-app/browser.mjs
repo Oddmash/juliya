@@ -180,7 +180,9 @@ try {
       const selected = selection.toString();
       controller.refresh();
       const refreshMutations = records.takeRecords().length;
-      controller.update({ inline: true, locale: "ko" });
+      const metadata = {};
+      metadata.self = metadata;
+      controller.update({ inline: true, locale: "ko", metadata });
       const updateMutations = records.takeRecords().length;
       const selectionPreserved = selection.anchorNode === selectedNode && selection.toString() === selected;
       selection.removeAllRanges();
@@ -213,6 +215,44 @@ try {
     assert.ok(inline.descendantChanged);
     assert.ok(inline.wide < inline.count);
     assert.ok(inline.preserved);
+    const authorStyle = await page.evaluate(async () => {
+      const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
+      const stylesheet = document.createElement("style");
+      stylesheet.textContent = ".selector-fixture > a:first-child { font-size: 40px; }";
+      document.head.append(stylesheet);
+      const create = () => {
+        const element = document.createElement("p");
+        element.className = "selector-fixture";
+        element.style.cssText = "width: 180px; font: 16px Arial";
+        element.append("Lead ", Object.assign(document.createElement("a"), { textContent: "Wide link with words" }), " and other text");
+        document.body.append(element);
+        return element;
+      };
+      const offsets = (element) => [...element.querySelectorAll("[data-kowrap-break]")].map((br) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.setEndBefore(br);
+        return range.toString().length;
+      });
+      const element = create();
+      const before = getComputedStyle(element.querySelector("a")).fontSize;
+      const mounted = mountKowrap(element, { inline: true, locale: "en", forcedBreaks: [5] });
+      const withBreak = getComputedStyle(element.querySelector("a")).fontSize;
+      mounted.update({ inline: true, locale: "en" });
+      const actual = offsets(element);
+      const fresh = create();
+      const freshMount = mountKowrap(fresh, { inline: true, locale: "en" });
+      const expected = offsets(fresh);
+      mounted.destroy();
+      freshMount.destroy();
+      element.remove();
+      fresh.remove();
+      stylesheet.remove();
+      return { before, withBreak, actual, expected };
+    });
+    assert.equal(authorStyle.before, "40px");
+    assert.equal(authorStyle.withBreak, "16px");
+    assert.deepEqual(authorStyle.actual, authorStyle.expected);
     const beforeFont = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
       const element = document.querySelector("#font");
@@ -246,12 +286,29 @@ try {
       let frame = requestAnimationFrame(sample);
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const native = snapshot();
+      const offsets = (target) => [...target.querySelectorAll("[data-kowrap-break]")].map((br) => {
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        range.setEndBefore(br);
+        return range.toString().length;
+      });
       const controller = mountKowrap(element, { inline: true, locale: "en" });
+      const fallback = offsets(element);
       const loaded = font.load();
       window.finishFontFixture = async () => {
         await loaded;
         await document.fonts.ready;
         const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await frames();
+        const actual = offsets(element);
+        const fresh = element.cloneNode(false);
+        fresh.removeAttribute("id");
+        fresh.textContent = element.textContent;
+        element.after(fresh);
+        const freshMount = mountKowrap(fresh, { inline: true, locale: "en" });
+        const expected = offsets(fresh);
+        freshMount.destroy();
+        fresh.remove();
         element.style.width = "180px";
         element.style.fontSize = "22px";
         element.style.width = "480px";
@@ -262,7 +319,7 @@ try {
         cancelAnimationFrame(frame);
         observer?.disconnect();
         controller.destroy();
-        return { snapshots, shifts, native, final, stable };
+        return { snapshots, shifts, native, final, stable, fallback, actual, expected };
       };
       return { native, loading: font.status === "loading" };
     });
@@ -270,6 +327,8 @@ try {
     assert.ok(beforeFont.loading);
     const fontResult = await page.evaluate(() => window.finishFontFixture());
     assert.ok(fontResult.stable);
+    assert.notDeepEqual(fontResult.fallback, fontResult.expected);
+    assert.deepEqual(fontResult.actual, fontResult.expected);
     assert.ok(fontResult.snapshots.length >= 3);
     console.log(`${engine.name()}: delayed font layout samples ${JSON.stringify(fontResult)}`);
     assert.deepEqual(errors, []);
