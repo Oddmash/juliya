@@ -29,12 +29,12 @@ export const fontOf = (computed: CSSStyleDeclaration): CanvasMeasureOptions => (
   fontKerning: computed.fontKerning as CanvasFontKerning,
 });
 
-export const observeElementLayout = (element: HTMLElement, onLayout: (layout: ElementLayout | undefined) => void, skipUnchangedResize = false) => {
+export const observeElementLayout = (element: HTMLElement, onLayout: (layout: ElementLayout | undefined, fromWindowResize: boolean) => void, skipUnchangedResize = false) => {
   const doc = element.ownerDocument;
   const view = doc.defaultView;
   if (!view) {
-    onLayout(undefined);
-    return { refresh: () => onLayout(undefined), destroy: () => {} };
+    onLayout(undefined, false);
+    return { refresh: () => onLayout(undefined, false), destroy: () => {} };
   }
   let active = true;
   let previousFont: string | undefined;
@@ -44,7 +44,7 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
   let published = false;
   let lastLayout: ElementLayout | undefined;
 
-  const update = (contentWidth?: number, fromObserver = false) => {
+  const update = (contentWidth?: number, fromObserver = false, fromWindowResize = false) => {
     if (!active) return;
     let layout: ElementLayout | undefined;
     try {
@@ -75,31 +75,35 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     if (skipUnchangedResize && fromObserver && published && layout?.width === lastLayout?.width && layout?.measure === lastLayout?.measure) return;
     published = true;
     lastLayout = layout;
-    onLayout(layout);
+    onLayout(layout, fromWindowResize);
   };
 
   let pendingWidth: number | undefined;
   let pendingRefresh = false;
-  const schedule = (width?: number, force = false) => {
+  let pendingWindowResize = false;
+  const schedule = (width?: number, cause: "observer" | "window" | "fonts" = "observer") => {
     if (!active) return;
     if (width !== undefined) pendingWidth = width;
-    pendingRefresh ||= force;
+    pendingRefresh ||= cause !== "observer";
+    pendingWindowResize ||= cause === "window";
     const flush = () => {
       frame = undefined;
       const nextWidth = pendingWidth;
       const fromObserver = !pendingRefresh;
+      const fromWindowResize = pendingWindowResize;
       pendingWidth = undefined;
       pendingRefresh = false;
-      update(nextWidth, fromObserver);
+      pendingWindowResize = false;
+      update(nextWidth, fromObserver, fromWindowResize);
     };
     if (!view.requestAnimationFrame) flush();
     else if (frame === undefined) frame = view.requestAnimationFrame(flush);
   };
   const refresh = () => update();
-  const onResize = () => schedule(undefined, true);
+  const onResize = () => schedule(undefined, "window");
   const onFonts = () => {
     measure = undefined;
-    schedule(undefined, true);
+    schedule(undefined, "fonts");
   };
   const Observer = view.ResizeObserver ?? globalThis.ResizeObserver;
   const observer = Observer ? new Observer((entries) => {

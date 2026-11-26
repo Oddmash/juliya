@@ -57,7 +57,7 @@ const readStyledRuns = (element: HTMLElement) => {
 export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void, readAuthorMarkup?: ReadAuthorMarkup) => {
   let previous: { signature: string; authorSignature: string; measure: Measure; offsets: number[] } | undefined;
   let forceAuthorRead = false;
-  const observer = observeElementLayout(element, (layout) => {
+  const observer = observeElementLayout(element, (layout, fromWindowResize) => {
     const options = getOptions();
     if (!layout) {
       previous = undefined;
@@ -68,7 +68,8 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
     const signatureOf = ({ text, styled }: ReturnType<typeof readStyledRuns>) => JSON.stringify([text, layout.width, locale, strategy, breakLongWords, forcedBreaks, styled]);
     const rendered = readStyledRuns(element);
     const signature = signatureOf(rendered);
-    if (!forceAuthorRead && previous?.signature === signature && previous.measure === layout.measure) {
+    // Generated breaks can mask structural CSS changes during a viewport resize.
+    if (!forceAuthorRead && !fromWindowResize && previous?.signature === signature && previous.measure === layout.measure) {
       onBreaks(previous.offsets);
       return;
     }
