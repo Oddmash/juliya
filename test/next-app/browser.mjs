@@ -140,8 +140,8 @@ try {
     assert.ok(comparison.some(({ breaks }) => breaks > 0));
     console.log(`${engine.name()}: ${comparison.length} portfolio prose samples, CSS lines=${comparison.reduce((sum, sample) => sum + sample.cssLines, 0)}, Kowrap lines=${comparison.reduce((sum, sample) => sum + sample.lines, 0)}`);
     await page.route(`${origin}/__juliya-inline-test`, (route) => route.fulfill({
-      contentType: "text/html",
-      body: '<p id="inline" style="width: 140px; font: 20px Arial; word-break: keep-all">읽기 좋은 <strong>한국어 줄바꿈</strong>을 경험해 보세요.<br>문서의 내용을 읽어 보세요.</p>',
+      contentType: "text/html; charset=utf-8",
+      body: '<!doctype html><meta charset="utf-8"><p id="inline" style="width: 140px; font: 20px Arial; word-break: keep-all">읽기 좋은 <strong>한국어 줄바꿈</strong>을 경험해 보세요.<br>문서의 내용을 읽어 보세요.</p>',
     }));
     await page.route(`${origin}/__juliya-dist/**`, async (route) => {
       const path = new URL(route.request().url()).pathname.slice("/__juliya-dist/".length);
