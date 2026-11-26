@@ -173,14 +173,14 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
     });
     mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style", "lang"] });
   }
-  const refresh = (force = true) => {
+  const refresh = () => {
     const records = mutations?.takeRecords() ?? [];
     if (records.some((record) => record.type !== "attributes")) restore();
-    observer.refresh(force || records.length > 0);
+    observer.refresh();
   };
   return {
-    update: (next: InlineKowrapOptions) => { options = next; refresh(false); },
-    refresh: () => refresh(),
+    update: (next: InlineKowrapOptions) => { options = next; refresh(); },
+    refresh,
     destroy: () => { observer.destroy(); mutations?.disconnect(); restore(); },
     restore,
   };
