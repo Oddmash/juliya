@@ -1,5 +1,7 @@
 # 줄이야 (Juliya) 개발 지침
 
+Follow the [Oddmash concurrent work claims](https://github.com/Oddmash/.github/blob/main/AGENTS.md#concurrent-work-claims) and organization collaboration rules before implementation, review, CI retries, or merges.
+
 Oddmash의 [공통 작업 기준](https://github.com/Oddmash/.github/blob/main/AGENTS.md)을 따른다. README의 기본 언어는 영어이며 한국어, 일본어, 중국어 간체 번역은 `docs/readme/`에서 관리한다. 네 언어의 제품 소개, 공개 API 예제, 지원 범위 및 이전 안내를 동기화한다. 기여 문서는 한국어로 유지하고 공개 기여 양식은 영어를 사용한다.
 
 - README는 제품 소개, 실제 줄바꿈 예시와 지원 범위만 담는다. 설치, 개발, 테스트, 릴리스는 `CONTRIBUTING.md`에 둔다.
