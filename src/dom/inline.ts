@@ -55,8 +55,9 @@ const readStyledRuns = (element: HTMLElement) => {
 };
 
 export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void, readAuthorMarkup?: ReadAuthorMarkup) => {
-  let previous: { signature: string; measure: Measure; offsets: number[] } | undefined;
-  return observeElementLayout(element, (layout) => {
+  let previous: { signature: string; authorSignature: string; measure: Measure; offsets: number[] } | undefined;
+  let forceAuthorRead = false;
+  const observer = observeElementLayout(element, (layout) => {
     const options = getOptions();
     if (!layout) {
       previous = undefined;
@@ -67,11 +68,18 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
     const signatureOf = ({ text, styled }: ReturnType<typeof readStyledRuns>) => JSON.stringify([text, layout.width, locale, strategy, breakLongWords, forcedBreaks, styled]);
     const rendered = readStyledRuns(element);
     const signature = signatureOf(rendered);
-    if (previous?.signature === signature && previous.measure === layout.measure) {
+    if (!forceAuthorRead && previous?.signature === signature && previous.measure === layout.measure) {
       onBreaks(previous.offsets);
       return;
     }
-    const { text, styles, styled } = readAuthorMarkup ? readAuthorMarkup(() => readStyledRuns(element)) : rendered;
+    const author = readAuthorMarkup ? readAuthorMarkup(() => readStyledRuns(element)) : rendered;
+    const authorSignature = signatureOf(author);
+    const { text, styles, styled } = author;
+    if (previous?.authorSignature === authorSignature && previous.measure === layout.measure) {
+      onBreaks(previous.offsets);
+      previous.signature = readAuthorMarkup ? signatureOf(readStyledRuns(element)) : signature;
+      return;
+    }
     const measures = new Map<string, Measure>();
     for (const [key, { font, language }] of styles) {
       measures.set(key, createLocalizedCanvasMeasure(font, element.ownerDocument, language));
@@ -83,8 +91,15 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
     }, 0);
     const offsets = breakOffsets(wrap(text, { ...options, ...layout, measureRange }));
     onBreaks(offsets);
-    previous = { signature: readAuthorMarkup ? signatureOf(readStyledRuns(element)) : signature, measure: layout.measure, offsets };
+    previous = { signature: readAuthorMarkup ? signatureOf(readStyledRuns(element)) : signature, authorSignature, measure: layout.measure, offsets };
   });
+  return {
+    ...observer,
+    refresh: (force = true) => {
+      forceAuthorRead = force;
+      try { observer.refresh(); } finally { forceAuthorRead = false; }
+    },
+  };
 };
 
 export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) => {
@@ -158,13 +173,14 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
     });
     mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style", "lang"] });
   }
-  const refresh = () => {
-    if (mutations?.takeRecords().some((record) => record.type !== "attributes")) restore();
-    observer.refresh();
+  const refresh = (force = true) => {
+    const records = mutations?.takeRecords() ?? [];
+    if (records.some((record) => record.type !== "attributes")) restore();
+    observer.refresh(force || records.length > 0);
   };
   return {
-    update: (next: InlineKowrapOptions) => { options = next; refresh(); },
-    refresh,
+    update: (next: InlineKowrapOptions) => { options = next; refresh(false); },
+    refresh: () => refresh(),
     destroy: () => { observer.destroy(); mutations?.disconnect(); restore(); },
     restore,
   };
