@@ -2,16 +2,16 @@ import Link from "next/link";
 import { ButtonLink } from "@oddmash/ui/button";
 import localFont from "next/font/local";
 import { JuliyaText } from "@oddmash/juliya/react";
-import { CopyButton } from "../components/copy-button";
-import { FrameworkExamples } from "../components/framework-examples";
-import { LandingSpecimen } from "../components/landing-specimen";
-import { Playground } from "../components/playground";
-import { SiteButtonLink } from "../components/site-navigation";
-import "./landing.css";
+import { CopyButton } from "../../components/copy-button";
+import { FrameworkExamples } from "../../components/framework-examples";
+import { LandingSpecimen } from "../../components/landing-specimen";
+import { Playground } from "../../components/playground";
+import { SiteButtonLink } from "../../components/site-navigation";
+import "../landing.css";
 
 const installCommand = "pnpm add @oddmash/juliya";
 const display = localFont({
-	src: "./fonts/kowrap-display.woff2",
+	src: "../fonts/kowrap-display.woff2",
 	variable: "--landing-display",
 	weight: "100 900",
 	display: "swap",

@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import type { CSSProperties, ReactNode } from "react";
 import manifest from "../../package.json";
 import tokens from "../theme/tokens.json";
-import { SiteNavigation } from "../components/site-navigation";
-import { SiteBrand } from "../components/site-brand";
+import { SiteNavigation } from "./site-navigation";
+import { SiteBrand } from "./site-brand";
 import { SiteHeader, SiteHeaderInner, SiteFooter, SiteNav } from "@oddmash/ui/site-layout";
 import { PlatformLink, PlatformLinks } from "@oddmash/ui/platform-link";
-import { CopyToastProvider } from "../components/copy-toast";
+import { CopyToastProvider } from "./copy-toast";
 import { getGuides, guideHref } from "../lib/guides";
 import { repositoryUrl } from "../lib/project";
 import "@oddmash/ui/styles.css";
-import "./globals.css";
+import { engineLocale, type SiteLocale } from "../lib/locales";
+import "../app/globals.css";
 
 export const metadata: Metadata = {
 	title: {
@@ -56,12 +57,19 @@ const theme = {
 	"--radius-lg": tokens.radius.large,
 } as CSSProperties;
 
-const RootLayout = ({ children }: { children: ReactNode }) => (
-	<html lang="ko" data-om-theme="dark" style={theme}>
+const skipLabels: Record<SiteLocale, string> = {
+	ko: "본문 바로가기",
+	en: "Skip to main content",
+	ja: "本文へ移動",
+	zh: "跳到主要内容",
+};
+
+export const SiteDocument = ({ children, locale }: { children: ReactNode; locale: SiteLocale }) => (
+	<html lang={engineLocale(locale)} data-om-theme="dark" style={theme}>
 		<body>
 			<CopyToastProvider>
 			<a className="skip-link" href="#main">
-				본문 바로가기
+				{skipLabels[locale]}
 			</a>
 			<SiteHeader className="header">
 				<SiteHeaderInner className="nav container">
@@ -84,5 +92,3 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
 		</body>
 	</html>
 );
-
-export default RootLayout;
