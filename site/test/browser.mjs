@@ -641,6 +641,40 @@ try {
 		await compact.close();
 	}
 	if (engine.name() === "chromium") {
+		const captureMobileScene = (previous) => {
+			const panel = document.querySelector(".specimen-panels");
+			const index = panel?.dataset.example;
+			if (!index || previous.includes(index) || panel.dataset.widthStep !== "1" || panel.dataset.phase !== "kowrap") return false;
+			const hero = panel.closest(".landing-intro");
+			const stage = panel.querySelector(".specimen-stage").getBoundingClientRect();
+			const sample = panel.querySelector(".specimen-applied .specimen-text").getBoundingClientRect();
+			const specimen = panel.closest(".specimen").getBoundingClientRect();
+			const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
+			const label = panel.querySelector(".specimen-label").getBoundingClientRect();
+			return {
+				index,
+				sampleHeight: sample.height,
+				fits: sample.top >= stage.top && sample.bottom <= stage.bottom + 1 && sample.bottom <= label.top + 1 &&
+					sample.left >= stage.left - 1 && sample.right <= stage.right + 1,
+				cueGap: cue.top - specimen.bottom,
+				heroHeight: hero.offsetHeight,
+				installTop: document.querySelector("#install").offsetTop,
+			};
+		};
+		const probe = await openPage({ width: 320, height: 812 });
+		try {
+			await probe.setContent('<main class="landing-intro"><div class="specimen"><div class="specimen-panels" data-example="0" data-width-step="1" data-phase="kowrap"><div class="specimen-stage"><div class="specimen-applied"><p class="specimen-text">Test</p></div></div><span class="specimen-label">Label</span></div></div><div class="hero-scroll">Scroll</div><div id="install">Install</div></main>');
+			assert.equal((await probe.evaluate(captureMobileScene, [])).index, "0");
+			await probe.locator(".specimen-panels").evaluate(panel => { panel.dataset.example = "1"; panel.dataset.phase = "native"; });
+			assert.equal(await probe.evaluate(captureMobileScene, []), false, "transition after readiness is not counted");
+			await probe.locator(".specimen-panels").evaluate(panel => { panel.dataset.phase = "kowrap"; panel.dataset.widthStep = "0"; });
+			assert.equal(await probe.evaluate(captureMobileScene, []), false, "wrong width step is not counted");
+			await probe.locator(".specimen-panels").evaluate(panel => { panel.dataset.widthStep = "1"; });
+			assert.equal(await probe.evaluate(captureMobileScene, ["1"]), false, "seen scene is not counted");
+			assert.equal((await probe.evaluate(captureMobileScene, ["0"])).index, "1");
+		} finally {
+			await probe.close();
+		}
 		const verifyMobileScenes = async (language, width) => {
 			const compact = await openPage({ width, height: 812 });
 			try {
@@ -653,30 +687,11 @@ try {
 				let longest = 0;
 				let initial;
 				while (seen.length < 8) {
-					await compact.waitForFunction(previous => {
-						const panel = document.querySelector(".specimen-panels");
-						return panel.dataset.widthStep === "1" && panel.dataset.phase === "kowrap" &&
-							!previous.includes(panel.dataset.example);
-					}, seen, { timeout: 40000 }).catch(error => {
+					const snapshot = await compact.waitForFunction(captureMobileScene, seen, { timeout: 40000 }).catch(error => {
 						throw new Error(`Mobile scene audit ${language || "ko"} ${width}px timed out; observed ${seen.length}/8 scenes (${seen.join(", ") || "none"})`, { cause: error });
 					});
-					const geometry = await compact.locator(".specimen-panels").evaluate(panel => {
-						const hero = panel.closest(".landing-intro");
-						const stage = panel.querySelector(".specimen-stage").getBoundingClientRect();
-						const sample = panel.querySelector(".specimen-applied .specimen-text").getBoundingClientRect();
-						const specimen = panel.closest(".specimen").getBoundingClientRect();
-						const cue = hero.querySelector(".hero-scroll").getBoundingClientRect();
-						const label = panel.querySelector(".specimen-label").getBoundingClientRect();
-						return {
-							index: panel.dataset.example,
-							sampleHeight: sample.height,
-							fits: sample.top >= stage.top && sample.bottom <= stage.bottom + 1 && sample.bottom <= label.top + 1 &&
-								sample.left >= stage.left - 1 && sample.right <= stage.right + 1,
-							cueGap: cue.top - specimen.bottom,
-							heroHeight: hero.offsetHeight,
-							installTop: document.querySelector("#install").offsetTop,
-						};
-					});
+					const geometry = await snapshot.jsonValue();
+					await snapshot.dispose();
 					assert.ok(!seen.includes(geometry.index), "each mobile scene is examined once");
 					seen.push(geometry.index);
 					const label = `${language || "ko"} ${width}px scene ${geometry.index}`;
