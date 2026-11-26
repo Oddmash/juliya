@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { chromium, firefox, webkit } from "playwright";
 import { portfolioCorpus } from "../fixtures/portfolio-prose.mjs";
 
@@ -138,6 +139,52 @@ try {
     }
     assert.ok(comparison.some(({ breaks }) => breaks > 0));
     console.log(`${engine.name()}: ${comparison.length} portfolio prose samples, CSS lines=${comparison.reduce((sum, sample) => sum + sample.cssLines, 0)}, Kowrap lines=${comparison.reduce((sum, sample) => sum + sample.lines, 0)}`);
+    await page.route(`${origin}/__juliya-inline-test`, (route) => route.fulfill({
+      contentType: "text/html",
+      body: '<p id="inline" style="width: 140px; font: 20px Arial; word-break: keep-all">읽기 좋은 <strong>한국어 줄바꿈</strong>을 경험해 보세요.<br>문서의 내용을 읽어 보세요.</p>',
+    }));
+    await page.route(`${origin}/__juliya-dist/**`, async (route) => {
+      const path = new URL(route.request().url()).pathname.slice("/__juliya-dist/".length);
+      await route.fulfill({
+        contentType: "text/javascript",
+        body: await readFile(new URL(`../../dist/${path}`, import.meta.url)),
+      });
+    });
+    await page.goto(`${origin}/__juliya-inline-test`);
+    const inline = await page.evaluate(async () => {
+      const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
+      const element = document.querySelector("#inline");
+      const text = element.textContent;
+      const strong = element.querySelector("strong");
+      const manual = element.querySelector("br");
+      const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await frames();
+      const controller = mountKowrap(element, { inline: true, locale: "ko" });
+      await document.fonts.ready;
+      await frames();
+      const generated = [...element.querySelectorAll("[data-kowrap-break]")];
+      const records = new MutationObserver(() => {});
+      records.observe(element, { childList: true, characterData: true, subtree: true });
+      controller.refresh();
+      const refreshMutations = records.takeRecords().length;
+      controller.update({ inline: true, locale: "ko" });
+      const updateMutations = records.takeRecords().length;
+      element.style.minHeight = "400px";
+      await frames();
+      const stable = generated.every((node) => node.isConnected);
+      element.style.width = "800px";
+      await frames();
+      const wide = element.querySelectorAll("[data-kowrap-break]").length;
+      controller.destroy();
+      records.disconnect();
+      return { count: generated.length, refreshMutations, updateMutations, stable, wide, preserved: element.textContent === text && element.querySelector("strong") === strong && element.querySelector("br") === manual };
+    });
+    assert.ok(inline.count > 0);
+    assert.equal(inline.refreshMutations, 0);
+    assert.equal(inline.updateMutations, 0);
+    assert.ok(inline.stable);
+    assert.ok(inline.wide < inline.count);
+    assert.ok(inline.preserved);
     assert.deepEqual(errors, []);
     console.log(
       `${engine.name()}: Next.js SSR, hydration, responsive wrapping and fractional width passed`,
