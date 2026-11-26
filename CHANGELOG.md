@@ -1,5 +1,9 @@
 # 변경 이력
 
+## [0.4.3](docs/releases/v0.4.3.md)
+
+- Revalidate inline author styles on viewport resize when generated breaks mask structural selector changes.
+
 ## [0.4.2](docs/releases/v0.4.2.md)
 
 - Preserve Korean technical noun phrases and deduplicate plain-text resize measurements.
