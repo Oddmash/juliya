@@ -52,6 +52,13 @@ test("initial HTML declares the page language without client JavaScript", () => 
 	}
 });
 
+test("the exported 404 retains a Korean document and home link", () => {
+	const html = read("404.html");
+	assert.match(html, /<html\b[^>]*\blang="ko"/);
+	assert.match(html, /<h1>페이지를 찾을 수 없습니다<\/h1>/);
+	assert.ok(html.includes(`href="${basePath}/">홈으로 돌아가세요.`));
+});
+
 test("translated landing and reference routes are exported", () => {
 	for (const language of ["en", "ja", "zh"]) {
 		assert.match(read(`${language}/index.html`), /Juliya/);
