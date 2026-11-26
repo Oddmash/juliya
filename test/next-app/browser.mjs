@@ -141,13 +141,22 @@ try {
     console.log(`${engine.name()}: ${comparison.length} portfolio prose samples, CSS lines=${comparison.reduce((sum, sample) => sum + sample.cssLines, 0)}, Kowrap lines=${comparison.reduce((sum, sample) => sum + sample.lines, 0)}`);
     await page.route(`${origin}/__juliya-inline-test`, (route) => route.fulfill({
       contentType: "text/html; charset=utf-8",
-      body: '<!doctype html><meta charset="utf-8"><p id="inline" style="width: 140px; font: 20px Arial; word-break: keep-all">읽기 좋은 <strong>한국어 줄바꿈</strong>을 경험해 보세요.<br>문서의 내용을 읽어 보세요.</p>',
+      body: '<!doctype html><meta charset="utf-8"><p id="inline" style="width: 140px; font: 20px Arial; word-break: keep-all">읽기 좋은 <strong>한국어 줄바꿈</strong>을 경험해 보세요.<br>문서의 내용을 읽어 보세요.</p><p id="font" style="width: 240px; font: 20px Arial">Typography and line breaking for readable Korean 한국어 documents.</p><div id="after-font">After text</div>',
     }));
     await page.route(`${origin}/__juliya-dist/**`, async (route) => {
       const path = new URL(route.request().url()).pathname.slice("/__juliya-dist/".length);
       await route.fulfill({
         contentType: "text/javascript",
         body: await readFile(new URL(`../../dist/${path}`, import.meta.url)),
+      });
+    });
+    let releaseFont;
+    const fontGate = new Promise((resolve) => { releaseFont = resolve; });
+    await page.route(`${origin}/__juliya-slow-font.woff2`, async (route) => {
+      await fontGate;
+      await route.fulfill({
+        contentType: "font/woff2",
+        body: await readFile(new URL("../../site/app/fonts/geist-mono-ascii.woff2", import.meta.url)),
       });
     });
     await page.goto(`${origin}/__juliya-inline-test`);
@@ -185,6 +194,65 @@ try {
     assert.ok(inline.stable);
     assert.ok(inline.wide < inline.count);
     assert.ok(inline.preserved);
+    const beforeFont = await page.evaluate(async () => {
+      const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
+      const element = document.querySelector("#font");
+      const font = new FontFace("DelayedFixture", "url(/__juliya-slow-font.woff2)");
+      document.fonts.add(font);
+      element.style.fontFamily = "DelayedFixture, Arial";
+      const snapshots = [];
+      const shifts = [];
+      const snapshot = () => {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        const lines = new Set();
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          for (let i = 0; i < node.length; i++) {
+            const range = document.createRange();
+            range.setStart(node, i);
+            range.setEnd(node, i + 1);
+            lines.add(Math.round(range.getBoundingClientRect().top));
+          }
+        }
+        return { lines: [...lines], after: Math.round(document.querySelector("#after-font").getBoundingClientRect().top) };
+      };
+      let observer;
+      if (PerformanceObserver.supportedEntryTypes.includes("layout-shift")) {
+        observer = new PerformanceObserver((list) => shifts.push(...list.getEntries().map(({ value }) => value)));
+        observer.observe({ type: "layout-shift", buffered: true });
+      }
+      const sample = () => {
+        snapshots.push(snapshot());
+        frame = requestAnimationFrame(sample);
+      };
+      let frame = requestAnimationFrame(sample);
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const native = snapshot();
+      const controller = mountKowrap(element, { inline: true, locale: "en" });
+      const loaded = font.load();
+      window.finishFontFixture = async () => {
+        await loaded;
+        await document.fonts.ready;
+        const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        element.style.width = "180px";
+        element.style.fontSize = "22px";
+        element.style.width = "480px";
+        await frames();
+        const final = snapshot();
+        await frames();
+        const stable = JSON.stringify(snapshot()) === JSON.stringify(final);
+        cancelAnimationFrame(frame);
+        observer?.disconnect();
+        controller.destroy();
+        return { snapshots, shifts, native, final, stable };
+      };
+      return { native, loading: font.status === "loading" };
+    });
+    releaseFont();
+    assert.ok(beforeFont.loading);
+    const fontResult = await page.evaluate(() => window.finishFontFixture());
+    assert.ok(fontResult.stable);
+    assert.ok(fontResult.snapshots.length >= 3);
+    console.log(`${engine.name()}: delayed font layout samples ${JSON.stringify(fontResult)}`);
     assert.deepEqual(errors, []);
     console.log(
       `${engine.name()}: Next.js SSR, hydration, responsive wrapping and fractional width passed`,
