@@ -1,5 +1,12 @@
 # 변경 이력
 
+## [0.4.2](docs/releases/v0.4.2.md)
+
+- Preserve unchanged inline break nodes and coalesce font and resize notifications.
+- Add package discovery metadata and a localized documentation sitemap.
+- Document first-paint and font-readiness tradeoffs and expand browser regression coverage.
+- Adopt Oddmash UI 0.10.0 in the documentation site.
+
 ## [0.4.1](docs/releases/v0.4.1.md)
 
 - Complete the migration to the Juliya package and repository.
