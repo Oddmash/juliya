@@ -34,34 +34,44 @@ export const readInline = (element: HTMLElement) => {
 
 export const breakOffsets = (lines: WrappedLine[]) => lines.slice(0, -1).filter((line) => !line.breakAfter).map((line) => line.end);
 
-export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void) => {
+type ReadAuthorMarkup = <T>(read: () => T) => T;
+
+const readStyledRuns = (element: HTMLElement) => {
+  const { text, runs } = readInline(element);
+  const view = element.ownerDocument.defaultView!;
+  const styles = new Map<string, { font: ReturnType<typeof fontOf>; language: ReturnType<typeof languageOf> }>();
+  const styled: { start: number; end: number; key: string }[] = [];
+  for (const run of runs) {
+    const parent = run.node.parentElement!;
+    const font = fontOf(view.getComputedStyle(parent));
+    const language = languageOf(parent);
+    const key = JSON.stringify([font, language]);
+    styles.set(key, { font, language });
+    const last = styled.at(-1);
+    if (last?.key === key && last.end === run.start) last.end = run.end;
+    else styled.push({ start: run.start, end: run.end, key });
+  }
+  return { text, styles, styled };
+};
+
+export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void, readAuthorMarkup?: ReadAuthorMarkup) => {
   let previous: { signature: string; measure: Measure; offsets: number[] } | undefined;
   return observeElementLayout(element, (layout) => {
-    const { text, runs } = readInline(element);
     const options = getOptions();
     if (!layout) {
       previous = undefined;
-      onBreaks(breakOffsets(manualLines(text, options.forcedBreaks)));
+      onBreaks(breakOffsets(manualLines(readInline(element).text, options.forcedBreaks)));
       return;
     }
-    const view = element.ownerDocument.defaultView!;
-    const styles = new Map<string, { font: ReturnType<typeof fontOf>; language: ReturnType<typeof languageOf> }>();
-    const styled: { start: number; end: number; key: string }[] = [];
-    for (const run of runs) {
-      const parent = run.node.parentElement!;
-      const font = fontOf(view.getComputedStyle(parent));
-      const language = languageOf(parent);
-      const key = JSON.stringify([font, language]);
-      styles.set(key, { font, language });
-      const last = styled.at(-1);
-      if (last?.key === key && last.end === run.start) last.end = run.end;
-      else styled.push({ start: run.start, end: run.end, key });
-    }
-    const signature = JSON.stringify([text, layout.width, options, styled]);
+    const { locale, strategy, breakLongWords, forcedBreaks } = options;
+    const signatureOf = ({ text, styled }: ReturnType<typeof readStyledRuns>) => JSON.stringify([text, layout.width, locale, strategy, breakLongWords, forcedBreaks, styled]);
+    const rendered = readStyledRuns(element);
+    const signature = signatureOf(rendered);
     if (previous?.signature === signature && previous.measure === layout.measure) {
       onBreaks(previous.offsets);
       return;
     }
+    const { text, styles, styled } = readAuthorMarkup ? readAuthorMarkup(() => readStyledRuns(element)) : rendered;
     const measures = new Map<string, Measure>();
     for (const [key, { font, language }] of styles) {
       measures.set(key, createLocalizedCanvasMeasure(font, element.ownerDocument, language));
@@ -72,8 +82,8 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
       return left < right ? width + measures.get(run.key)!(text.slice(left, right)) : width;
     }, 0);
     const offsets = breakOffsets(wrap(text, { ...options, ...layout, measureRange }));
-    previous = { signature, measure: layout.measure, offsets };
     onBreaks(offsets);
+    previous = { signature: readAuthorMarkup ? signatureOf(readStyledRuns(element)) : signature, measure: layout.measure, offsets };
   });
 };
 
@@ -81,11 +91,13 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
   let options = initial;
   let undo: (() => void)[] = [];
   let previous: number[] = [];
+  const generated = new Set<HTMLBRElement>();
   let mutations: MutationObserver | undefined;
   const restore = () => {
     undo.reverse().forEach((apply) => apply());
     undo = [];
     previous = [];
+    generated.clear();
     mutations?.takeRecords();
   };
   const render = (offsets: number[]) => {
@@ -98,6 +110,7 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
       const { node, start } = run;
       const br = element.ownerDocument.createElement("br");
       br.setAttribute(inlineBreakAttribute, "");
+      generated.add(br);
       const position = offset - start;
       if (position === node.length) {
         node.after(br);
@@ -116,7 +129,27 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
     previous = offsets;
     mutations?.takeRecords();
   };
-  const observer = observeInline(element, () => options, render);
+  const readAuthorMarkup: ReadAuthorMarkup = (read) => {
+    if (!generated.size) return read();
+    const positions = Array.from(element.querySelectorAll<HTMLBRElement>("br")).filter((br) => generated.has(br)).map((br) => ({ br, parent: br.parentNode!, next: br.nextSibling }));
+    const selection = element.ownerDocument.getSelection();
+    const anchor = selection?.anchorNode;
+    const focus = selection?.focusNode;
+    const anchorOffset = selection?.anchorOffset ?? 0;
+    const focusOffset = selection?.focusOffset ?? 0;
+    try {
+      positions.forEach(({ br }) => br.remove());
+      return read();
+    } finally {
+      positions.reverse().forEach(({ br, parent, next }) => parent.insertBefore(br, next));
+      if (selection && anchor && focus && (element.contains(anchor) || element.contains(focus)) &&
+        (selection.anchorNode !== anchor || selection.focusNode !== focus || selection.anchorOffset !== anchorOffset || selection.focusOffset !== focusOffset)) {
+        selection.setBaseAndExtent(anchor, anchorOffset, focus, focusOffset);
+      }
+      mutations?.takeRecords();
+    }
+  };
+  const observer = observeInline(element, () => options, render, readAuthorMarkup);
   const Mutation = element.ownerDocument.defaultView?.MutationObserver;
   if (Mutation) {
     mutations = new Mutation((records) => {
