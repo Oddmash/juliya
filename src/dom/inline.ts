@@ -34,37 +34,48 @@ export const readInline = (element: HTMLElement) => {
 
 export const breakOffsets = (lines: WrappedLine[]) => lines.slice(0, -1).filter((line) => !line.breakAfter).map((line) => line.end);
 
-export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void) => observeElementLayout(element, (layout) => {
-  const { text, runs } = readInline(element);
-  const options = getOptions();
-  if (!layout) {
-    onBreaks(breakOffsets(manualLines(text, options.forcedBreaks)));
-    return;
-  }
-  const view = element.ownerDocument.defaultView!;
-  const measures = new Map<string, Measure>();
-  const styled: { start: number; end: number; measure: Measure; key: string }[] = [];
-  for (const run of runs) {
-    const parent = run.node.parentElement!;
-    const font = fontOf(view.getComputedStyle(parent));
-    const language = languageOf(parent);
-    const key = JSON.stringify([font, language]);
-    let measure = measures.get(key);
-    if (!measure) {
-      measure = createLocalizedCanvasMeasure(font, element.ownerDocument, language);
-      measures.set(key, measure);
+export const observeInline = (element: HTMLElement, getOptions: () => InlineKowrapOptions, onBreaks: (offsets: number[]) => void) => {
+  let previous: { signature: string; measure: Measure; offsets: number[] } | undefined;
+  return observeElementLayout(element, (layout) => {
+    const { text, runs } = readInline(element);
+    const options = getOptions();
+    if (!layout) {
+      previous = undefined;
+      onBreaks(breakOffsets(manualLines(text, options.forcedBreaks)));
+      return;
     }
-    const previous = styled.at(-1);
-    if (previous?.key === key && previous.end === run.start) previous.end = run.end;
-    else styled.push({ start: run.start, end: run.end, key, measure });
-  }
-  const measureRange = (start: number, end: number) => styled.reduce((width, run) => {
-    const left = Math.max(start, run.start);
-    const right = Math.min(end, run.end);
-    return left < right ? width + run.measure(text.slice(left, right)) : width;
-  }, 0);
-  onBreaks(breakOffsets(wrap(text, { ...options, ...layout, measureRange })));
-}, true);
+    const view = element.ownerDocument.defaultView!;
+    const styles = new Map<string, { font: ReturnType<typeof fontOf>; language: ReturnType<typeof languageOf> }>();
+    const styled: { start: number; end: number; key: string }[] = [];
+    for (const run of runs) {
+      const parent = run.node.parentElement!;
+      const font = fontOf(view.getComputedStyle(parent));
+      const language = languageOf(parent);
+      const key = JSON.stringify([font, language]);
+      styles.set(key, { font, language });
+      const last = styled.at(-1);
+      if (last?.key === key && last.end === run.start) last.end = run.end;
+      else styled.push({ start: run.start, end: run.end, key });
+    }
+    const signature = JSON.stringify([text, layout.width, options, styled]);
+    if (previous?.signature === signature && previous.measure === layout.measure) {
+      onBreaks(previous.offsets);
+      return;
+    }
+    const measures = new Map<string, Measure>();
+    for (const [key, { font, language }] of styles) {
+      measures.set(key, createLocalizedCanvasMeasure(font, element.ownerDocument, language));
+    }
+    const measureRange = (start: number, end: number) => styled.reduce((width, run) => {
+      const left = Math.max(start, run.start);
+      const right = Math.min(end, run.end);
+      return left < right ? width + measures.get(run.key)!(text.slice(left, right)) : width;
+    }, 0);
+    const offsets = breakOffsets(wrap(text, { ...options, ...layout, measureRange }));
+    previous = { signature, measure: layout.measure, offsets };
+    onBreaks(offsets);
+  });
+};
 
 export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) => {
   let options = initial;
