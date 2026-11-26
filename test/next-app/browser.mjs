@@ -248,6 +248,14 @@ try {
       const freshForced = create();
       const freshForcedMount = mountKowrap(freshForced, { inline: true, locale: "en", forcedBreaks: [5] });
       const expectedRefresh = offsets(freshForced);
+      stylesheet.textContent = ".selector-fixture > a:first-child { font-size: 40px; }";
+      mounted.refresh();
+      const widthBeforeResize = element.clientWidth;
+      stylesheet.textContent = ".selector-fixture > a:first-child { font-size: 52px; }";
+      window.dispatchEvent(new Event("resize"));
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const resized = offsets(element);
+      const widthAfterResize = element.clientWidth;
       freshForcedMount.destroy();
       freshForced.remove();
       mounted.update({ inline: true, locale: "en" });
@@ -260,13 +268,15 @@ try {
       element.remove();
       fresh.remove();
       stylesheet.remove();
-      return { before, withBreak, actual, expected, initial, refreshed, expectedRefresh };
+      return { before, withBreak, actual, expected, initial, refreshed, expectedRefresh, resized, widthBeforeResize, widthAfterResize };
     });
     assert.equal(authorStyle.before, "40px");
     assert.equal(authorStyle.withBreak, "16px");
     assert.deepEqual(authorStyle.actual, authorStyle.expected);
     assert.deepEqual(authorStyle.refreshed, authorStyle.expectedRefresh);
     assert.notDeepEqual(authorStyle.initial, authorStyle.expectedRefresh);
+    assert.equal(authorStyle.widthAfterResize, authorStyle.widthBeforeResize);
+    assert.deepEqual(authorStyle.resized, authorStyle.expectedRefresh);
     const beforeFont = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
       const element = document.querySelector("#font");
