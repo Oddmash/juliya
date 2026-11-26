@@ -78,27 +78,35 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     onLayout(layout);
   };
 
+  let pendingWidth: number | undefined;
+  let pendingRefresh = false;
+  const schedule = (width?: number, force = false) => {
+    if (!active) return;
+    if (width !== undefined) pendingWidth = width;
+    pendingRefresh ||= force;
+    const flush = () => {
+      frame = undefined;
+      const nextWidth = pendingWidth;
+      const fromObserver = !pendingRefresh;
+      pendingWidth = undefined;
+      pendingRefresh = false;
+      update(nextWidth, fromObserver);
+    };
+    if (!view.requestAnimationFrame) flush();
+    else if (frame === undefined) frame = view.requestAnimationFrame(flush);
+  };
   const refresh = () => update();
+  const onResize = () => schedule(undefined, true);
   const onFonts = () => {
     measure = undefined;
-    update();
+    schedule(undefined, true);
   };
   const Observer = view.ResizeObserver ?? globalThis.ResizeObserver;
   const observer = Observer ? new Observer((entries) => {
-    const width = entries?.[0]?.contentRect.width;
-    if (width === undefined || !view.requestAnimationFrame) {
-      update(width, true);
-      return;
-    }
-    if (frame !== undefined) view.cancelAnimationFrame(frame);
-    // Rendering can change the observed element's height.
-    frame = view.requestAnimationFrame(() => {
-      frame = undefined;
-      update(width, true);
-    });
+    schedule(entries?.[0]?.contentRect.width);
   }) : undefined;
   observer?.observe(element);
-  view.addEventListener("resize", refresh);
+  view.addEventListener("resize", onResize);
   doc.fonts?.addEventListener("loadingdone", onFonts);
   void doc.fonts?.ready.then(onFonts);
   update();
@@ -107,7 +115,7 @@ export const observeElementLayout = (element: HTMLElement, onLayout: (layout: El
     active = false;
     if (frame !== undefined) view.cancelAnimationFrame(frame);
     observer?.disconnect();
-    view.removeEventListener("resize", refresh);
+    view.removeEventListener("resize", onResize);
     doc.fonts?.removeEventListener("loadingdone", onFonts);
   };
   return { refresh, destroy };
