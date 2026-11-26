@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { HeaderSearch } from "./header-search";
 import { ButtonLink } from "@oddmash/ui/button";
 import type { ButtonLinkProps } from "@oddmash/ui/button";
 import { LocalePicker } from "@oddmash/ui/locale-picker";
 import { SiteNav } from "@oddmash/ui/site-layout";
 import { PlatformLink, PlatformLinks } from "@oddmash/ui/platform-link";
-import { engineLocale, landingCopy, languageFromPath, languageNames, languagePath, languages } from "../lib/locales";
+import { engineLocale, landingCopy, languageNames, languagePath, languages } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
 import { translatedGuides } from "../lib/translated-guides";
 import { repositoryUrl } from "../lib/project";
@@ -26,13 +25,11 @@ export const SiteButtonLink = ({ href, onClick, ...props }: ButtonLinkProps) => 
 		}} />;
 };
 
-export const SiteNavigation = ({ items }: { items: Item[] }) => {
+export const SiteNavigation = ({ items, locale }: { items: Item[]; locale: SiteLocale }) => {
 	const pathname = usePathname() ?? "/";
-	const router = useRouter();
-	const locale = languageFromPath(pathname);
+	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 	const copy = landingCopy[locale];
 	const prefix = languagePath(locale);
-	useEffect(() => { document.documentElement.lang = engineLocale(locale); }, [locale]);
 	const destination = (next: SiteLocale) => {
 		const suffix = prefix ? pathname.slice(prefix.length) || "/" : pathname;
 		const target = suffix.startsWith("/docs") ? suffix : "/";
@@ -44,9 +41,9 @@ export const SiteNavigation = ({ items }: { items: Item[] }) => {
 		<LocalePicker
 			selectProps={{ className: "language-select" }}
 			label={{ ko: "언어", en: "Language", ja: "言語", zh: "语言" }[locale]}
-			options={languages.map(language => ({ value: language, label: languageNames[language], lang: engineLocale(language), href: (process.env.NEXT_PUBLIC_BASE_PATH ?? "") + destination(language) }))}
+			options={languages.map(language => ({ value: language, label: languageNames[language], lang: engineLocale(language), href: basePath + destination(language) }))}
 			value={locale}
-			onValueChange={value => router.push(destination(value as SiteLocale) + window.location.hash)}
+			onValueChange={value => window.location.assign(basePath + destination(value as SiteLocale) + window.location.hash)}
 		/>
 		<PlatformLinks className="desktop-link">
 			<PlatformLink platform="github" href={repositoryUrl} aria-label="GitHub" title="GitHub" target="_blank" rel="noopener noreferrer" />

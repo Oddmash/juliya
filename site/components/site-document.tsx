@@ -73,13 +73,13 @@ export const SiteDocument = ({ children, locale }: { children: ReactNode; locale
 			</a>
 			<SiteHeader className="header">
 				<SiteHeaderInner className="nav container">
-					<SiteBrand version={manifest.version}><Logo /></SiteBrand>
-					<SiteNavigation items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
+					<SiteBrand locale={locale} version={manifest.version}><Logo /></SiteBrand>
+					<SiteNavigation locale={locale} items={getGuides().map(({ slug, title, group, body }) => ({ slug, title, group, body, href: guideHref(slug) }))} />
 				</SiteHeaderInner>
 			</SiteHeader>
 			{children}
 			<SiteFooter className="footer container">
-				<SiteBrand><Logo size={23} /></SiteBrand>
+				<SiteBrand locale={locale}><Logo size={23} /></SiteBrand>
 				<SiteNav className="footer-links" aria-label="Oddmash">
 					<a href="https://github.com/Oddmash">Oddmash</a>
 					<PlatformLinks>
