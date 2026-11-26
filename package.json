@@ -1,8 +1,10 @@
 {
   "name": "@oddmash/juliya",
   "license": "MIT",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Locale-aware text wrapping for Korean, English, Japanese and Simplified Chinese",
+  "homepage": "https://oddmash.github.io/juliya/",
+  "keywords": ["text-wrapping", "line-breaking", "typography", "internationalization", "korean", "japanese", "chinese", "react", "vue", "svelte"],
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "exports": {
