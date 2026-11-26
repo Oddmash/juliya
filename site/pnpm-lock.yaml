@@ -12,8 +12,8 @@ importers:
         specifier: file:..
         version: file:..(react@19.3.1)
       '@oddmash/ui':
-        specifier: 0.5.0
-        version: 0.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 0.10.0
+        version: 0.10.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       next:
         specifier: 16.4.6
         version: 16.4.6(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -268,8 +268,8 @@ packages:
       react:
         optional: true
 
-  '@oddmash/ui@0.5.0':
-    resolution: {integrity: sha512-5PEetMVCqV/iAq3CR5EzdEc4+OIbNEU17lGHcybqHxuJ4Y+qXrurvHC52dEMtMJWGSHcF22e+pICAebTregvvA==}
+  '@oddmash/ui@0.10.0':
+    resolution: {integrity: sha512-nescymH8BhtqZhh9zgcgSLEz5ClBZRGmAWJoKr9BGU7bHFbKT73i9YvwLyi7ChBj9kilFAjphIKIGmwsKrg/Wg==}
     engines: {node: '>=24'}
     peerDependencies:
       react: ^18.3.1 || ^19.0.0
@@ -823,7 +823,7 @@ snapshots:
     optionalDependencies:
       react: 19.3.1
 
-  '@oddmash/ui@0.5.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@oddmash/ui@0.10.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@radix-ui/react-dialog': 1.3.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@radix-ui/react-tabs': 1.2.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

@@ -167,3 +167,19 @@ test("localized brand links are prerendered on landing and documentation pages",
 		}
 	}
 });
+
+
+test("sitemap lists every public localized route and only exported pages", () => {
+	const xml = read("sitemap.xml");
+	const origin = "https://oddmash.github.io/juliya/";
+	const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+	const expected = ["comparison/"];
+	for (const prefix of ["", "en/", "ja/", "zh/"]) {
+		expected.push(prefix, prefix + "docs/");
+		for (const slug of ["core", "forced-breaks", "inline", "dom", "react", "vue", "svelte", "ssr", "api", "troubleshooting"]) {
+			expected.push(prefix + "docs/" + slug + "/");
+		}
+	}
+	assert.deepEqual(urls.sort(), expected.map(route => origin + route).sort());
+	for (const route of expected) assert.ok(existsSync(new URL(route + "index.html", output)), route);
+});
