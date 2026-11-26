@@ -64,7 +64,7 @@ export const observeInline = (element: HTMLElement, getOptions: () => InlineKowr
     return left < right ? width + run.measure(text.slice(left, right)) : width;
   }, 0);
   onBreaks(breakOffsets(wrap(text, { ...options, ...layout, measureRange })));
-});
+}, true);
 
 export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) => {
   let options = initial;
@@ -108,12 +108,19 @@ export const mountInline = (element: HTMLElement, initial: InlineKowrapOptions) 
   const observer = observeInline(element, () => options, render);
   const Mutation = element.ownerDocument.defaultView?.MutationObserver;
   if (Mutation) {
-    mutations = new Mutation(() => { restore(); observer.refresh(); });
+    mutations = new Mutation((records) => {
+      if (records.some((record) => record.type !== "attributes")) restore();
+      observer.refresh();
+    });
     mutations.observe(element, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style", "lang"] });
   }
+  const refresh = () => {
+    if (mutations?.takeRecords().some((record) => record.type !== "attributes")) restore();
+    observer.refresh();
+  };
   return {
-    update: (next: InlineKowrapOptions) => { restore(); options = next; observer.refresh(); },
-    refresh: () => { restore(); observer.refresh(); },
+    update: (next: InlineKowrapOptions) => { options = next; refresh(); },
+    refresh,
     destroy: () => { observer.destroy(); mutations?.disconnect(); restore(); },
     restore,
   };
