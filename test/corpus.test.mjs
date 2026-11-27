@@ -70,4 +70,3 @@ for (const locale of ["ko", "en", "ja", "zh"]) {
     });
   }
 }
-

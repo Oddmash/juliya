@@ -57,4 +57,3 @@ if (process.argv.includes("--browser")) {
 
 console.log(JSON.stringify({ split, mode: process.argv.includes("--browser") ? "canvas" : "deterministic", results }, null, 2));
 if (results.some(result => !result.restored || !result.ranges || !result.graphemeSafe || result.overflow > 0)) process.exitCode = 1;
-

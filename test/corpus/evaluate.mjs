@@ -52,4 +52,3 @@ export const evaluate = (wrap, fixture, width, measure, strategy) => {
     durationMs,
   };
 };
-

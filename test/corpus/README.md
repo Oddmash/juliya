@@ -48,4 +48,3 @@ The development-only deterministic observations include a potential Korean prefe
 ## Expansion
 
 Add new rights-verified passages across genres and lengths with a stable source revision or edition and a distinct author-level split. For full-book stress tests, keep unneeded editions outside the npm package and use independently approved, pinned texts only. The seed includes short excerpts rather than entire novels; repetition and concatenation exercise longer paragraph batches but do not substitute for full-book quality assessment.
-
