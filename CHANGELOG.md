@@ -1,5 +1,10 @@
 # 변경 이력
 
+## [0.4.4](docs/releases/v0.4.4.md)
+
+- Preserve Korean adverbial modifier and predicate pairs when the same line count and width allow it.
+- Avoid protecting dative and topic-marked nouns as predicates; cover narrow widths and explicit breaks.
+
 ## [0.4.3](docs/releases/v0.4.3.md)
 
 - Revalidate inline author styles on viewport resize when generated breaks mask structural selector changes.
