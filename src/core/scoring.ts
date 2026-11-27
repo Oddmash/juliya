@@ -24,8 +24,8 @@ const compounds: Readonly<Record<string, readonly string[]>> = {
   접근: ["가능한"],
 };
 
-const adverbialModifier = /^[가-힣]{2,}게$/u;
-const predicateHead = /^[가-힣]+(?:거나|지만|면서|도록|고|면|며|다|요|기|는|은|을|지|게|서)[.!?。！？…,;:]?$/u;
+const adverbialModifier = /^[가-힣]+게$/u;
+const predicateHead = /^[가-힣]+(?:거나|지만|면서|도록|고|면|며|다|요|기|는|은|지|게|서)[.!?。！？…,;:]?$/u;
 
 const protectedPair = (fragment: string, nextWord: string) => {
   const left = fragment.match(/\S+$/u)?.[0] ?? "";

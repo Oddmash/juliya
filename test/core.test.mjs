@@ -250,3 +250,43 @@ test("generalizes Korean adverbial preferences across different predicates", () 
     assert.ok(lines.some(line => line.text.includes(pair)));
   }
 });
+
+
+test("handles short Korean adverbials without leaking the preference to other locales", () => {
+  const text = "이 도구는 문장을 읽기 쉽게 만듭니다. 끝까지 확인합니다.";
+  const width = 16;
+  const korean = run(text, width, { measure: proportionalMeasure });
+  const explicitKorean = run(text, width, { measure: proportionalMeasure, locale: "ko" });
+  const english = run(text, width, { measure: proportionalMeasure, locale: "en" });
+  assert.equal(reconstruct(korean), text);
+  assert.deepEqual(korean, explicitKorean);
+  assert.equal(korean.length, english.length);
+  assert.ok(korean.every(line => line.width <= width));
+  assert.ok(korean.some(line => line.text.includes("쉽게 만듭니다.")));
+  assert.ok(!english.some(line => line.text.includes("쉽게 만듭니다.")));
+});
+
+test("does not treat Korean object-particle nouns as predicate heads", () => {
+  const text = "우리는 조용하게 문을 닫았다. 다음 내용을 본다.";
+  const width = 11;
+  const lines = run(text, width);
+  assert.equal(reconstruct(lines), text);
+  assert.ok(lines.every(line => line.width <= width));
+  assert.ok(lines.some(line => line.text.includes("문을 닫았다.")));
+  assert.ok(!lines.some(line => line.text.includes("조용하게 문을")));
+});
+
+test("excludes dative particles and yields when an adverb-predicate pair cannot fit", () => {
+  const dative = "친구에게 말을 전했다. 끝";
+  for (const width of [5, 7, 10]) {
+    const korean = run(dative, width, { locale: "ko" });
+    const english = run(dative, width, { locale: "en" });
+    assert.deepEqual(korean.map(line => line.text), english.map(line => line.text));
+  }
+
+  const narrow = "쉽게 만듭니다.";
+  const lines = run(narrow, 3);
+  assert.equal(reconstruct(lines), narrow);
+  assert.ok(lines.every(line => line.width <= 3));
+  assert.ok(!lines.some(line => line.text.includes(narrow)));
+});
