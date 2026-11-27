@@ -160,6 +160,32 @@ try {
       });
     });
     await page.goto(`${origin}/__juliya-inline-test`);
+    const adverbial = await page.evaluate(async () => {
+      const { wrap } = await import("/__juliya-dist/index.js");
+      const text = "제목이 한 줄에 안 들어가는 건 괜찮습니다. 그런데 줄 끝에 단어가 어색하게 끊기거나 마지막 줄에 몇 글자만 남으면 같은 제목도 읽기 어렵습니다.";
+      await document.fonts.ready;
+      const context = document.createElement("canvas").getContext("2d");
+      const results = [];
+      for (const font of ["16px sans-serif", "18px serif", "20px sans-serif"]) {
+        context.font = font;
+        const measure = (value) => context.measureText(value).width;
+        for (const width of [320, 390, 693, 900]) {
+          const lines = wrap(text, { width, measure, locale: "ko" });
+          const greedy = wrap(text, { width, measure, locale: "ko", strategy: "greedy" });
+          results.push({
+            font, width,
+            restored: lines.map(line => line.text + line.breakAfter).join("") === text,
+            fits: lines.every(line => line.width <= width),
+            lineBudget: lines.length <= greedy.length,
+            paired: lines.some(line => line.text.includes("어색하게 끊기거나")),
+          });
+        }
+      }
+      return results;
+    });
+    for (const sample of adverbial) {
+      assert.ok(sample.restored && sample.fits && sample.lineBudget, JSON.stringify(sample));
+    }
     const inline = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
       const element = document.querySelector("#inline");
