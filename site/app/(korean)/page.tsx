@@ -7,6 +7,8 @@ import { FrameworkExamples } from "../../components/framework-examples";
 import { LandingSpecimen } from "../../components/landing-specimen";
 import { Playground } from "../../components/playground";
 import { SiteButtonLink } from "../../components/site-navigation";
+import { CorpusShowcase } from "../../components/corpus-showcase";
+import { representativeFixtures } from "../../lib/corpus";
 import "../landing.css";
 
 const installCommand = "pnpm add @oddmash/juliya";
@@ -62,6 +64,7 @@ const Page = () => (
 				<article><code>SSR + CSR</code><h3>서버 렌더링</h3><p>초기 마크업을 유지하면서 브라우저에서 정확하게 측정합니다.</p><Link href="/docs/ssr/">SSR 가이드</Link></article>
 			</div>
 		</section>
+		<CorpusShowcase locale="ko" samples={representativeFixtures} />
 		<section className="landing-end">
 			<h2>읽기 좋은 다국어 문장을 만들어 보세요.</h2>
 			<SiteButtonLink className="button button-primary" href="/docs/">문서 읽기</SiteButtonLink>
