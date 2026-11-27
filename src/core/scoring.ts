@@ -24,8 +24,12 @@ const compounds: Readonly<Record<string, readonly string[]>> = {
   접근: ["가능한"],
 };
 
+const adverbialModifier = /^[가-힣]+게$/u;
+const predicateHead = /^[가-힣]+(?:거나|지만|면서|도록|고|면|며|다|요|기|지|게|서)[.!?。！？…,;:]?$/u;
+
 const protectedPair = (fragment: string, nextWord: string) => {
   const left = fragment.match(/\S+$/u)?.[0] ?? "";
+  if (adverbialModifier.test(left) && !left.endsWith("에게") && predicateHead.test(nextWord)) return true;
   if (numeralModifier.test(left) && counterHead.test(nextWord)) return true;
   if (technicalPrefix.test(left) && technicalHead.test(nextWord)) return true;
   return Object.hasOwn(compounds, left) && compounds[left]!.some((head) => nextWord.startsWith(head));
