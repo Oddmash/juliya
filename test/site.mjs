@@ -199,11 +199,29 @@ test("sitemap lists every public localized route and only exported pages", () =>
 	const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
 	const expected = ["comparison/"];
 	for (const prefix of ["", "en/", "ja/", "zh/"]) {
-		expected.push(prefix, prefix + "docs/");
+		expected.push(prefix, prefix + "docs/", prefix + "corpus/");
 		for (const slug of ["core", "forced-breaks", "inline", "dom", "react", "vue", "svelte", "ssr", "api", "troubleshooting"]) {
 			expected.push(prefix + "docs/" + slug + "/");
 		}
 	}
 	assert.deepEqual(urls.sort(), expected.map(route => origin + route).sort());
 	for (const route of expected) assert.ok(existsSync(new URL(route + "index.html", output)), route);
+});
+
+test("localized literature showcase and corpus routes preserve source fixtures", () => {
+	const fixtures = JSON.parse(readFileSync(new URL("./corpus/fixtures.json", import.meta.url), "utf8"));
+	for (const prefix of ["", "en/", "ja/", "zh/"]) {
+		const landing = read(prefix + "index.html");
+		assert.match(landing, /id="corpus-showcase"/);
+		assert.match(landing, /id="corpus-width"/);
+		assert.match(landing, /id="corpus-native"/);
+		assert.match(landing, /id="corpus-juliya"/);
+		assert.ok(landing.includes(basePath + "/" + prefix + "corpus/"));
+		const corpus = read(prefix + "corpus/index.html");
+		for (const fixture of fixtures) {
+			assert.ok(corpus.includes('id="' + fixture.id + '"'), fixture.id);
+			if (fixture.source) assert.ok(corpus.includes(fixture.source.replaceAll("&", "&amp;")), fixture.id);
+		}
+		assert.ok(corpus.includes("https://creativecommons.org/licenses/by-sa/4.0/"));
+	}
 });

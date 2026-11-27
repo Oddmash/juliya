@@ -7,6 +7,8 @@ import { CopyButton } from "./copy-button";
 import { SiteButtonLink } from "./site-navigation";
 import { engineLocale, landingCopy, languagePath } from "../lib/locales";
 import type { SiteLocale } from "../lib/locales";
+import { CorpusShowcase } from "./corpus-showcase";
+import { representativeFixtures } from "../lib/corpus";
 import "../app/landing.css";
 
 export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
@@ -35,6 +37,7 @@ export const TranslatedLanding = ({ locale }: { locale: SiteLocale }) => {
 				<article><code>width: 320px</code><h3>{copy.responsive}</h3><p>{copy.responsiveDescription}</p><Link href={docs}>{copy.docs}</Link></article>
 				<article><code>SSR + CSR</code><h3>{copy.ssr}</h3><p>{copy.ssrDescription}</p><Link href={docs}>{copy.docs}</Link></article>
 			</div></section>
+			<CorpusShowcase locale={locale} samples={representativeFixtures} />
 			<section className="landing-end"><h2>{copy.end}</h2><SiteButtonLink className="button button-primary" href={docs}>{copy.read}</SiteButtonLink></section>
 		</main>
 	);

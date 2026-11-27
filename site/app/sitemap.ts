@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 	const routes = languages.flatMap(language => {
 		const prefix = languagePath(language);
 		const slugs = language === "ko" ? getGuides().map(guide => guide.slug) : translatedGuideSlugs;
-		return [prefix + "/", ...slugs.map(slug => prefix + guideHref(slug))];
+		return [prefix + "/", prefix + "/corpus/", ...slugs.map(slug => prefix + guideHref(slug))];
 	});
 	return [...routes, "/comparison/"].map(route => ({ url: origin + route }));
 }

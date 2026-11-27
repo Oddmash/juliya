@@ -32,7 +32,7 @@ export const SiteNavigation = ({ items, locale }: { items: Item[]; locale: SiteL
 	const prefix = languagePath(locale);
 	const destination = (next: SiteLocale) => {
 		const suffix = prefix ? pathname.slice(prefix.length) || "/" : pathname;
-		const target = suffix.startsWith("/docs") ? suffix : "/";
+		const target = suffix.startsWith("/docs") || suffix.startsWith("/corpus") ? suffix : "/";
 		return languagePath(next) + target;
 	};
 	return <SiteNav className="nav-links" aria-label={locale === "ko" ? "주 메뉴" : copy.docs}>
