@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { segmentSentences, splitLines, wrap } from "@oddmash/juliya";
+import { lineCost } from "../dist/core/scoring.js";
 import { portfolioCorpus } from "./fixtures/portfolio-prose.mjs";
 
 const proportionalMeasure = (text) => [...text].reduce((width, char) => width + (/[가-힣]/u.test(char) ? 1 : char === " " ? 0.3 : 0.5), 0);
@@ -216,4 +217,87 @@ test("balanced Korean wrapping preserves technical noun phrases within the same 
     assert.ok(lines.every(line => line.width <= width));
     assert.ok(lines.some(line => line.text.includes(phrase)));
   }
+});
+
+
+test("keeps Korean adverbial modifiers with predicates within the same line budget", () => {
+  const text = "제목이 한 줄에 안 들어가는 건 괜찮습니다. 그런데 줄 끝에 단어가 어색하게 끊기거나 마지막 줄에 몇 글자만 남으면 같은 제목도 읽기 어렵습니다.";
+  for (const width of [37, 40, 45, 50]) {
+    const lines = run(text, width, { measure: proportionalMeasure });
+    assert.equal(reconstruct(lines), text);
+    assert.equal(lines.length, 2);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes("어색하게 끊기거나")));
+  }
+  for (const width of [1, 3, 8, 16, 25, 37, 50, 100]) {
+    const lines = run(text, width, { measure });
+    const greedy = run(text, width, { strategy: "greedy" });
+    assert.equal(reconstruct(lines), text);
+    assert.ok(lines.length <= greedy.length);
+    assert.ok(lines.every(line => line.width <= width));
+  }
+});
+
+
+test("generalizes Korean adverbial preferences across different predicates", () => {
+  for (const [text, width, pair] of [
+    ["이 도구는 문장을 자연스럽게 보여주고 내용을 읽기 쉽게 만듭니다.", 22, "자연스럽게 보여주고"],
+    ["이 기능은 결과를 정확하게 계산하고 화면에 표시합니다.", 20, "정확하게 계산하고"],
+  ]) {
+    const lines = run(text, width);
+    assert.equal(reconstruct(lines), text);
+    assert.equal(lines.length, 2);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes(pair)));
+  }
+});
+
+
+test("handles short Korean adverbials without leaking the preference to other locales", () => {
+  const text = "이 도구는 문장을 읽기 쉽게 만듭니다. 끝까지 확인합니다.";
+  const width = 16;
+  const korean = run(text, width, { measure: proportionalMeasure });
+  const explicitKorean = run(text, width, { measure: proportionalMeasure, locale: "ko" });
+  const english = run(text, width, { measure: proportionalMeasure, locale: "en" });
+  assert.equal(reconstruct(korean), text);
+  assert.deepEqual(korean, explicitKorean);
+  assert.equal(korean.length, english.length);
+  assert.ok(korean.every(line => line.width <= width));
+  assert.ok(korean.some(line => line.text.includes("쉽게 만듭니다.")));
+  assert.ok(!english.some(line => line.text.includes("쉽게 만듭니다.")));
+});
+
+test("does not treat Korean object-particle nouns as predicate heads", () => {
+  const text = "우리는 조용하게 문을 닫았다. 다음 내용을 본다.";
+  const width = 11;
+  const lines = run(text, width);
+  assert.equal(reconstruct(lines), text);
+  assert.ok(lines.every(line => line.width <= width));
+  assert.ok(lines.some(line => line.text.includes("문을 닫았다.")));
+  assert.ok(!lines.some(line => line.text.includes("조용하게 문을")));
+});
+
+test("does not protect dative or topic-marked nouns as predicates", () => {
+  const neutral = (fragment, nextWord) => lineCost({ fragment, width: 8, emergency: false }, 8, false, nextWord, "ko");
+  for (const [fragment, nextWord] of [
+    ["친구에게", "전했다."],
+    ["조용하게", "문은"],
+    ["조용하게", "문제는"],
+  ]) {
+    assert.equal(neutral(fragment, nextWord), 0.06);
+  }
+  assert.ok(neutral("쉽게", "만듭니다.") > 0.06);
+  assert.ok(neutral("쉽게,", "만듭니다.") < 0.06);
+});
+
+test("yields when an adverb-predicate pair cannot fit or crosses an explicit break", () => {
+  const narrow = "쉽게 만듭니다.";
+  const lines = run(narrow, 3);
+  assert.equal(reconstruct(lines), narrow);
+  assert.ok(lines.every(line => line.width <= 3));
+  assert.ok(!lines.some(line => line.text.includes(narrow)));
+  const explicit = "쉽게\n만듭니다.";
+  const forced = run(explicit, 20);
+  assert.equal(reconstruct(forced), explicit);
+  assert.deepEqual(forced.map(line => line.text), ["쉽게", "만듭니다."]);
 });
