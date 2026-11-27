@@ -236,3 +236,17 @@ test("keeps Korean adverbial modifiers with predicates within the same line budg
     assert.ok(lines.every(line => line.width <= width));
   }
 });
+
+
+test("generalizes Korean adverbial preferences across different predicates", () => {
+  for (const [text, width, pair] of [
+    ["이 도구는 문장을 자연스럽게 보여주고 내용을 읽기 쉽게 만듭니다.", 22, "자연스럽게 보여주고"],
+    ["이 기능은 결과를 정확하게 계산하고 화면에 표시합니다.", 20, "정확하게 계산하고"],
+  ]) {
+    const lines = run(text, width);
+    assert.equal(reconstruct(lines), text);
+    assert.equal(lines.length, 2);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes(pair)));
+  }
+});
