@@ -42,9 +42,23 @@ Reported metrics:
 - Normalized line slack standard deviation (lower is more even, not inherently more readable).
 - Word-interior breaks according to the runtime's Intl.Segmenter (a heuristic, not a linguistic gold standard).
 - Split/eligible provisional preferred phrases, on development examples only. A phrase fitting by itself does not prove it can fit with the same total line count; inspect those examples before calling a split a defect.
+- Same-line-budget feasible phrases and avoidable splits: for each occurrence, the evaluator searches the legal line-candidate graph with all internal boundaries of that occurrence forbidden. It reports the exact UTF-16 span and observed offsets. A fitting phrase that requires an extra line is not an avoidable split. Per-phrase feasibility is not proof that all preferences can be met simultaneously.
 - Per-strategy engine duration and line count.
 
 The preferred phrases are candidate annotations for human language review, not asserted grammatical truth. To certify a linguistic regression, annotate exact preferred/unwanted boundaries and check feasibility against the same line-count budget with independent language review. Review development-only failures and open scoped engine issues; keep the corpus separate from scoring logic.
+
+### Linguistic review rubric
+
+Review the original paragraph in context, without showing the engine identity or its score. For each potential boundary, record the fixture ID, UTF-16 offset, adjacent words or characters, language, grammatical relation, preferred/acceptable/disfavored label, severity (minor or meaning-disrupting), rationale, reviewer and adjudication status. Unlabeled boundaries are unknown, not automatically correct. Two independent fluent reviewers should annotate the frozen development and holdout sets; reconcile disagreements before treating labels as reviewed gold data. Report agreement and annotation coverage per language, with unresolved items excluded from gold scores.
+
+| Locale | Disfavored boundaries to inspect | Acceptable or preferred alternatives |
+| --- | --- | --- |
+| Korean | Inside an eojeol; adverbial and directly modified predicate; determiner/attributive and noun; numeral and counter; auxiliary constructions | Clause boundaries, punctuation, complete syntactic phrases; allow separation when intervening arguments or width make adjacency inappropriate |
+| English | Determiner and noun phrase; preposition and complement; auxiliary and main verb; fixed multiword expressions | Clause and phrase boundaries; punctuation; ordinary inter-word breaks where the relation remains clear |
+| Japanese | Inside a lexical unit; noun and following particle; predicate and auxiliary; forbidden line-start/end punctuation | Bunsetsu or larger phrase boundaries, punctuation; avoid treating every character boundary as equally natural |
+| Simplified Chinese | Inside a lexical unit; modifier and head; numeral and classifier; fixed expressions; forbidden line-start/end punctuation | Word and clause boundaries; punctuation; allow alternative valid word segmentations |
+
+Keep integrity, overflow and minimum line count as hard gates. Report avoidable meaning-disrupting splits, minor splits, preferred-boundary usage, and coverage separately from visual slack, short final lines and runtime. Compare strategies at identical widths, fonts and line-count budgets. Do not rank language quality using a single aggregate across locales or infer independent human validation from automated tests. Freeze the engine candidate before inspecting holdout results. Explicit source breaks take precedence over preferences. Korean inflection heuristics are deliberately conservative: recognizing an open-syllable predicate stem plus attributive ㄴ/ㄹ is not full morphological analysis, and homographic nouns remain ambiguous.
 
 ### Initial engine evaluation (2026-11-27)
 

@@ -301,3 +301,12 @@ test("yields when an adverb-predicate pair cannot fit or crosses an explicit bre
   assert.equal(reconstruct(forced), explicit);
   assert.deepEqual(forced.map(line => line.text), ["쉽게", "만듭니다."]);
 });
+
+test("recognizes conservative Korean attributive predicate inflections", () => {
+  const cost = (nextWord, locale = "ko") => lineCost({ fragment: "조용하게", width: 8, emergency: false }, 8, false, nextWord, locale);
+  for (const head of ["비칠", "보일", "바꿀", "계산할", "변경된", "표시할"]) {
+    assert.ok(cost(head) > 0.06, head);
+    assert.equal(cost(head, "en"), 0.06);
+  }
+  for (const noun of ["문을", "비밀", "사실", "길", "물건", "사진", "시간"]) assert.equal(cost(noun), 0.06, noun);
+});

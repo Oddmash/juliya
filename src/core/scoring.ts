@@ -26,10 +26,21 @@ const compounds: Readonly<Record<string, readonly string[]>> = {
 
 const adverbialModifier = /^[가-힣]+게$/u;
 const predicateHead = /^[가-힣]+(?:거나|지만|면서|도록|고|면|며|다|요|기|지|게|서)[.!?。！？…,;:]?$/u;
+const vowelPredicateStems = new Set(["가", "오", "보", "주", "쓰", "켜", "끄", "뛰", "서", "자", "피", "치", "비치", "보이", "들리", "바꾸", "만드", "지나", "나오", "들어오"]);
+const inflectedPredicateHead = (word: string) => {
+  const match = /^([가-힣]+)[.!?。！？…,;:]?$/u.exec(word);
+  if (!match) return false;
+  const head = match[1]!;
+  const last = head.charCodeAt(head.length - 1) - 0xac00;
+  const final = last % 28;
+  if (final !== 4 && final !== 8) return false;
+  const stem = head.slice(0, -1) + String.fromCharCode(0xac00 + last - final);
+  return vowelPredicateStems.has(stem) || /(?:하|되|시키)$/u.test(stem);
+};
 
 const protectedPair = (fragment: string, nextWord: string) => {
   const left = fragment.match(/\S+$/u)?.[0] ?? "";
-  if (adverbialModifier.test(left) && !left.endsWith("에게") && predicateHead.test(nextWord)) return true;
+  if (adverbialModifier.test(left) && !left.endsWith("에게") && (predicateHead.test(nextWord) || inflectedPredicateHead(nextWord))) return true;
   if (numeralModifier.test(left) && counterHead.test(nextWord)) return true;
   if (technicalPrefix.test(left) && technicalHead.test(nextWord)) return true;
   return Object.hasOwn(compounds, left) && compounds[left]!.some((head) => nextWord.startsWith(head));

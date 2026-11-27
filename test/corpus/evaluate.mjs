@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
+import { boundariesOf, candidatesFrom } from "../../dist/core/boundaries.js";
+import { segmentsWithBreaks } from "../../dist/core/segmentation.js";
 
 export const corpus = JSON.parse(readFileSync(new URL("./fixtures.json", import.meta.url), "utf8"));
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
@@ -19,6 +21,29 @@ export const validatePreferredPhrases = fixture => {
   }
 };
 
+// An independent shortest-path objective over legal engine candidates, with
+// annotated boundaries forbidden. No linguistic penalty or layout score is used.
+export const minimumLinesKeeping = (text, width, measure, locale, ranges) => {
+  let count = 0;
+  const options = { width, measure, locale, breakLongWords: true };
+  for (const paragraph of segmentsWithBreaks(text)) {
+    const points = boundariesOf(paragraph.text, options);
+    const last = points.length - 1;
+    const counts = Array(points.length).fill(Infinity);
+    counts[last] = 0;
+    for (let start = last - 1; start >= 0; start--) {
+      for (const candidate of candidatesFrom(paragraph.text, points, start, options)) {
+        const offset = paragraph.start + points[candidate.next].offset;
+        if (candidate.width > width || ranges.some(range => range.start < offset && offset < range.end)) continue;
+        counts[start] = Math.min(counts[start], 1 + counts[candidate.next]);
+      }
+    }
+    if (paragraph.breakAfter && ranges.some(range => range.start < paragraph.start + paragraph.text.length && paragraph.start + paragraph.text.length < range.end)) return Infinity;
+    count += Math.max(1, counts[0]);
+  }
+  return count;
+};
+
 export const evaluate = (wrap, fixture, width, measure, strategy) => {
   validatePreferredPhrases(fixture);
   const text = fixture.text;
@@ -34,11 +59,21 @@ export const evaluate = (wrap, fixture, width, measure, strategy) => {
   const wordInteriorBreaks = breaks.filter(offset => words.some(word => word.index < offset && offset < word.index + word.segment.length)).length;
   let eligiblePreferredPhrases = 0;
   let splitPreferredPhrases = 0;
+  let feasiblePreferredPhrases = 0;
+  let avoidablePhraseSplits = 0;
+  const phraseObservations = [];
   for (const phrase of fixture.preferredPhrases ?? []) {
     if (measure(phrase) > width) continue;
     for (let index = text.indexOf(phrase); index >= 0; index = text.indexOf(phrase, index + phrase.length)) {
       eligiblePreferredPhrases++;
-      if (breaks.some(offset => index < offset && offset < index + phrase.length)) splitPreferredPhrases++;
+      const end = index + phrase.length;
+      const splitOffsets = breaks.filter(offset => index < offset && offset < end);
+      const split = splitOffsets.length > 0;
+      if (split) splitPreferredPhrases++;
+      const feasible = !split || minimumLinesKeeping(text, width, measure, fixture.locale, [{ start: index, end }]) <= lines.length;
+      if (feasible) feasiblePreferredPhrases++;
+      if (split && feasible) avoidablePhraseSplits++;
+      phraseObservations.push({ start: index, end, splitOffsets, feasible, annotationStatus: "provisional" });
     }
   }
   return {
@@ -58,6 +93,9 @@ export const evaluate = (wrap, fixture, width, measure, strategy) => {
     wordInteriorBreaks,
     eligiblePreferredPhrases,
     splitPreferredPhrases,
+    feasiblePreferredPhrases,
+    avoidablePhraseSplits,
+    phraseObservations,
     durationMs,
   };
 };

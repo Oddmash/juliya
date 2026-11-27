@@ -1,7 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { wrap } from "@oddmash/juliya";
-import { corpus, evaluate, models, validatePreferredPhrases } from "./corpus/evaluate.mjs";
+import { corpus, evaluate, minimumLinesKeeping, models, validatePreferredPhrases } from "./corpus/evaluate.mjs";
+
+test("distinguishes feasible phrase preservation from line-budget conflicts", () => {
+  const text = "가나 다라 마바 사아";
+  const range = { start: 3, end: 8 };
+  assert.equal(minimumLinesKeeping(text, 5, models.monospace, "ko", []), 2);
+  assert.equal(minimumLinesKeeping(text, 5, models.monospace, "ko", [range]), 3);
+  assert.equal(minimumLinesKeeping(text, 8, models.monospace, "ko", [range]), 2);
+  assert.equal(minimumLinesKeeping("가나\n다라", 10, models.monospace, "ko", [{ start: 0, end: 5 }]), Infinity);
+});
+
+test("development: keeps the inflected predicate in ko-mill at the existing line budget", () => {
+  const fixture = corpus.find(item => item.id === "ko-mill");
+  const result = evaluate(wrap, fixture, 12, models.monospace, "balanced");
+  assert.equal(result.lineCount, 8);
+  assert.equal(result.avoidablePhraseSplits, 0);
+  assert.ok(wrap(fixture.text, { width: 12, measure: models.monospace, locale: "ko" }).some(line => line.text.includes("한적하게 비칠")));
+});
 
 test("literature fixtures preserve provenance and disjoint work-level evaluation splits", () => {
   const ids = new Set();
