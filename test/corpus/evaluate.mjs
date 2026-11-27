@@ -11,7 +11,16 @@ export const models = {
   ), 0),
 };
 
+export const validatePreferredPhrases = fixture => {
+  const phrases = fixture.preferredPhrases;
+  if (phrases === undefined) return;
+  if (fixture.split !== "development" || !Array.isArray(phrases) || phrases.some(phrase => typeof phrase !== "string" || phrase.length === 0 || !fixture.text.includes(phrase))) {
+    throw new TypeError(`Invalid preferred phrase annotations for ${fixture.id}`);
+  }
+};
+
 export const evaluate = (wrap, fixture, width, measure, strategy) => {
+  validatePreferredPhrases(fixture);
   const text = fixture.text;
   const start = performance.now();
   const lines = wrap(text, { width, measure, locale: fixture.locale, strategy });
