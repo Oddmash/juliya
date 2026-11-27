@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { wrap } from "@oddmash/juliya";
-import { corpus, evaluate, models } from "./corpus/evaluate.mjs";
+import { corpus, evaluate, models, validatePreferredPhrases } from "./corpus/evaluate.mjs";
 
 test("literature fixtures preserve provenance and disjoint work-level evaluation splits", () => {
   const ids = new Set();
@@ -12,13 +12,10 @@ test("literature fixtures preserve provenance and disjoint work-level evaluation
     ids.add(item.id);
     assert.ok(item.text && item.author && item.rights && item.transformation && item.license && item.checkedOn);
     assert.ok(["development", "holdout"].includes(item.split));
+    validatePreferredPhrases(item);
     if (item.kind !== "literature") continue;
     assert.ok(item.source.startsWith("https://") && item.rightsEvidence.startsWith("https://"));
     assert.ok(item.publication && item.authorDeath && item.attribution);
-    if (item.preferredPhrases) {
-      assert.equal(item.split, "development");
-      assert.ok(item.preferredPhrases.every(phrase => phrase.length > 0 && item.text.includes(phrase)));
-    }
     const work = `${item.author}/${item.title}`;
     if (works.has(work)) assert.equal(works.get(work), item.split);
     works.set(work, item.split);
@@ -32,6 +29,18 @@ test("literature fixtures preserve provenance and disjoint work-level evaluation
     }
     assert.ok(corpus.some(item => item.locale === locale && item.kind === "original"));
   }
+});
+
+test("rejects invalid phrase annotations before evaluating original fixtures", () => {
+  const fixture = { id: "synthetic-original", kind: "original", locale: "ko", split: "development", text: "쉽게 읽는다." };
+  for (const invalid of [
+    { ...fixture, preferredPhrases: [""] },
+    { ...fixture, preferredPhrases: ["없는 문구"] },
+    { ...fixture, split: "holdout", preferredPhrases: ["쉽게"] },
+  ]) {
+    assert.throws(() => evaluate(wrap, invalid, 12, models.monospace, "balanced"), /Invalid preferred phrase annotations/);
+  }
+  assert.doesNotThrow(() => evaluate(wrap, { ...fixture, preferredPhrases: ["쉽게"] }, 12, models.monospace, "balanced"));
 });
 
 for (const fixture of corpus) {
