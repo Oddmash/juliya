@@ -217,3 +217,22 @@ test("balanced Korean wrapping preserves technical noun phrases within the same 
     assert.ok(lines.some(line => line.text.includes(phrase)));
   }
 });
+
+
+test("keeps Korean adverbial modifiers with predicates within the same line budget", () => {
+  const text = "제목이 한 줄에 안 들어가는 건 괜찮습니다. 그런데 줄 끝에 단어가 어색하게 끊기거나 마지막 줄에 몇 글자만 남으면 같은 제목도 읽기 어렵습니다.";
+  for (const width of [37, 40, 45, 50]) {
+    const lines = run(text, width, { measure: proportionalMeasure });
+    assert.equal(reconstruct(lines), text);
+    assert.equal(lines.length, 2);
+    assert.ok(lines.every(line => line.width <= width));
+    assert.ok(lines.some(line => line.text.includes("어색하게 끊기거나")));
+  }
+  for (const width of [1, 3, 8, 16, 25, 37, 50, 100]) {
+    const lines = run(text, width, { measure });
+    const greedy = run(text, width, { strategy: "greedy" });
+    assert.equal(reconstruct(lines), text);
+    assert.ok(lines.length <= greedy.length);
+    assert.ok(lines.every(line => line.width <= width));
+  }
+});
