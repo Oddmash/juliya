@@ -8,14 +8,16 @@
     "author": "Lewis Carroll",
     "publication": "1865",
     "authorDeath": "1898",
-    "source": "https://www.gutenberg.org/cache/epub/11/pg11-images.html",
+    "source": "https://www.gutenberg.org/ebooks/11",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/11",
-    "rights": "Original 1865 text, marked public domain in the USA; author died 1898. No modern editorial material included.",
+    "rights": "Original work published 1865; author died 1898. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
     "attribution": "Lewis Carroll; Project Gutenberg ebook 11, Arthur DiBianca and David Widger",
     "transformation": "Excerpt from opening paragraph.",
     "text": "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do:",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 11; /cache/epub/11/pg11-images.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/1/11/11-h/11-h.htm"
   },
   {
     "id": "en-dracula",
@@ -26,14 +28,16 @@
     "author": "Bram Stoker",
     "publication": "1897",
     "authorDeath": "1912",
-    "source": "https://www.gutenberg.org/cache/epub/45839/pg45839-images.html",
+    "source": "https://www.gutenberg.org/ebooks/45839",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/45839",
-    "rights": "Original published 1897, author died 1912; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
+    "rights": "Original work published 1897; author died 1912. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
     "attribution": "Bram Stoker; Project Gutenberg ebook 45839; Juliet Sutherland, Reiner Ruf, James Adcock and Distributed Proofreaders",
     "transformation": "Excerpt only; no editorial text.",
     "text": "Bistritz.—Left Munich at 8.35 p.m. on 1st May, arriving at Vienna early next morning; should have arrived at 6.46, but train was an hour late.",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 45839; /cache/epub/45839/pg45839-images.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/4/5/8/3/45839/45839-h/45839-h.htm"
   },
   {
     "id": "en-expectations",
@@ -44,14 +48,16 @@
     "author": "Charles Dickens",
     "publication": "1861",
     "authorDeath": "1870",
-    "source": "https://www.gutenberg.org/files/1400/old/1400-h/1400-h.htm",
+    "source": "https://www.gutenberg.org/ebooks/1400",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/1400",
-    "rights": "Original published 1861, author died 1870; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
+    "rights": "Original work published 1861; author died 1870. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
     "attribution": "Charles Dickens; Project Gutenberg ebook 1400; 1867 edition; Anonymous Volunteer and David Widger",
     "transformation": "Excerpt only; no editorial text.",
     "text": "my infant tongue could make of both names nothing longer or more explicit than Pip.",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 1400; /files/1400/old/1400-h/1400-h.htm",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/1/4/0/1400/1400-h/1400-h.htm"
   },
   {
     "id": "en-frankenstein",
@@ -62,10 +68,10 @@
     "author": "Mary Shelley",
     "publication": "1818",
     "authorDeath": "1851",
-    "source": "https://www.gutenberg.org/cache/epub/84/pg84-images.html",
+    "source": "https://www.gutenberg.org/ebooks/84",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/84",
-    "rights": "Original published 1818, author died 1851; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
-    "attribution": "Mary Shelley; Project Gutenberg ebook 84",
+    "rights": "Original work published 1818; author died 1851. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
+    "attribution": "Mary Wollstonecraft (Godwin) Shelley; Project Gutenberg ebook 84; Judith Boss, Christy Phillips, Lynn Hanninen, and David Meltzer; HTML by Al Haines",
     "transformation": "Excerpt only; no editorial text.",
     "text": "You will rejoice to hear that no disaster has accompanied the commencement of an enterprise which you have regarded with such evil forebodings.",
     "preferredPhrases": [
@@ -73,7 +79,9 @@
       "an enterprise"
     ],
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 84; /cache/epub/84/pg84-images.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/8/84/84-h/84-h.htm"
   },
   {
     "id": "en-jane-eyre",
@@ -84,14 +92,15 @@
     "author": "Charlotte Brontë",
     "publication": "1847",
     "authorDeath": "1855",
-    "source": "https://en.wikisource.org/wiki/Jane_Eyre_(1st_edition)/Volume_1/Chapter_1",
+    "source": "https://en.wikisource.org/w/index.php?title=Jane_Eyre_(1st_edition)%2FVolume_1%2FChapter_1&oldid=7323748",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/1260",
     "rights": "Original published 1847, author died 1855; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
-    "attribution": "Charlotte Brontë; Wikisource contributors; first edition, volume 1 chapter 1",
+    "attribution": "Charlotte Brontë; Wikisource contributors; first edition, volume 1 chapter 1; revision 7323748",
     "transformation": "Excerpt only; no editorial text.",
     "text": "There was no possibility of taking a walk that day. We had been wandering, indeed, in the leafless shrubbery an hour in the morning;",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "7323748"
   },
   {
     "id": "en-moby-dick",
@@ -102,14 +111,15 @@
     "author": "Herman Melville",
     "publication": "1851",
     "authorDeath": "1891",
-    "source": "https://en.wikisource.org/wiki/Moby-Dick_(1851)_US_edition/Chapter_1",
+    "source": "https://en.wikisource.org/w/index.php?title=Moby-Dick_(1851)_US_edition%2FChapter_1&oldid=10617656",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/2701",
     "rights": "Original published 1851, author died 1891; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
-    "attribution": "Herman Melville; Wikisource contributors; 1851 US edition",
+    "attribution": "Herman Melville; Wikisource contributors; 1851 US edition; revision 10617656",
     "transformation": "Excerpt only; no editorial text.",
     "text": "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore,",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "10617656"
   },
   {
     "id": "en-modern-technical",
@@ -152,10 +162,10 @@
     "author": "Jane Austen",
     "publication": "1813",
     "authorDeath": "1817",
-    "source": "https://www.gutenberg.org/cache/epub/1342/pg1342.html",
+    "source": "https://www.gutenberg.org/ebooks/1342",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/1342",
-    "rights": "Original 1813 text, marked public domain in the USA; author died 1817. No modern editorial material included.",
-    "attribution": "Jane Austen; Project Gutenberg ebook 1342, Chuck Greif and Online Distributed Proofreading Team",
+    "rights": "Original work published 1813; author died 1817. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
+    "attribution": "Jane Austen; Project Gutenberg ebook 1342, 1998 text edition; Chuck Greif and the Online Distributed Proofreading Team (catalog credits)",
     "transformation": "Opening sentence only.",
     "text": "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
     "preferredPhrases": [
@@ -163,7 +173,8 @@
       "a good fortune"
     ],
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 1342; /cache/epub/1342/pg1342.html (1998 text version, not the newer illustrated edition)"
   },
   {
     "id": "en-time-machine",
@@ -174,14 +185,16 @@
     "author": "H. G. Wells",
     "publication": "1895",
     "authorDeath": "1946",
-    "source": "https://www.gutenberg.org/cache/epub/35/pg35.html",
+    "source": "https://www.gutenberg.org/ebooks/35",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/35",
-    "rights": "Original published 1895, author died 1946; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
+    "rights": "Original work published 1895; author died 1946. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
     "attribution": "H. G. Wells; Project Gutenberg ebook 35; 1898 text",
     "transformation": "Excerpt only; no editorial text.",
     "text": "The Time Traveller (for so it will be convenient to speak of him) was expounding a recondite matter to us.",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 35; /cache/epub/35/pg35.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/3/35/35-h/35-h.htm"
   },
   {
     "id": "en-tom-sawyer",
@@ -192,14 +205,16 @@
     "author": "Mark Twain",
     "publication": "1876",
     "authorDeath": "1910",
-    "source": "https://dev.gutenberg.org/cache/epub/7194/pg7194-images.html",
+    "source": "https://www.gutenberg.org/ebooks/7194",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/7194",
-    "rights": "Original published 1876, author died 1910; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
-    "attribution": "Mark Twain; Project Gutenberg ebook 7194, part 2",
+    "rights": "Original work published 1876; author died 1910. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
+    "attribution": "Mark Twain; Project Gutenberg ebook 7194, part 2; David Widger",
     "transformation": "Excerpt only; no editorial text.",
     "text": "She listened intently, but there was no answer. She had no companions but silence and loneliness.",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 7194; /cache/epub/7194/pg7194-images.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/7/1/9/7194/7194-h/7194-h.htm"
   },
   {
     "id": "en-treasure",
@@ -210,14 +225,16 @@
     "author": "Robert Louis Stevenson",
     "publication": "1883",
     "authorDeath": "1894",
-    "source": "https://www.gutenberg.org/cache/epub/27780/pg27780-images.html",
+    "source": "https://www.gutenberg.org/ebooks/27780",
     "rightsEvidence": "https://www.gutenberg.org/ebooks/27780",
-    "rights": "Original published 1883, author died 1894; underlying work public-domain by age in US and Korea. If applicable Wikisource transcription CC BY-SA 4.0.",
-    "attribution": "Robert Louis Stevenson; Project Gutenberg ebook 27780",
+    "rights": "Original work published 1883; author died 1894. The corresponding Project Gutenberg edition is public domain in the USA; only original author prose is included.",
+    "attribution": "Robert Louis Stevenson; Project Gutenberg ebook 27780; Juliet Sutherland, Stephen Blundell, and the Online Distributed Proofreading Team",
     "transformation": "Excerpt only; no editorial text.",
     "text": "I remember him as if it were yesterday, as he came plodding to the inn door, his sea-chest following behind him in a hand-barrow;",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; Project Gutenberg source terms"
+    "license": "Public-domain underlying work; Project Gutenberg source terms",
+    "sourceEdition": "Project Gutenberg eBook 27780; /cache/epub/27780/pg27780-images.html",
+    "verificationSource": "https://mirror.fi.ossplanet.net/gutenberg/2/7/7/8/27780/27780-h/27780-h.htm"
   },
   {
     "id": "ja-botchan",
@@ -397,7 +414,7 @@
     "source": "https://www.aozora.gr.jp/cards/000148/files/58842_76759.html",
     "rightsEvidence": "https://www.aozora.gr.jp/cards/000148/card58842.html",
     "rights": "Original published 1908; author died 1916; Aozora expired-rights work policy (original prose only).",
-    "attribution": "夏目漱石; 青空文庫; 岩波書店 定本 漱石全集 第五巻 2017, author manuscript; input 砂場清隆; proof 木下聡; 2022-11-28",
+    "attribution": "夏目漱石 (source credited as 夏目金之助); 青空文庫; 岩波書店 定本 漱石全集 第五巻 2017, author manuscript; input 砂場清隆; proof 木下聡; 2022-11-28",
     "transformation": "Excerpt; ruby readings omitted, no editorial notes.",
     "text": "女とは京都からの相乗である。乗つた時から三四郎の眼に着いた。第一色が黒い。",
     "checkedOn": "2026-11-27",
@@ -668,14 +685,15 @@
     "author": "陈仲琳（attributed）",
     "publication": "Ming dynasty",
     "authorDeath": "Ming dynasty",
-    "source": "https://zh.wikisource.org/zh-hans/封神演義/卷001",
-    "rightsEvidence": "https://zh.wikisource.org/zh-hans/封神演義/卷001",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E5%B0%81%E7%A5%9E%E6%BC%94%E7%BE%A9%2F%E5%8D%B7001&oldid=5966216&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E5%B0%81%E7%A5%9E%E6%BC%94%E7%BE%A9%2F%E5%8D%B7001&oldid=5966216&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
-    "attribution": "陈仲琳（attributed）; Chinese Wikisource contributors, accessed 2026-11-27",
+    "attribution": "陈仲琳（attributed）; Chinese Wikisource contributors, revision 5966216",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "纣王乃帝乙之三子也。帝乙生三子：长曰微子启；次曰微子衍；三曰寿王。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "5966216"
   },
   {
     "id": "zh-jinghua",
@@ -686,14 +704,15 @@
     "author": "李汝珍",
     "publication": "Qing dynasty",
     "authorDeath": "19th century",
-    "source": "https://zh.wikisource.org/zh-hans/鏡花緣/第001回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=鏡花緣/第001回&oldid=831027",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E9%8F%A1%E8%8A%B1%E7%B7%A3%2F%E7%AC%AC001%E5%9B%9E&oldid=831027&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E9%8F%A1%E8%8A%B1%E7%B7%A3%2F%E7%AC%AC001%E5%9B%9E&oldid=831027&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
     "attribution": "李汝珍; Chinese Wikisource contributors, revision 831027",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "且说天下名山，除王母所住昆仑之外，海岛中有三座名山：一名蓬莱，二名方丈，三名瀛洲。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "831027"
   },
   {
     "id": "zh-journey",
@@ -704,14 +723,15 @@
     "author": "吴承恩",
     "publication": "Ming dynasty",
     "authorDeath": "16th century",
-    "source": "https://zh.wikisource.org/zh-hans/西遊記/第001回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=西遊記/第001回&oldid=2562136",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E8%A5%BF%E9%81%8A%E8%A8%98%2F%E7%AC%AC001%E5%9B%9E&oldid=2562136&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E8%A5%BF%E9%81%8A%E8%A8%98%2F%E7%AC%AC001%E5%9B%9E&oldid=2562136&variant=zh-hans",
     "rights": "Ming-era original, long-expired economic rights; source credits Wu Cheng'en. Wikisource transcription attribution and CC BY-SA 4.0 retained if applicable.",
     "attribution": "吴承恩; Chinese Wikisource contributors, revision 2562136",
     "transformation": "Simplified Chinese display variant; opening prose excerpt, not poetry.",
     "text": "盖闻天地之数，有十二万九千六百岁为一元。将一元分为十二会，乃子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥之十二支也。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "2562136"
   },
   {
     "id": "zh-laocan",
@@ -722,14 +742,15 @@
     "author": "刘鹗",
     "publication": "1903–1906",
     "authorDeath": "1909",
-    "source": "https://zh.wikisource.org/zh-hans/老殘遊記/第01回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=老殘遊記/第01回&oldid=2367222",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E8%80%81%E6%AE%98%E9%81%8A%E8%A8%98%2F%E7%AC%AC01%E5%9B%9E&oldid=2367222&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E8%80%81%E6%AE%98%E9%81%8A%E8%A8%98%2F%E7%AC%AC01%E5%9B%9E&oldid=2367222&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
     "attribution": "刘鹗; Chinese Wikisource contributors, revision 2367222",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "话说山东登州府东门外有一座大山，名叫蓬莱山。山上有个阁子，名叫蓬莱阁。这阁造得画栋飞云，珠帘卷雨，十分壮丽。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "2367222"
   },
   {
     "id": "zh-liaozhai",
@@ -740,14 +761,15 @@
     "author": "蒲松龄",
     "publication": "Qing dynasty",
     "authorDeath": "1715",
-    "source": "https://zh.wikisource.org/zh-hans/聊齋志異/第04卷",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=聊齋志異/第04卷&oldid=12090910",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E8%81%8A%E9%BD%8B%E5%BF%97%E7%95%B0%2F%E7%AC%AC04%E5%8D%B7&oldid=12090910&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E8%81%8A%E9%BD%8B%E5%BF%97%E7%95%B0%2F%E7%AC%AC04%E5%8D%B7&oldid=12090910&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
     "attribution": "蒲松龄; Chinese Wikisource contributors, revision 12090910",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "宣德间，宫中尚促织之戏，岁征民间。此物故非西产。有华阴令，欲媚上官，以一头进，试使斗而才，因责常供。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "12090910"
   },
   {
     "id": "zh-modern-technical",
@@ -790,8 +812,8 @@
     "author": "曹雪芹",
     "publication": "Qing dynasty, before 1931",
     "authorDeath": "18th century",
-    "source": "https://zh.wikisource.org/zh-hans/紅樓夢/第001回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=紅樓夢/第001回&oldid=2703826",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E7%B4%85%E6%A8%93%E5%A4%A2%2F%E7%AC%AC001%E5%9B%9E&oldid=2703826&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E7%B4%85%E6%A8%93%E5%A4%A2%2F%E7%AC%AC001%E5%9B%9E&oldid=2703826&variant=zh-hans",
     "rights": "Source identifies Qing work as public domain worldwide. Wikisource transcription attribution and CC BY-SA 4.0 retained if applicable.",
     "attribution": "曹雪芹; Chinese Wikisource contributors, revision 2703826",
     "transformation": "Simplified Chinese display variant; excerpt from chapter 1 narrative.",
@@ -801,7 +823,8 @@
       "深有趣味"
     ],
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "2703826"
   },
   {
     "id": "zh-rulin",
@@ -812,14 +835,15 @@
     "author": "吴敬梓",
     "publication": "Qing dynasty",
     "authorDeath": "1754",
-    "source": "https://zh.wikisource.org/zh-hans/儒林外史/第01回",
-    "rightsEvidence": "https://zh.wikisource.org/zh-hans/儒林外史/第01回",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E5%84%92%E6%9E%97%E5%A4%96%E5%8F%B2%2F%E7%AC%AC01%E5%9B%9E&oldid=2648156&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E5%84%92%E6%9E%97%E5%A4%96%E5%8F%B2%2F%E7%AC%AC01%E5%9B%9E&oldid=2648156&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
-    "attribution": "吴敬梓; Chinese Wikisource contributors, accessed 2026-11-27",
+    "attribution": "吴敬梓; Chinese Wikisource contributors, revision 2648156",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "这王冕天性聪明，年纪不满二十岁，就把那天文、地理，经史上的大学问，无一不贯通。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "2648156"
   },
   {
     "id": "zh-sanguo",
@@ -830,8 +854,8 @@
     "author": "罗贯中",
     "publication": "Ming-era edition",
     "authorDeath": "14th century",
-    "source": "https://zh.wikisource.org/zh-hans/三國演義/第001回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=三國演義/第001回&oldid=2583915",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E4%B8%89%E5%9C%8B%E6%BC%94%E7%BE%A9%2F%E7%AC%AC001%E5%9B%9E&oldid=2583915&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E4%B8%89%E5%9C%8B%E6%BC%94%E7%BE%A9%2F%E7%AC%AC001%E5%9B%9E&oldid=2583915&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
     "attribution": "罗贯中; Chinese Wikisource contributors, revision 2583915",
     "transformation": "Simplified Chinese display variant; excerpt only.",
@@ -841,7 +865,8 @@
       "七国分争"
     ],
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "2583915"
   },
   {
     "id": "zh-twenty-years",
@@ -852,14 +877,15 @@
     "author": "吴趼人",
     "publication": "1910",
     "authorDeath": "1910",
-    "source": "https://zh.wikisource.org/zh-hans/二十年目睹之怪現狀/第001回",
-    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=二十年目睹之怪現狀/第001回&oldid=1756880",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E4%BA%8C%E5%8D%81%E5%B9%B4%E7%9B%AE%E7%9D%B9%E4%B9%8B%E6%80%AA%E7%8F%BE%E7%8B%80%2F%E7%AC%AC001%E5%9B%9E&oldid=1756880&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E4%BA%8C%E5%8D%81%E5%B9%B4%E7%9B%AE%E7%9D%B9%E4%B9%8B%E6%80%AA%E7%8F%BE%E7%8B%80%2F%E7%AC%AC001%E5%9B%9E&oldid=1756880&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
     "attribution": "吴趼人; Chinese Wikisource contributors, revision 1756880",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "只是这本册子，受了那汉子之托，要代他传播，当要想个法子，不负所托才好。纵使我自己办不到，也要转托别人，方是个道理。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "1756880"
   },
   {
     "id": "zh-water",
@@ -870,13 +896,14 @@
     "author": "施耐庵",
     "publication": "Ming-era 100-chapter edition",
     "authorDeath": "14th century",
-    "source": "https://zh.wikisource.org/zh-hans/水滸傳_(100回本)/引首",
-    "rightsEvidence": "https://zh.wikisource.org/zh-hans/水滸傳_(100回本)/引首",
+    "source": "https://zh.wikisource.org/w/index.php?title=%E6%B0%B4%E6%BB%B8%E5%82%B3_(100%E5%9B%9E%E6%9C%AC)%2F%E5%BC%95%E9%A6%96&oldid=11181745&variant=zh-hans",
+    "rightsEvidence": "https://zh.wikisource.org/w/index.php?title=%E6%B0%B4%E6%BB%B8%E5%82%B3_(100%E5%9B%9E%E6%9C%AC)%2F%E5%BC%95%E9%A6%96&oldid=11181745&variant=zh-hans",
     "rights": "Original classical prose from author/edition predating 1931; underlying economic rights expired by age. Wikisource transcription CC BY-SA 4.0 if applicable.",
-    "attribution": "施耐庵; Chinese Wikisource contributors, accessed 2026-11-27",
+    "attribution": "施耐庵; Chinese Wikisource contributors, revision 11181745",
     "transformation": "Simplified Chinese display variant; excerpt only.",
     "text": "话说这八句诗，乃是故宋神宗天子朝中一个名儒，姓邵，讳尧夫，道号康节先生所作。为叹五代残唐天下干戈不息。",
     "checkedOn": "2026-11-27",
-    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription"
+    "license": "Public-domain underlying work; CC BY-SA 4.0 for any protected Wikisource transcription",
+    "sourceRevision": "11181745"
   }
 ]
