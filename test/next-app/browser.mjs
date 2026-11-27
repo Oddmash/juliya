@@ -177,6 +177,7 @@ try {
             restored: lines.map(line => line.text + line.breakAfter).join("") === text,
             fits: lines.every(line => line.width <= width),
             lineBudget: lines.length <= greedy.length,
+            pairFits: Math.max(measure(text.slice(0, text.indexOf("어색하게")).trimEnd()), measure(text.slice(text.indexOf("어색하게")))) <= width,
             paired: lines.some(line => line.text.includes("어색하게 끊기거나")),
           });
         }
@@ -185,6 +186,7 @@ try {
     });
     for (const sample of adverbial) {
       assert.ok(sample.restored && sample.fits && sample.lineBudget, JSON.stringify(sample));
+      if (sample.width === 693 && sample.pairFits) assert.ok(sample.paired, JSON.stringify(sample));
     }
     const inline = await page.evaluate(async () => {
       const { mountKowrap } = await import("/__juliya-dist/dom/index.js");
