@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { segmentSentences, splitLines, wrap } from "@oddmash/juliya";
+import { lineCost } from "../dist/core/scoring.js";
 import { portfolioCorpus } from "./fixtures/portfolio-prose.mjs";
 
 const proportionalMeasure = (text) => [...text].reduce((width, char) => width + (/[가-힣]/u.test(char) ? 1 : char === " " ? 0.3 : 0.5), 0);
@@ -276,17 +277,27 @@ test("does not treat Korean object-particle nouns as predicate heads", () => {
   assert.ok(!lines.some(line => line.text.includes("조용하게 문을")));
 });
 
-test("excludes dative particles and yields when an adverb-predicate pair cannot fit", () => {
-  const dative = "친구에게 말을 전했다. 끝";
-  for (const width of [5, 7, 10]) {
-    const korean = run(dative, width, { locale: "ko" });
-    const english = run(dative, width, { locale: "en" });
-    assert.deepEqual(korean.map(line => line.text), english.map(line => line.text));
+test("does not protect dative or topic-marked nouns as predicates", () => {
+  const neutral = (fragment, nextWord) => lineCost({ fragment, width: 8, emergency: false }, 8, false, nextWord, "ko");
+  for (const [fragment, nextWord] of [
+    ["친구에게", "전했다."],
+    ["조용하게", "문은"],
+    ["조용하게", "문제는"],
+  ]) {
+    assert.equal(neutral(fragment, nextWord), 0.06);
   }
+  assert.ok(neutral("쉽게", "만듭니다.") > 0.06);
+  assert.ok(neutral("쉽게,", "만듭니다.") < 0.06);
+});
 
+test("yields when an adverb-predicate pair cannot fit or crosses an explicit break", () => {
   const narrow = "쉽게 만듭니다.";
   const lines = run(narrow, 3);
   assert.equal(reconstruct(lines), narrow);
   assert.ok(lines.every(line => line.width <= 3));
   assert.ok(!lines.some(line => line.text.includes(narrow)));
+  const explicit = "쉽게\n만듭니다.";
+  const forced = run(explicit, 20);
+  assert.equal(reconstruct(forced), explicit);
+  assert.deepEqual(forced.map(line => line.text), ["쉽게", "만듭니다."]);
 });
