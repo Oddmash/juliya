@@ -16,6 +16,11 @@ test("literature fixtures preserve provenance and disjoint work-level evaluation
     if (item.kind !== "literature") continue;
     assert.ok(item.source.startsWith("https://") && item.rightsEvidence.startsWith("https://"));
     assert.ok(item.publication && item.authorDeath && item.attribution);
+    if (item.source.includes("wikisource.org")) assert.match(item.source, /[?&]oldid=\d+/);
+    if (item.source.includes("gutenberg.org")) {
+      assert.match(item.source, /^https:\/\/www\.gutenberg\.org\/ebooks\/\d+$/);
+      assert.ok(item.sourceEdition);
+    }
     const work = `${item.author}/${item.title}`;
     if (works.has(work)) assert.equal(works.get(work), item.split);
     works.set(work, item.split);
